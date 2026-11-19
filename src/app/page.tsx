@@ -126,9 +126,9 @@ export default function HomePage() {
                       </span>
                     </div>
 
-                    <h4 className="font-serif font-bold text-base sm:text-lg text-wine-950 group-hover:text-brand-burgundy transition-colors line-clamp-2 leading-snug">
+                    <h3 className="font-serif font-bold text-base sm:text-lg text-wine-950 group-hover:text-brand-burgundy transition-colors line-clamp-2 leading-snug">
                       {art.title}
-                    </h4>
+                    </h3>
 
                     <p className="font-ui text-xs text-neutral-dark line-clamp-2 leading-relaxed">
                       {art.excerpt}

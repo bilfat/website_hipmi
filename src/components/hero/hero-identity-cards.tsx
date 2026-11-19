@@ -20,33 +20,33 @@ export const HeroIdentityCards: React.FC<HeroIdentityCardsProps> = ({
 
   return (
     <motion.div
-      className="relative z-40 w-full max-w-[680px] mx-auto px-2 -mt-8 xs:-mt-10 sm:-mt-16 md:-mt-20 lg:-mt-24 pointer-events-auto"
-      initial={isReducedMotion ? undefined : { opacity: 0, y: 22 }}
+      className="relative z-40 w-full max-w-[560px] mx-auto px-2 -mt-8 xs:-mt-10 sm:-mt-12 md:-mt-14 lg:-mt-14 xl:-mt-16 pointer-events-auto"
+      initial={isReducedMotion ? undefined : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
-        duration: 1.0,
-        delay: isReducedMotion ? 0 : 0.41,
+        duration: 0.9,
+        delay: isReducedMotion ? 0 : 0.38,
         ease: editorialEase,
       }}
     >
-      <div className="grid grid-cols-2 gap-2 sm:gap-6 justify-items-center">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 justify-items-center">
         {/* Card 1 - Ketua Umum (Figur Kiri) */}
         <div
-          className="w-full max-w-[160px] xs:max-w-[190px] sm:max-w-[310px] rounded-2xl p-2.5 sm:p-4 bg-white/90 sm:bg-[#FCF8F6]/85 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_8px_24px_rgba(61,15,22,0.08)] hover:shadow-[0_12px_32px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
+          className="w-full max-w-[155px] xs:max-w-[180px] sm:max-w-[245px] lg:max-w-[255px] rounded-2xl p-2 sm:p-2.5 lg:p-3 bg-white/95 sm:bg-[#FCF8F6]/90 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_6px_20px_rgba(61,15,22,0.08)] hover:shadow-[0_10px_28px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
         >
           {/* Champagne Gold Accent Line at Top */}
           <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 h-[2px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
 
           <div className="flex flex-col items-center text-center">
-            <span className="font-ui text-[11px] font-semibold tracking-wider sm:tracking-widest text-brand-burgundy uppercase mb-0.5 sm:mb-1 flex items-center gap-1 sm:gap-1.5 truncate">
+            <span className="font-ui text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#E8B577] inline-block shrink-0" />
               <span className="truncate">{ketum.role}</span>
             </span>
-            <h3 className="font-display text-xs sm:text-lg font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
+            <h3 className="font-display text-xs sm:text-base font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
               {ketum.name}
             </h3>
             {ketum.bio && (
-              <p className="font-ui text-[11px] text-neutral-muted mt-0.5 line-clamp-1">
+              <p className="font-ui text-[10px] sm:text-xs text-neutral-dark mt-0.5 line-clamp-1 font-medium">
                 {ketum.bio}
               </p>
             )}
@@ -55,21 +55,21 @@ export const HeroIdentityCards: React.FC<HeroIdentityCardsProps> = ({
 
         {/* Card 2 - Wakil Ketua Umum (Figur Kanan) */}
         <div
-          className="w-full max-w-[160px] xs:max-w-[190px] sm:max-w-[310px] rounded-2xl p-2.5 sm:p-4 bg-white/90 sm:bg-[#FCF8F6]/85 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_8px_24px_rgba(61,15,22,0.08)] hover:shadow-[0_12px_32px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
+          className="w-full max-w-[155px] xs:max-w-[180px] sm:max-w-[245px] lg:max-w-[255px] rounded-2xl p-2 sm:p-2.5 lg:p-3 bg-white/95 sm:bg-[#FCF8F6]/90 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_6px_20px_rgba(61,15,22,0.08)] hover:shadow-[0_10px_28px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
         >
           {/* Champagne Gold Accent Line at Top */}
           <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 h-[2px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
 
           <div className="flex flex-col items-center text-center">
-            <span className="font-ui text-[11px] font-semibold tracking-wider sm:tracking-widest text-brand-burgundy uppercase mb-0.5 sm:mb-1 flex items-center gap-1 sm:gap-1.5 truncate">
+            <span className="font-ui text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
               <span className="w-1.5 h-1.5 rounded-full bg-[#E8B577] inline-block shrink-0" />
               <span className="truncate">{waketum.role}</span>
             </span>
-            <h3 className="font-display text-xs sm:text-lg font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
+            <h3 className="font-display text-xs sm:text-base font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
               {waketum.name}
             </h3>
             {waketum.bio && (
-              <p className="font-ui text-[11px] text-neutral-muted mt-0.5 line-clamp-1">
+              <p className="font-ui text-[10px] sm:text-xs text-neutral-dark mt-0.5 line-clamp-1 font-medium">
                 {waketum.bio}
               </p>
             )}

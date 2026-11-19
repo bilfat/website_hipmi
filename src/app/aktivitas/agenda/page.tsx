@@ -172,113 +172,111 @@ export default function PublicEventsPage() {
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {filteredEvents.map((evt) => {
               const visual = getEventVisual(evt.id);
-              const eventDate = new Date(evt.schedule_start);
-              const dayStr = eventDate.getDate();
-              const monthStr = eventDate.toLocaleDateString("id-ID", { month: "short" }).toUpperCase();
-              const timeStr = eventDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+              const isFree = evt.category === "gratis";
+              const dateObj = evt.schedule_start ? new Date(evt.schedule_start) : null;
+              const dayStr = dateObj ? dateObj.getDate() : "28";
+              const monthStr = dateObj
+                ? dateObj.toLocaleDateString("id-ID", { month: "short" }).toUpperCase()
+                : "NOV";
+              const yearStr = dateObj ? dateObj.getFullYear() : "2026";
+              const timeStr = dateObj
+                ? dateObj.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })
+                : "09.00";
 
               return (
                 <div
                   key={evt.id}
-                  className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl bg-surface-card border border-wine-950/10 shadow-sm hover:shadow-2xl hover:border-gold-400/60 transition-all duration-300 transform hover:-translate-y-1"
+                  className="rounded-2xl sm:rounded-3xl bg-white border border-gold-400/40 hover:border-gold-400 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden group hover:-translate-y-1 relative"
                 >
-                  {/* COMPACT COVER IMAGE (16:9 Aspect Ratio) */}
-                  <div className="relative aspect-[16/9] w-full overflow-hidden bg-neutral-900">
+                  {/* 1. Small Top Image Header */}
+                  <div className="relative h-28 sm:h-36 w-full overflow-hidden bg-wine-950/20 shrink-0">
                     <Image
                       src={visual.image}
                       alt={evt.title}
                       fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                      sizes="(max-width: 768px) 50vw, 33vw"
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+                      className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-black/25" />
 
-                    {/* Gradient overlay for readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-wine-950/85 via-wine-950/20 to-transparent" />
-
-                    {/* Floating Date Badge (Calendar Card Style) */}
-                    <div className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white/95 backdrop-blur-md rounded-xl sm:rounded-2xl p-1 px-1.5 sm:p-1.5 sm:px-2.5 text-center shadow-md border border-gold-300">
-                      <span className="block font-mono font-black text-xs sm:text-sm leading-none text-brand-burgundy">
-                        {dayStr}
+                    {/* Floating Date Badge (Top-Left) */}
+                    <div className="absolute top-2 left-2 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-white/95 backdrop-blur-md shadow-xs border border-gold-400/50 flex items-center gap-1 sm:gap-1.5">
+                      <span className="font-serif font-black text-xs sm:text-sm text-brand-burgundy leading-none">
+                        {dayStr} {monthStr}
                       </span>
-                      <span className="block font-mono text-[7px] sm:text-[9px] font-bold text-neutral-dark uppercase leading-none mt-0.5">
-                        {monthStr}
+                      <span className="font-mono text-[9px] text-neutral-dark/80 hidden sm:inline">
+                        {yearStr}
                       </span>
                     </div>
 
-                    {/* Top Right Price/Category Badge */}
-                    <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-                      <span
-                        className={`inline-flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[8px] sm:text-[10px] font-mono font-bold tracking-wide backdrop-blur-md border ${
-                          evt.category === "berbayar"
-                            ? "bg-amber-600/90 text-white border-amber-300/40"
-                            : "bg-emerald-600/90 text-white border-emerald-300/40"
-                        }`}
-                      >
-                        {visual.priceDisplay}
-                      </span>
-                    </div>
+                    {/* Floating Category Badge (Top-Right) */}
+                    <span
+                      className={`absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider backdrop-blur-md shadow-xs border ${
+                        isFree
+                          ? "bg-emerald-900/80 text-emerald-200 border-emerald-400/40"
+                          : "bg-wine-950/85 text-gold-200 border-gold-400/50"
+                      }`}
+                    >
+                      {isFree ? "GRATIS" : "TERBUKA"}
+                    </span>
 
-                    {/* Bottom Tag Badge */}
-                    <div className="absolute bottom-2 left-2 right-2 sm:bottom-3 sm:left-3 sm:right-3 flex items-center justify-between text-[8px] sm:text-[10px] text-white/90">
-                      <span className="px-1.5 sm:px-2 py-0.5 rounded-md bg-black/50 backdrop-blur-sm border border-white/20 font-mono text-gold-300 truncate max-w-[95px] sm:max-w-none">
-                        {visual.tag}
-                      </span>
-                      <span className="hidden sm:inline font-mono text-white/80">
-                        {timeStr} WIB
-                      </span>
-                    </div>
+                    {/* Floating Tag (Bottom-Left) */}
+                    <span className="absolute bottom-1.5 left-2 px-1.5 sm:px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[9px] sm:text-[10px] font-medium text-white/90 truncate max-w-[85%]">
+                      {visual.tag}
+                    </span>
                   </div>
 
-                  {/* CARD BODY (Clean & Compact) */}
-                  <div className="p-3 sm:p-5 space-y-2 sm:space-y-3 flex-1 flex flex-col justify-between">
-                    <div className="space-y-1.5 sm:space-y-2">
+                  {/* 2. Perforated Ticket Notches Divider */}
+                  <div className="relative border-b border-dashed border-wine-950/20 bg-surface-ivory/40">
+                    <div className="absolute -left-1.5 -top-1.5 w-3 h-3 rounded-full bg-[#FAF5F2] border-r border-gold-400/40" />
+                    <div className="absolute -right-1.5 -top-1.5 w-3 h-3 rounded-full bg-[#FAF5F2] border-l border-gold-400/40" />
+                  </div>
+
+                  {/* 3. Ticket Body: Title & Meta Info */}
+                  <div className="p-3 sm:p-4 space-y-2 flex-1 flex flex-col justify-between">
+                    <div className="space-y-1">
                       <Link href={`/aktivitas/agenda/${evt.id}`} className="block">
-                        <h2 className="font-serif font-bold text-xs sm:text-base text-wine-950 group-hover:text-brand-burgundy transition-colors line-clamp-1 leading-snug">
+                        <h2 className="font-serif font-bold text-xs sm:text-base text-wine-950 group-hover:text-brand-burgundy transition-colors leading-snug line-clamp-1 sm:line-clamp-2">
                           {evt.title}
                         </h2>
                       </Link>
+                    </div>
 
-                      <p className="text-[10px] sm:text-xs text-neutral-dark line-clamp-2 leading-relaxed font-sans">
-                        {evt.description}
-                      </p>
-
-                      {/* Location & Schedule Info */}
-                      <div className="space-y-1 pt-1 sm:pt-1.5 border-t border-wine-950/10 text-[10px] sm:text-xs text-neutral-dark">
-                        <div className="flex items-center gap-1.5">
-                          <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-gold-600 shrink-0" />
-                          <span className="truncate">{evt.location}</span>
-                        </div>
+                    <div className="space-y-1 pt-1 text-[10px] sm:text-xs font-ui text-neutral-dark">
+                      <div className="flex items-center gap-1.5">
+                        <Clock className="w-3 h-3 text-gold-600 shrink-0" />
+                        <span className="truncate">{timeStr} WIB</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="w-3 h-3 text-brand-burgundy shrink-0" />
+                        <span className="truncate">{evt.location}</span>
                       </div>
                     </div>
+                  </div>
 
-                    {/* CARD FOOTER ACTIONS */}
-                    <div className="pt-2 sm:pt-3.5 mt-1 sm:mt-2 border-t border-wine-950/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 sm:gap-2">
+                  {/* 4. Ticket Footer: Price & Action */}
+                  <div className="p-2 sm:p-3 sm:px-4 bg-surface-warm-white border-t border-wine-950/10 flex items-center justify-between gap-1.5">
+                    <span className="text-[10px] sm:text-xs font-mono font-bold text-brand-burgundy truncate">
+                      {visual.priceDisplay}
+                    </span>
+
+                    {evt.category === "berbayar" ? (
                       <Link
-                        href={`/aktivitas/agenda/${evt.id}`}
-                        className="text-[10px] sm:text-xs font-semibold text-neutral-dark hover:text-brand-burgundy transition-colors text-center sm:text-left py-0.5"
+                        href={`/aktivitas/agenda/${evt.id}/tiket`}
+                        className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-brand-burgundy hover:bg-wine-950 text-white text-[10px] sm:text-xs font-semibold shadow-xs transition-all shrink-0"
                       >
-                        Detail
+                        <Ticket className="w-3 h-3" />
+                        <span>Pesan</span>
                       </Link>
-
-                      {evt.category === "berbayar" ? (
-                        <Link
-                          href={`/aktivitas/agenda/${evt.id}/tiket`}
-                          className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-[10px] sm:text-xs font-semibold shadow-sm transition-all group-hover:shadow"
-                        >
-                          <Ticket className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                          <span>Pesan Tiket</span>
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/aktivitas/agenda/${evt.id}/daftar`}
-                          className="inline-flex items-center justify-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] sm:text-xs font-semibold shadow-sm transition-all group-hover:shadow"
-                        >
-                          <span>Daftar Gratis</span>
-                          <ArrowRight className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </Link>
-                      )}
-                    </div>
-
+                    ) : (
+                      <Link
+                        href={`/aktivitas/agenda/${evt.id}/daftar`}
+                        className="inline-flex items-center gap-1 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-[10px] sm:text-xs font-semibold shadow-xs transition-all shrink-0"
+                      >
+                        <span>Daftar</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    )}
                   </div>
                 </div>
               );

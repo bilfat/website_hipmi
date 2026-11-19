@@ -48,7 +48,7 @@ export const HeroSection: React.FC = () => {
 
   return (
     <section
-      className="relative w-full min-h-[920px] sm:min-h-[960px] lg:min-h-[1000px] xl:min-h-[1040px] bg-gradient-to-b from-[#FFFFFF] via-[#FCF8F6] to-[#F8EFF1] overflow-hidden flex flex-col justify-between pt-24 sm:pt-28 lg:pt-32 pb-4 select-none"
+      className="relative w-full min-h-[640px] sm:min-h-[700px] lg:h-[100dvh] lg:min-h-[640px] lg:max-h-[820px] xl:max-h-[870px] bg-gradient-to-b from-[#FFFFFF] via-[#FCF8F6] to-[#F8EFF1] overflow-hidden flex flex-col justify-between pt-16 sm:pt-20 lg:pt-20 pb-2 select-none"
       aria-label="Hero ARTHAKARSA Editorial"
     >
       {/* LAYER 1: Background Subtle Atmosphere Glows & Muted Mauve Depth */}
@@ -74,9 +74,9 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* LAYER 3: Giant Backdrop Typography "ARTHAKARSA"
-          Located behind silhouettes (z-10), Poppins Black, Burgundy to Dusty Rose soft gradient */}
+          Located behind silhouettes (z-10), perfectly aligned without excessive downward shift */}
       <div
-        className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden -translate-y-12 sm:-translate-y-16 lg:-translate-y-24 pb-16 sm:pb-24 lg:pb-32"
+        className="absolute inset-0 flex items-center justify-center pointer-events-none z-10 overflow-hidden -translate-y-4 sm:-translate-y-8 lg:-translate-y-12"
         aria-hidden="true"
       >
         <motion.div
@@ -91,10 +91,10 @@ export const HeroSection: React.FC = () => {
           }}
         >
           <span
-            className="block font-ui font-black text-[14vw] sm:text-[13.5vw] md:text-[13vw] lg:text-[165px] xl:text-[205px] leading-none tracking-[0.05em] sm:tracking-[0.08em] md:tracking-[0.12em] uppercase select-none"
+            className="block font-ui font-black text-[13vw] sm:text-[12vw] md:text-[11vw] lg:text-[125px] xl:text-[155px] leading-none tracking-[0.05em] sm:tracking-[0.08em] md:tracking-[0.10em] uppercase select-none"
             style={{
               background:
-                "linear-gradient(180deg, rgba(90, 23, 34, 0.30) 0%, rgba(221, 165, 173, 0.22) 65%, rgba(90, 23, 34, 0.08) 100%)",
+                "linear-gradient(180deg, rgba(90, 23, 34, 0.28) 0%, rgba(221, 165, 173, 0.18) 65%, rgba(90, 23, 34, 0.05) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
             }}
@@ -104,11 +104,11 @@ export const HeroSection: React.FC = () => {
         </motion.div>
       </div>
 
-      {/* LAYER 4: Floating Official ARTHAKARSA Logos (5 sharp + 2 blurred in corners) */}
+      {/* LAYER 4: Floating Official ARTHAKARSA Logos (2 on mobile, 7 on desktop) */}
       <HeroFloatingLogos isReducedMotion={isReducedMotion} />
 
-      {/* LAYER 5: 3-Column Content Frame (Desktop 1440 Basis / Responsive Reflow) */}
-      <div className="relative z-30 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 flex-1 flex flex-col justify-center my-auto">
+      {/* LAYER 5: 3-Column Content Frame (Desktop 1440 Basis / Compact Laptop Fit) */}
+      <div className="relative z-30 w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-10 flex-1 flex flex-col justify-center">
         <AnimatePresence mode="wait">
           <motion.div
             key={slide.id}
@@ -116,9 +116,9 @@ export const HeroSection: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={isReducedMotion ? undefined : { opacity: 0 }}
             transition={{ duration: 0.97, ease: editorialEase }}
-            className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center"
+            className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-6 items-center"
           >
-            {/* Left Column: HIPMI Introduction (~320-350px) */}
+            {/* Left Column: HIPMI Introduction */}
             <div className="lg:col-span-3 order-2 lg:order-1 flex justify-center lg:justify-start">
               <HeroIntro
                 badge={slide.introBadge}
@@ -130,7 +130,7 @@ export const HeroSection: React.FC = () => {
               />
             </div>
 
-            {/* Center Column: Dual Silhouette & Identity Cards (~600-640px) */}
+            {/* Center Column: Dual Silhouette & Identity Cards */}
             <div className="lg:col-span-6 order-1 lg:order-2 flex flex-col items-center justify-center relative">
               <HeroSilhouette isReducedMotion={isReducedMotion} />
               <HeroIdentityCards
@@ -139,7 +139,7 @@ export const HeroSection: React.FC = () => {
               />
             </div>
 
-            {/* Right Column: Organization Editorial Message (~300-350px) */}
+            {/* Right Column: Organization Editorial Message */}
             <div className="lg:col-span-3 order-3 flex justify-center lg:justify-end">
               <HeroMessage
                 lines={slide.messageLines}
@@ -153,12 +153,7 @@ export const HeroSection: React.FC = () => {
         <HeroBottomBar isReducedMotion={isReducedMotion} />
       </div>
 
-      {/* LAYER 6: Bottom Multi-Layer Organic Wave SVG
-          4 Layers per Section 3.2:
-          1. Burgundy as main layer (#5A1722)
-          2. Dark Wine as deepest foundation (#3D0F16)
-          3. Dusty Rose as transition layer (#F2E5E8)
-          4. Champagne Gold as accent line (#E8B577) */}
+      {/* LAYER 6: Bottom Multi-Layer Organic Wave SVG */}
       <div
         className="absolute bottom-0 left-0 right-0 w-full pointer-events-none z-2 overflow-hidden leading-none"
         aria-hidden="true"
@@ -168,7 +163,7 @@ export const HeroSection: React.FC = () => {
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
           preserveAspectRatio="none"
-          className="w-full h-16 sm:h-24 md:h-28 lg:h-32"
+          className="w-full h-10 sm:h-14 md:h-16 lg:h-20"
         >
           {/* Layer 3: Dusty Rose transition wave */}
           <path
@@ -200,9 +195,9 @@ export const HeroSection: React.FC = () => {
       </div>
 
       {/* LAYER 7: Slider Controls (Previous / Next / Dots)
-          Only displayed if multiple slides exist, per Section 10 & 11 */}
+          Only displayed if multiple slides exist */}
       {HERO_SLIDES.length > 1 && (
-        <div className="relative z-50 w-full mt-4 sm:mt-6">
+        <div className="relative z-50 w-full mt-2 sm:mt-3">
           <HeroSliderControls
             totalSlides={HERO_SLIDES.length}
             activeSlide={currentSlideIndex}

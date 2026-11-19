@@ -87,7 +87,7 @@ export const BenefitSection: React.FC = () => {
 
           <Link
             href="/daftar"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all shrink-0 self-start md:self-end"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all shrink-0 self-start md:self-end focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none"
           >
             <span>Daftar Menjadi Kader</span>
             <ArrowRight className="w-3.5 h-3.5" />

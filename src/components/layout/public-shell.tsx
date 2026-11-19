@@ -18,7 +18,7 @@ export function PublicShell({ children, transparentHeader }: PublicShellProps) {
   return (
     <div className="min-h-screen flex flex-col bg-white text-neutral-black relative selection:bg-brand-burgundy selection:text-white">
       <PublicNavbar isSeamlessAtTop={shouldBeSeamless} />
-      <main className={`flex-1 pb-16 ${shouldBeSeamless ? "pt-0" : "pt-24 sm:pt-28"}`}>
+      <main className={`flex-1 ${shouldBeSeamless ? "pt-0 pb-0" : "pt-24 sm:pt-28 pb-8"}`}>
         {children}
       </main>
       <PublicFooter />

@@ -73,7 +73,7 @@ export function PublicNavbar({ isSeamlessAtTop = true }: PublicNavbarProps) {
         aria-label="Navigasi Utama"
         className={`w-full transition-all duration-300 ease-out pointer-events-auto ${isFloating
             ? "max-w-[1520px] glass-navbar rounded-full px-5 sm:px-8 py-3.5 sm:py-4 shadow-xl border border-white/60"
-            : "w-full max-w-[1520px] mx-auto px-5 sm:px-8 lg:px-12 py-5 sm:py-6 bg-transparent border-b border-brand-burgundy/10 shadow-none rounded-none"
+            : "w-full max-w-[1520px] mx-auto px-5 sm:px-8 lg:px-12 py-3 sm:py-3.5 lg:py-4 bg-transparent border-b border-brand-burgundy/10 shadow-none rounded-none"
           }`}
       >
         <div className="flex items-center justify-between w-full gap-2 sm:gap-4">

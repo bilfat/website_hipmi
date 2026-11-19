@@ -22,7 +22,7 @@ export const HeroSilhouette: React.FC<HeroSilhouetteProps> = ({
     >
       {/* Dual Figure Container: Side-by-side with subtle overlap and depth */}
       <motion.div
-        className="relative flex items-end justify-center -space-x-8 xs:-space-x-12 sm:-space-x-24 md:-space-x-36 lg:-space-x-44 xl:-space-x-48 w-full max-w-[1000px]"
+        className="relative flex items-end justify-center -space-x-8 xs:-space-x-12 sm:-space-x-20 md:-space-x-28 lg:-space-x-32 xl:-space-x-36 w-full max-w-[850px]"
         initial={isReducedMotion ? undefined : { x: 70, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{
@@ -33,11 +33,11 @@ export const HeroSilhouette: React.FC<HeroSilhouetteProps> = ({
       >
         {/* Figure 1 (Left - Ketua Umum)
             Primary Burgundy #5A1722 with Dark Wine #3D0F16 gradient fill via CSS masking */}
-        <div className="relative z-20 w-[170px] xs:w-[220px] sm:w-[340px] md:w-[440px] lg:w-[510px] xl:w-[550px] aspect-square flex-shrink-0">
+        <div className="relative z-20 w-[170px] xs:w-[210px] sm:w-[280px] md:w-[330px] lg:w-[340px] xl:w-[390px] 2xl:w-[440px] aspect-square flex-shrink-0">
           <div
             className="w-full h-full transition-transform duration-500"
             style={{
-              filter: "drop-shadow(0 20px 32px rgba(61, 15, 22, 0.38))",
+              filter: "drop-shadow(0 16px 28px rgba(61, 15, 22, 0.32))",
             }}
           >
             <div
@@ -61,11 +61,11 @@ export const HeroSilhouette: React.FC<HeroSilhouetteProps> = ({
 
         {/* Figure 2 (Right - Wakil Ketua Umum)
             Subtle horizontal mirror & scale offset for natural depth, Dark Wine #3D0F16 dominance */}
-        <div className="relative z-10 w-[160px] xs:w-[205px] sm:w-[320px] md:w-[415px] lg:w-[485px] xl:w-[520px] aspect-square flex-shrink-0 scale-x-[-1]">
+        <div className="relative z-10 w-[160px] xs:w-[195px] sm:w-[260px] md:w-[310px] lg:w-[320px] xl:w-[370px] 2xl:w-[415px] aspect-square flex-shrink-0 scale-x-[-1]">
           <div
             className="w-full h-full transition-transform duration-500"
             style={{
-              filter: "drop-shadow(0 18px 28px rgba(61, 15, 22, 0.32))",
+              filter: "drop-shadow(0 14px 24px rgba(61, 15, 22, 0.28))",
             }}
           >
             <div

@@ -58,7 +58,7 @@ export const PillarsSection: React.FC = () => {
                   key={field.id}
                   type="button"
                   onClick={() => setSelectedFieldCode(field.code)}
-                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex items-center justify-between group relative overflow-hidden ${
+                  className={`w-full text-left p-4 sm:p-5 rounded-2xl border transition-all duration-300 flex items-center justify-between group relative overflow-hidden focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none ${
                     isSelected
                       ? "bg-white border-2 border-gold-400 shadow-lg scale-102"
                       : "bg-surface-ivory/80 border-gold-300/40 hover:bg-white hover:border-gold-400/80 shadow-sm"

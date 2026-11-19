@@ -38,7 +38,7 @@ export const CommunityCtaSection: React.FC = () => {
               </div>
 
               <div>
-                <span className="text-[11px] font-mono font-bold tracking-wider text-gold-600 uppercase">
+                <span className="text-[11px] font-mono font-bold tracking-wider text-brand-burgundy uppercase">
                   Saluran Aspirasi Terbuka
                 </span>
                 <h3 className="font-display text-2xl font-bold text-neutral-black mt-1">
@@ -54,7 +54,7 @@ export const CommunityCtaSection: React.FC = () => {
             <div className="pt-8 mt-6 border-t border-brand-burgundy/10 flex flex-wrap items-center justify-between gap-4">
               <Link
                 href="/kotak-suara"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-wine-950 text-white font-ui text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-wine-950 text-white font-ui text-xs sm:text-sm font-semibold shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-gold-400 focus-visible:outline-none"
               >
                 <span>Kirim Aspirasi</span>
                 <ArrowRight className="w-4 h-4" />
@@ -62,7 +62,7 @@ export const CommunityCtaSection: React.FC = () => {
 
               <Link
                 href="/kotak-suara?tab=track"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-muted hover:text-brand-burgundy transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-muted hover:text-brand-burgundy transition-colors focus-visible:underline focus-visible:outline-none"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Lacak Status Tiket</span>
@@ -96,7 +96,7 @@ export const CommunityCtaSection: React.FC = () => {
             <div className="pt-8 mt-6 border-t border-brand-burgundy/10 flex flex-wrap items-center justify-between gap-4">
               <Link
                 href="/aktivitas/media-partner/ajukan"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-wine-950 font-ui text-xs sm:text-sm font-bold shadow-sm transition-all duration-200"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gold-500 hover:bg-gold-400 text-wine-950 font-ui text-xs sm:text-sm font-bold shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-brand-burgundy focus-visible:outline-none"
               >
                 <span>Ajukan Kemitraan</span>
                 <ArrowRight className="w-4 h-4" />
@@ -104,7 +104,7 @@ export const CommunityCtaSection: React.FC = () => {
 
               <Link
                 href="/aktivitas/media-partner/cek-status"
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-muted hover:text-gold-700 transition-colors"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-neutral-muted hover:text-gold-700 transition-colors focus-visible:underline focus-visible:outline-none"
               >
                 <Search className="w-3.5 h-3.5" />
                 <span>Cek Status Pengajuan</span>

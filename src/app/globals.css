@@ -135,6 +135,12 @@ body {
     var(--color-brand-warm-ivory);
 }
 
+/* Custom text selection */
+::selection {
+  background-color: rgba(90, 23, 34, 0.18);
+  color: #3D0F16;
+}
+
 /* Custom subtle scrollbar */
 ::-webkit-scrollbar {
   width: 7px;
@@ -149,4 +155,25 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #5A1722;
+}
+
+/* High-Performance Hardware-Accelerated Floating Bobbing Keyframes */
+@keyframes heroFloatGentle {
+  0% {
+    transform: translate3d(0, -6px, 0) rotate(var(--rot-start, -5deg));
+  }
+  50% {
+    transform: translate3d(0, 7px, 0) rotate(var(--rot-mid, 5deg));
+  }
+  100% {
+    transform: translate3d(0, -6px, 0) rotate(var(--rot-start, -5deg));
+  }
+}
+
+.hero-floating-gpu {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  perspective: 1000px;
 }

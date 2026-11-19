@@ -41,7 +41,10 @@ export default function RootLayout({
       <body className="font-ui bg-white min-h-screen text-neutral-black antialiased selection:bg-brand-burgundy selection:text-white">
         {children}
         <DemoControlCenter />
-      </body>
+      {/* impeccable-live-start */}
+<script src="http://localhost:8400/live.js?token=4c2d2dce-8409-409f-b9f4-287962bfef50"></script>
+{/* impeccable-live-end */}
+</body>
     </html>
   );
 }
