@@ -3,8 +3,8 @@
 # DESIGN SYSTEM & VISUAL IMPLEMENTATION GUIDE
 
 **Nama dokumen:** `design.md`  
-**Versi:** 1.0 — Aurora Glass Editorial  
-**Tanggal:** 17 November 2026  
+**Versi:** 1.2 — Aurora Glass Editorial · Next.js Frontend Stack  
+**Tanggal:** 18 November 2026  
 **Proyek:** HIPMI CENTRAL — HIPMI Perguruan Tinggi Universitas Telkom  
 **Identitas kabinet aktif:** ARTHAKARSA  
 **Status:** Arah visual disetujui sebagai referensi desain; detail teknis menjadi baseline implementasi dan tetap wajib melalui pemeriksaan aset, kontras, responsivitas, serta performa.  
@@ -31,51 +31,67 @@ Dokumen ini bukan pengganti PRD Frontend. Pembagian kewenangan dokumen adalah:
 
 ## 0.2 Prioritas keputusan visual
 
-Arah visual terbaru yang disetujui dalam percakapan proyek ini adalah **Aurora Glass Editorial**. Arah ini memperbarui sebagian ketentuan visual v2.1 sebelumnya.
+Arah visual yang berlaku adalah **Aurora Glass Editorial — White-Dominant Burgundy**. Layar menggunakan putih sebagai dasar, sementara setiap bagian halaman boleh memakai warna latar pendukung yang sangat lembut dan saling menyambung. Burgundy tetap menjadi identitas utama.
 
-| Aspek                | Baseline visual terbaru                                                       |
-|:---------------------|:------------------------------------------------------------------------------|
-| Overall direction    | Aurora Glass Editorial                                                        |
-| Karakter             | Clean, premium, warm, layered, editorial, modern, glassmorphic                |
-| Primary              | Burgundy `#5A1722`                                                            |
-| Deep primary         | Dark Wine `#3D0F16`                                                           |
-| Typography display   | ARTHAKARSA Serif Display                                                      |
-| Typography UI/body   | Poppins                                                                       |
-| Surface utama        | White dan Warm Ivory                                                          |
-| Decorative signature | Fine-line contour, flowing ribbon, arch, orbit, dan connected lines           |
-| Glass                | Selective glassmorphism; bukan seluruh elemen                                 |
-| Motion               | Framer Motion / Motion for React sesuai dependency repository                 |
-| Public navbar        | Rounded floating navbar terinspirasi komposisi navbar KPM                     |
-| Dashboard            | Structured dashboard dengan sidebar, topbar, stat cards, activity, dan agenda |
-| Tab                  | Sliding indicator yang bergerak horizontal dengan halus                       |
-| Card                 | Satu card family dengan beberapa bentuk terkontrol                            |
-| Dropdown             | Asset-supported dropdown/mega menu                                            |
-| Loading              | Centered ARTHAKARSA logo dengan orbit/ring animation                          |
-| Error/empty          | Ilustrasi atau asset pendukung yang sesuai konteks                            |
+| Aspek                                 | Ketentuan visual terbaru                                                    |
+|---------------------------------------|-----------------------------------------------------------------------------|
+| Arah visual                           | Aurora Glass Editorial                                                      |
+| Karakter                              | Bersih, elegan, hangat, berlapis, editorial, modern                         |
+| Warna utama                           | Burgundy `#5A1722`                                                          |
+| Warna utama gelap                     | Dark Wine `#3D0F16`                                                         |
+| Huruf judul                           | ARTHAKARSA Serif Display                                                    |
+| Huruf antarmuka dan isi               | Poppins                                                                     |
+| Dasar layar                           | Putih `#FFFFFF`                                                             |
+| Latar bagian                          | Putih, putih hangat, merah muda pucat, merah muda lembut, dan gading hangat |
+| Aksen                                 | Emas antik dan tembaga                                                      |
+| Hiasan khas                           | Garis kontur, pita mengalir, lengkungan, orbit, dan garis penghubung        |
+| Efek kaca                             | Digunakan secara selektif                                                   |
+| Gerakan                               | Gerakan masuk dan keluar untuk tulisan, ikon, kartu, gambar, serta hiasan   |
+| Bilah navigasi publik                 | Bentuk kapsul mengambang, terinspirasi susunan navigasi KPM                 |
+| Dasbor                                | Bilah samping, bilah atas, kartu ringkasan, aktivitas, dan agenda yang rapi |
+| Perpindahan tab                       | Penanda aktif bergeser mendatar dengan halus                                |
+| Kartu                                 | Satu keluarga bentuk dengan beberapa variasi sudut                          |
+| Menu turun                            | Memakai aset visual yang sesuai untuk setiap kelompok menu                  |
+| Pemuatan                              | Logo ARTHAKARSA di tengah dengan gerakan orbit                              |
+| Halaman tidak ditemukan dan kesalahan | Memakai ilustrasi aset sesuai jenis keadaan                                 |
+| Kerangka aplikasi                     | Next.js dengan App Router sebagai acuan proyek baru                         |
+| Antarmuka                             | React + TypeScript                                                          |
+| Gaya antarmuka                        | Tailwind CSS + token CSS terpusat                                           |
+| Gerakan antarmuka                     | Motion for React                                                            |
+| Ikon                                  | Lucide React                                                                |
+| Visual tiga dimensi                   | Three.js + React Three Fiber + Drei                                         |
+| Formulir dan validasi                 | React Hook Form + Zod                                                       |
+| Tabel data                            | TanStack Table                                                              |
+| Grafik                                | Recharts                                                                    |
+| Batas tahap implementasi              | Frontend dengan data contoh; tanpa layanan peladen dan basis data           |
 
 ### 0.2.1 Perubahan eksplisit dari Design System v2.1
 
-Ketentuan berikut **diganti untuk visual website** karena pengguna menyetujui moodboard Aurora Glass Editorial:
+Ketentuan berikut diperbarui untuk tampilan situs:
 
-1.  Pasangan font website Anton + Plus Jakarta Sans diganti menjadi Poppins + ARTHAKARSA Serif Display.
-2.  Arah Bold Editorial yang dominan sans-serif diganti menjadi editorial serif display yang hangat, dipadukan dengan UI sans-serif modern.
-3.  Komposisi hero Beranda tidak lagi wajib berupa Burgundy solid penuh. Hero dapat menggunakan Warm Ivory/Blush dengan headline Burgundy, foto utama, floating glass cards, dan line art.
-4.  Background section boleh berganti secara terarah antara White, Warm Ivory, Blush Beige, Deep Wine, dan glass surface. Tidak semua section harus putih polos.
-5.  Background line art dan flowing ribbon menjadi elemen identitas visual yang konsisten, dengan penggunaan selektif.
-6.  Navbar publik menggunakan bentuk floating rounded glass/white capsule seperti referensi KPM, sambil mempertahankan identitas logo dan struktur menu HIPMI CENTRAL.
+1.  Pasangan huruf Anton + Plus Jakarta Sans diganti menjadi Poppins + ARTHAKARSA Serif Display.
+2.  Gaya judul editorial menggunakan huruf serif ARTHAKARSA, sedangkan navigasi, isi, formulir, tabel, dan komponen menggunakan Poppins.
+3.  Warna dasar seluruh layar adalah putih. Bagian-bagian halaman boleh berganti menggunakan warna pendukung yang sangat lembut agar tidak monoton.
+4.  Perpindahan warna antarbagiannya harus terasa menyambung melalui gradasi lembut, bentuk tepi melengkung, garis kontur, pita mengalir, atau lapisan latar yang saling bertemu. Jangan membuat susunan blok warna yang terputus seperti garis-garis belang.
+5.  Burgundy `#5A1722` dan Dark Wine `#3D0F16` tetap menjadi warna identitas utama. Keduanya digunakan pada judul, tombol utama, keadaan terpilih, bilah samping, bagian sorotan, dan bagian penutup secara terukur.
+6.  Efek kaca tetap digunakan secara selektif pada bilah navigasi, panel mengambang, menu turun, dan elemen sorotan; bukan pada seluruh permukaan.
+7.  Garis kontur, pita mengalir, lengkungan, dan orbit menjadi ciri latar yang konsisten, dengan kepadatan berbeda sesuai fungsi bagian.
+8.  Semua tulisan yang terlihat oleh pengguna, termasuk tulisan pada navigasi, formulir, pemberitahuan, petunjuk, keadaan kosong, halaman tidak ditemukan, dan halaman kesalahan, wajib menggunakan Bahasa Indonesia.
+9.  Setiap menu utama pada bilah navigasi memiliki pemetaan aset visual. Menu yang memiliki submenu menggunakan aset unggulan pada panel menu turun; menu yang langsung menuju halaman menggunakan aset yang sesuai pada bagian pembuka halamannya.
+10. Halaman tidak ditemukan dan setiap jenis halaman kesalahan wajib memiliki ilustrasi aset yang sesuai atau pengganti visual terarah jika aset belum tersedia.
 
 ### 0.2.2 Ketentuan yang TIDAK berubah
 
 Hal-hal berikut tetap mengikuti dokumen sistem dan PRD:
 
-- Logo HIPMI, wordmark Telkom University, dan logo kabinet ARTHAKARSA adalah identitas berbeda.
-- Logo master tidak boleh di-redraw, di-stretch, di-crop, di-recolor, atau diberi efek langsung.
-- Struktur enam menu utama public navigation tetap mengikuti PRD.
-- Seluruh 146 Screen ID, route, role, permission, scope, business flow, dan data tetap mengikuti PRD.
-- Aturan akses tidak boleh hanya mengandalkan penyembunyian tombol/menu secara visual.
-- Frontend-only/demo mode tetap mengikuti batas implementasi pada PRD yang berlaku.
+- Logo HIPMI, wordmark Telkom University, dan logo kabinet ARTHAKARSA adalah tiga identitas berbeda.
+- Logo master tidak boleh digambar ulang, diregangkan, dipotong, diubah warna, atau diberi efek langsung.
+- Struktur enam menu utama dan seluruh submenu tetap mengikuti PRD.
+- Seluruh identitas layar, alamat halaman, peran, izin, cakupan akses, alur bisnis, dan data tetap mengikuti PRD.
+- Perubahan visual tidak boleh mengubah alur kerja, aturan persetujuan, atau batas akses.
+- Implementasi tetap mengikuti batas frontend yang ditetapkan dalam PRD.
 - Data, foto, statistik, nama pengurus, agenda, dan dokumentasi tidak boleh dikarang sebagai data organisasi sungguhan.
-- Komponen data padat harus mengutamakan keterbacaan, bukan glass atau dekorasi.
+- Komponen yang memuat banyak data harus mengutamakan keterbacaan, bukan efek kaca atau hiasan.
 
 ## 0.3 Status nilai desain
 
@@ -101,6 +117,418 @@ Setiap nilai dalam dokumen diberi kategori berikut:
 10. Bila ada konflik antara desain dekoratif dan keterbacaan, keterbacaan selalu menang.
 
 ------------------------------------------------------------------------
+
+## 0.5 Bahasa antarmuka wajib Bahasa Indonesia
+
+**Semua kalimat dan label yang terlihat oleh pengguna wajib menggunakan Bahasa Indonesia yang baik, jelas, alami, dan konsisten.** Ketentuan ini berlaku untuk seluruh area situs, bukan hanya halaman publik.
+
+Cakupan wajib: - nama menu, submenu, bilah navigasi, bilah samping, dan judul halaman; - judul bagian, keterangan, paragraf, kartu, label, tombol, tautan, dan petunjuk; - nama kolom tabel, penyaring, pilihan, penanda status, dan keterangan singkat; - formulir pendaftaran, masuk, pengubahan profil, pengajuan, persetujuan, dan pengaturan; - pesan validasi, pesan berhasil, pesan gagal, pemberitahuan singkat, jendela konfirmasi, dan peringatan; - keadaan memuat, keadaan kosong, hasil pencarian kosong, halaman tidak ditemukan, halaman tanpa izin, gangguan sistem, dan halaman pemeliharaan; - teks alternatif gambar, nama aksesibel tombol, keterangan ikon, serta teks yang dibacakan pembaca layar; - judul halaman peramban, keterangan halaman, dan pesan yang muncul pada tautan berbagi.
+
+**Larangan pada teks yang terlihat:** - Jangan menampilkan kalimat berbahasa Inggris. - Jangan mencampur Bahasa Indonesia dan Bahasa Inggris dalam satu kalimat. - Jangan memakai singkatan, julukan, istilah internal pengembang, atau istilah teknis yang tidak dipahami pengguna. - Jangan menampilkan teks bawaan pustaka, contoh bawaan templat, atau tulisan pengganti seperti “Lorem ipsum”. - Jangan menampilkan label seperti “Dashboard”, “Workspace”, “Search”, “Profile”, “Settings”, “Loading”, “Error”, “Not Found”, “Pending”, “Approved”, “Rejected”, “Draft”, “Published”, “CTA”, “FAQ”, “PIC”, “NIM”, “ID”, atau “Admin Panel” sebagai tulisan antarmuka. - Jangan menampilkan nama teknis komponen, nama variabel, nama rute, kode kesalahan internal, atau pesan kesalahan pemrograman.
+
+**Pengecualian terbatas:** nama resmi organisasi, merek, nama kabinet, nama produk, nama orang, nama acara resmi, dan istilah resmi yang wajib dipertahankan boleh tetap memakai nama aslinya. Pengecualian ini tidak boleh menjadi alasan untuk membiarkan kalimat antarmuka berbahasa Inggris. Singkatan yang diperlukan dalam data organisasi harus ditulis lengkap pada tampilan pengguna, kecuali singkatan tersebut merupakan bagian dari nama resmi.
+
+### 0.5.1 Gaya bahasa
+
+- Gunakan Bahasa Indonesia yang ramah, profesional, ringkas, dan tidak kaku.
+- Gunakan sapaan “Anda” secara konsisten pada pesan sistem dan formulir.
+- Gunakan kalimat aktif dan kata kerja yang menjelaskan tindakan.
+- Hindari istilah gaul, julukan, dan kalimat promosi berlebihan pada area operasional.
+- Gunakan ejaan, tanda baca, huruf kapital, dan penulisan tanggal Indonesia secara konsisten.
+- Jangan menyingkat nama jabatan. Tampilkan “Ketua Umum”, “Wakil Ketua Umum”, “Sekretaris Umum”, “Bendahara Umum”, “Kepala Bidang”, “Kepala Kompartemen”, dan “Pengelola Program Kerja” secara lengkap.
+- Tampilkan “Nomor Induk Mahasiswa”, bukan singkatannya.
+- Tampilkan “Penanggung Jawab”, bukan singkatannya.
+- Tampilkan “Program Kerja”, bukan singkatan internalnya.
+- Tampilkan “Ketua Umum”, “Wakil Ketua Umum”, “Sekretaris Jenderal”, “Sekretaris Umum”, “Bendahara Umum”, dan “Kepala Kompartemen” secara lengkap, bukan singkatannya.
+- Tampilkan “Staf”, bukan “Staff”.
+- Tampilkan “Mitra Media”, bukan “Media Partner”.
+- Tampilkan “Ruang Kerja”, bukan “Workspace”.
+- Tampilkan “Dasbor”, bukan “Dashboard”.
+- Tampilkan “Panel Pengelola Sistem”, bukan “Admin Panel”.
+- Nama teknis dalam kode sumber boleh mengikuti konvensi pemrograman, tetapi tidak boleh diteruskan mentah-mentah ke antarmuka.
+
+### 0.5.2 Padanan tulisan antarmuka
+
+| Jangan ditampilkan   | Gunakan pada antarmuka                 |
+|----------------------|----------------------------------------|
+| Dashboard            | Dasbor                                 |
+| Workspace            | Ruang Kerja                            |
+| Profile              | Profil                                 |
+| Settings             | Pengaturan                             |
+| Search               | Cari                                   |
+| Login / Sign In      | Masuk                                  |
+| Register / Sign Up   | Daftar                                 |
+| Logout / Sign Out    | Keluar                                 |
+| Notifications        | Pemberitahuan                          |
+| Activity             | Aktivitas                              |
+| Upcoming             | Akan Datang                            |
+| View All             | Lihat Semua                            |
+| View Details         | Lihat Rincian                          |
+| Learn More           | Pelajari Lebih Lanjut                  |
+| Get Started          | Mulai                                  |
+| Contact Us           | Hubungi Kami                           |
+| Submit               | Kirim                                  |
+| Save                 | Simpan                                 |
+| Save Changes         | Simpan Perubahan                       |
+| Cancel               | Batal                                  |
+| Delete               | Hapus                                  |
+| Edit                 | Ubah                                   |
+| Add                  | Tambah                                 |
+| Create               | Buat                                   |
+| Close                | Tutup                                  |
+| Back                 | Kembali                                |
+| Next                 | Berikutnya                             |
+| Previous             | Sebelumnya                             |
+| Continue             | Lanjutkan                              |
+| Retry / Try Again    | Coba Lagi                              |
+| Loading              | Memuat                                 |
+| Not Found            | Halaman Tidak Ditemukan                |
+| Access Denied        | Akses Tidak Diizinkan                  |
+| System Error         | Terjadi Kesalahan                      |
+| Empty State          | Belum Ada Data                         |
+| No Results Found     | Data yang Dicari Tidak Ditemukan       |
+| Pending              | Menunggu                               |
+| Pending Verification | Menunggu Verifikasi                    |
+| Approved             | Disetujui                              |
+| Rejected             | Ditolak                                |
+| Published            | Diterbitkan                            |
+| Draft                | Konsep                                 |
+| Archived             | Diarsipkan                             |
+| Active               | Aktif                                  |
+| Inactive             | Tidak Aktif                            |
+| Filter               | Saring                                 |
+| Sort By              | Urutkan Berdasarkan                    |
+| Upload File          | Unggah Berkas                          |
+| Choose File          | Pilih Berkas                           |
+| Download             | Unduh                                  |
+| Email Address        | Alamat Surel                           |
+| Password             | Kata Sandi                             |
+| Forgot Password?     | Lupa Kata Sandi?                       |
+| Remember Me          | Ingat Saya                             |
+| Members              | Anggota                                |
+| Team                 | Tim                                    |
+| Task                 | Tugas                                  |
+| Progress             | Kemajuan                               |
+| Overview             | Ringkasan                              |
+| Statistics           | Statistik                              |
+| Report               | Laporan                                |
+| Help Center          | Pusat Bantuan                          |
+| Something Went Wrong | Terjadi Kendala. Silakan Coba Kembali. |
+
+Padanan di atas menjadi aturan awal. Jika ada istilah baru, tulis padanan Bahasa Indonesia sebelum komponen dipakai. Jangan menampilkan dua versi bahasa secara berdampingan kecuali pengguna secara khusus meminta pilihan bahasa.
+
+## 0.6 Aturan pemakaian aset untuk navigasi dan halaman keadaan khusus
+
+Aset visual bukan hiasan acak. Setiap kelompok menu, halaman tidak ditemukan, halaman kesalahan, dan keadaan kosong harus memiliki pemetaan aset yang jelas.
+
+1.  Periksa seluruh folder aset dan catat nama berkas yang benar-benar tersedia.
+2.  Buat daftar aset berdasarkan fungsi, bukan berdasarkan nama berkas yang ditebak.
+3.  Gunakan foto, poster, logo, ilustrasi, ikon khusus, dan pecahan logo yang memang sesuai dengan konteksnya.
+4.  Jangan memakai satu gambar yang sama untuk semua menu jika gambar tersebut tidak mewakili isi menu.
+5.  Jangan memakai foto stok seolah-olah dokumentasi HIPMI atau kabinet.
+6.  Jangan mengarang alamat berkas. Nama kunci aset dalam dokumen adalah nama fungsi, bukan klaim bahwa berkas tersebut sudah ada.
+7.  Jika aset yang sesuai belum ditemukan, catat sebagai aset yang belum tersedia dan gunakan pengganti sementara yang terarah dari ikon Lucide serta garis dekoratif. Jangan mengambil gambar acak dari internet.
+8.  Semua aset informatif wajib memiliki teks alternatif dalam Bahasa Indonesia. Hiasan murni harus diabaikan pembaca layar.
+9.  Logo master tetap menggunakan aturan pada Bagian 2; aset menu tidak boleh menggantikan atau memodifikasi logo resmi.
+
+## 0.7 Spesifikasi teknologi frontend
+
+**Susunan teknologi berikut menjadi pilihan resmi untuk implementasi frontend HIPMI CENTRAL.** Seluruh teknologi harus digunakan sesuai tanggung jawabnya. Jangan memasang pustaka lain yang memiliki fungsi sama tanpa alasan teknis dan persetujuan.
+
+### 0.7.1 Daftar teknologi utama
+
+| Lapisan                          | Teknologi         | Paket utama                  | Tanggung jawab                                                                              |
+|----------------------------------|-------------------|------------------------------|---------------------------------------------------------------------------------------------|
+| Kerangka aplikasi                | Next.js           | `next`                       | Struktur aplikasi, halaman, tata letak, navigasi, pemuatan aset, dan proses pengembangan    |
+| Pustaka antarmuka                | React             | `react`, `react-dom`         | Komponen, susunan antarmuka, state, dan interaksi                                           |
+| Bahasa pemrograman               | TypeScript        | `typescript`                 | Tipe data, kontrak komponen, model data contoh, dan pemeriksaan kesalahan saat pengembangan |
+| Sistem gaya                      | Tailwind CSS      | `tailwindcss`                | Tata letak responsif dan penerapan kelas gaya                                               |
+| Token visual                     | CSS Variables     | CSS bawaan                   | Sumber tunggal warna, tipografi, jarak, radius, bayangan, dan gerakan                       |
+| Animasi antarmuka                | Motion for React  | `motion`                     | Gerakan tulisan, ikon, kartu, menu, tab, transisi halaman, dan bagian                       |
+| Ikon antarmuka                   | Lucide React      | `lucide-react`               | Ikon navigasi dan kontrol                                                                   |
+| Mesin visual tiga dimensi        | Three.js          | `three`                      | Perenderan objek dan adegan tiga dimensi                                                    |
+| Penghubung Three.js dengan React | React Three Fiber | `@react-three/fiber`         | Pembuatan adegan Three.js melalui komponen React                                            |
+| Komponen bantu tiga dimensi      | Drei              | `@react-three/drei`          | Komponen bantu kamera, pencahayaan, kontrol, lingkungan, dan objek tiga dimensi             |
+| Pengelolaan formulir             | React Hook Form   | `react-hook-form`            | Nilai formulir, status isian, dan pengiriman simulasi                                       |
+| Validasi formulir                | Zod               | `zod`, `@hookform/resolvers` | Aturan validasi dan bentuk data formulir                                                    |
+| Pengelolaan tabel                | TanStack Table    | `@tanstack/react-table`      | Pengurutan, penyaringan, halaman data, pemilihan baris, dan pengelolaan kolom               |
+| Grafik dan statistik             | Recharts          | `recharts`                   | Grafik dua dimensi untuk ringkasan dan analisis data contoh                                 |
+
+### 0.7.2 Pembagian tanggung jawab pustaka
+
+Setiap pustaka memiliki tanggung jawab khusus:
+
+1.  **Next.js** mengatur struktur aplikasi, halaman, tata letak, navigasi, pemuatan aset, dan pembagian kode.
+2.  **React** membangun komponen antarmuka dan mengelola perubahan tampilan.
+3.  **TypeScript** memastikan bentuk data, properti komponen, dan fungsi memiliki tipe yang jelas.
+4.  **Tailwind CSS** menerapkan tata letak dan gaya menggunakan token yang telah ditentukan.
+5.  **CSS Variables** menjadi sumber utama nilai desain. Jangan membuat warna atau jarak baru langsung pada banyak komponen.
+6.  **Motion for React** mengatur gerakan antarmuka berbasis elemen HTML/SVG.
+7.  **Lucide React** menyediakan ikon antarmuka. Ikon tidak boleh menggantikan aset logo atau ilustrasi resmi.
+8.  **Three.js + React Three Fiber + Drei** hanya menangani visual tiga dimensi pada bagian yang memang membutuhkan kedalaman visual.
+9.  **React Hook Form + Zod** mengelola isian dan validasi formulir pada sisi pengguna.
+10. **TanStack Table** mengelola perilaku tabel, sedangkan tampilan tabel tetap dibuat mengikuti design system HIPMI CENTRAL.
+11. **Recharts** menampilkan grafik dua dimensi menggunakan warna dan tipografi design system.
+
+Jangan menggunakan Three.js untuk menggantikan Motion pada animasi tulisan, ikon, tombol, kartu, tab, atau menu. Jangan menggunakan Recharts untuk menggantikan tabel data rinci. Jangan menggunakan TanStack Table untuk daftar sederhana yang tidak membutuhkan perilaku tabel.
+
+### 0.7.3 Aturan versi dan kecocokan paket
+
+- Periksa `package.json` dan lockfile sebelum menambah atau memperbarui paket.
+- Jangan memasang versi terbaru secara membabi buta.
+- Gunakan versi stabil yang saling kompatibel dengan versi Next.js, React, dan TypeScript pada repository.
+- Jangan memasang versi alfa, beta, canary, atau pratinjau untuk kebutuhan utama tanpa persetujuan.
+- Jangan memasang dua paket berbeda untuk fungsi yang sama.
+- Jangan memperbarui Next.js, React, atau paket inti hanya untuk mengejar versi terbaru jika tidak diperlukan.
+- Catat paket yang sudah tersedia, paket yang perlu ditambahkan, dan alasan penambahannya.
+- Pertahankan satu package manager dan satu lockfile yang digunakan repository.
+- Setelah perubahan dependency, jalankan pemeriksaan tipe, lint, dan build sesuai perintah proyek.
+
+**Catatan khusus React Three Fiber:** versi utama React Three Fiber harus cocok dengan versi utama React. Dokumentasi resminya mencatat pasangan React Three Fiber 8 untuk React 18 dan React Three Fiber 9 untuk React 19. Dokumentasi yang diperiksa juga menandai versi 10 sebagai pratinjau/alfa; jangan menjadikannya pilihan produksi tanpa keputusan dan pemeriksaan kompatibilitas baru. Versi Drei harus dipilih agar cocok dengan versi React Three Fiber yang digunakan.
+
+### 0.7.4 Aturan pemakaian App Router
+
+Untuk proyek Next.js baru, gunakan **App Router** sebagai pola utama.
+
+- Gunakan direktori `app/` atau `src/app/` mengikuti struktur repository.
+- Setiap halaman mengikuti route yang ditetapkan PRD.
+- Gunakan `layout.tsx` untuk kerangka tampilan yang dipakai bersama.
+- Gunakan `page.tsx` untuk halaman pada alamat yang sesuai.
+- Gunakan `loading.tsx`, `error.tsx`, dan `not-found.tsx` jika sesuai dengan kebutuhan halaman dan pola Next.js.
+- Gunakan `next/link` untuk navigasi internal.
+- Gunakan `next/image` untuk gambar yang sesuai dengan kebutuhan optimasi.
+- Gunakan metadata halaman dalam Bahasa Indonesia.
+- Jangan membuat ulang struktur route yang telah ada tanpa memeriksa repository.
+- Jika repository yang sedang dikerjakan ternyata masih memakai Pages Router, jangan melakukan migrasi besar secara otomatis. Catat kondisi tersebut dan minta keputusan sebelum mengubah arsitektur route.
+
+### 0.7.5 Aturan Server Component dan Client Component
+
+- Komponen halaman dan tata letak yang tidak memerlukan interaksi dapat tetap menjadi Server Component bawaan App Router.
+- Gunakan Client Component hanya ketika membutuhkan state, event handler, efek React, API peramban, Motion, formulir interaktif, tabel interaktif, grafik interaktif, atau Three.js.
+- Letakkan penanda `'use client'` pada batas komponen interaktif yang paling kecil.
+- Jangan menjadikan seluruh halaman sebagai Client Component hanya karena satu tombol atau satu bagian membutuhkan interaksi.
+- Komponen server boleh menyusun komponen klien sebagai bagian dari tampilan.
+- Jangan memasukkan akses basis data, rahasia, token privat, atau layanan bisnis ke dalam komponen klien.
+- Jangan menyamakan penggunaan Server Component bawaan Next.js dengan kewajiban membuat backend bisnis. Pada tahap ini, Server Component hanya digunakan untuk penyusunan dan perenderan antarmuka yang sesuai.
+- Props yang dikirim dari Server Component ke Client Component harus berupa data yang dapat diserialisasi.
+
+### 0.7.6 Aturan TypeScript
+
+- Gunakan TypeScript untuk seluruh komponen, halaman, data contoh, utilitas, dan konfigurasi yang mendukungnya.
+- Utamakan tipe eksplisit untuk data yang berasal dari PRD.
+- Gunakan `type` atau `interface` untuk model akun, peran, izin tampilan, agenda, surat, transaksi, Program Kerja, anggota, produk, dan entitas lain yang dibutuhkan halaman.
+- Gunakan tipe gabungan yang jelas untuk status, misalnya status agenda atau status pengajuan.
+- Hindari `any`. Jika tipe belum diketahui, gunakan `unknown` lalu lakukan pemeriksaan tipe.
+- Jangan memakai nilai teks bebas untuk status yang seharusnya memiliki pilihan terbatas.
+- Jangan membuat model data contoh berbeda-beda untuk halaman yang menampilkan entitas yang sama.
+- Data contoh harus mengikuti kontrak data dan hubungan yang ditetapkan PRD.
+- Jangan menaruh aturan bisnis baru di dalam tipe data visual.
+
+### 0.7.7 Aturan Tailwind CSS dan token visual
+
+- Tailwind CSS digunakan untuk menerapkan tata letak, ukuran, jarak, susunan, dan responsivitas.
+- CSS Variables pada Bagian 3 dan Bagian 29 tetap menjadi sumber utama warna dan token visual.
+- Jangan menulis warna HEX secara acak pada kelas komponen.
+- Jangan membuat palet warna Tailwind kedua yang bertentangan dengan token utama.
+- Gunakan kelas utilitas untuk pola sederhana dan komponen bersama untuk pola yang berulang.
+- Gunakan CSS biasa atau CSS Module bila dibutuhkan untuk efek kompleks seperti garis kontur, bentuk khusus, gradasi berlapis, atau pembungkus adegan tiga dimensi.
+- Jangan menambahkan pustaka komponen visual besar yang membuat tampilan menyimpang dari design system.
+- Jangan mencampur beberapa pendekatan gaya pada satu komponen tanpa kebutuhan yang jelas.
+- Penamaan kelas dan komponen internal boleh berbahasa Inggris sesuai kebiasaan pengembangan; tulisan yang tampil kepada pengguna tetap wajib Bahasa Indonesia.
+
+### 0.7.8 Aturan Motion for React
+
+- Motion menjadi satu-satunya mesin utama untuk animasi antarmuka berbasis elemen HTML dan SVG.
+- Untuk implementasi baru, gunakan paket `motion` dan impor API React dari `motion/react`.
+- Jika repository telah memakai `framer-motion`, gunakan dependency yang sudah ada dan jangan memasang `motion` sebagai mesin kedua.
+- Jangan mengendalikan properti `transform` atau `opacity` pada elemen yang sama melalui dua mesin animasi.
+- Gunakan Motion untuk judul, paragraf, ikon, kartu, tab, menu turun, dialog, transisi halaman, dan gerakan bagian.
+- Gunakan CSS transition untuk hover sederhana yang tidak membutuhkan urutan atau state animasi kompleks.
+- Gunakan Motion untuk animasi DOM; gunakan Three.js/React Three Fiber untuk animasi objek di dalam kanvas tiga dimensi.
+- Terapkan seluruh aturan Bagian 22, termasuk gerakan masuk/keluar, pengulangan, dan pengurangan gerakan.
+
+### 0.7.9 Aturan Lucide React
+
+- Gunakan paket `lucide-react`.
+- Gunakan nama ikon yang tersedia pada versi paket yang terpasang.
+- Gunakan ukuran, ketebalan garis, dan warna sesuai token.
+- Ikon dekoratif diberi atribut agar tidak dibaca sebagai informasi oleh pembaca layar.
+- Ikon yang menjadi satu-satunya penanda tindakan harus memiliki nama aksesibel dalam Bahasa Indonesia.
+- Jangan mengganti logo HIPMI, logo Telkom University, logo ARTHAKARSA, atau ilustrasi aset dengan ikon Lucide.
+- Jangan menggunakan emoji sebagai pengganti ikon antarmuka resmi.
+
+### 0.7.10 Aturan Three.js, React Three Fiber, dan Drei
+
+Three.js adalah teknologi visual tambahan, bukan fondasi seluruh halaman. Gunakan hanya pada bagian yang memperoleh manfaat nyata dari visual tiga dimensi.
+
+**Lokasi penggunaan yang disarankan:** - Hero Beranda sebagai objek atau komposisi tiga dimensi yang mewakili karakter ARTHAKARSA. - Bagian pengenalan organisasi jika ada objek visual yang benar-benar memperkuat cerita. - Satu atau dua bagian editorial unggulan yang telah disetujui. - Elemen dekoratif tiga dimensi yang tidak menghalangi isi atau navigasi.
+
+**Lokasi yang tidak disarankan:** - Setiap kartu pada dasbor. - Tabel anggota, transaksi, surat, dan keuangan. - Formulir pendaftaran atau pengajuan. - Seluruh latar setiap halaman. - Setiap ikon kecil dan tombol. - Grafik angka yang seharusnya ditampilkan menggunakan Recharts. - Halaman kesalahan dan keadaan kosong yang sudah memiliki ilustrasi aset khusus. - Semua halaman hanya agar terlihat lebih ramai.
+
+**Aturan arsitektur adegan tiga dimensi:** 1. Buat komponen pembungkus khusus, misalnya `ThreeScene` atau `BrandScene`. 2. Letakkan adegan tiga dimensi dalam Client Component terisolasi. 3. Muat adegan menggunakan pemuatan dinamis agar paket Three.js tidak masuk ke semua halaman sejak awal. 4. Jika perenderan sisi server menimbulkan masalah pada komponen yang bergantung pada WebGL atau API peramban, nonaktifkan perenderan sisi server untuk komponen tersebut melalui `next/dynamic` dari dalam Client Component. 5. Gunakan `Suspense` dengan tampilan pengganti yang sesuai. 6. Sediakan pengganti gambar, SVG, atau CSS jika WebGL tidak tersedia, adegan gagal, atau perangkat tidak mendukungnya. 7. Jangan menaruh tulisan penting, tombol, formulir, atau navigasi di dalam kanvas tiga dimensi. 8. Jika adegan hanya dekoratif, buat kanvas tidak menghalangi klik dan berikan penandaan aksesibilitas yang sesuai. 9. Jika objek dapat berinteraksi, sediakan kontrol yang dapat digunakan dengan papan ketik dan alternatif dua dimensi. 10. Gunakan Drei hanya untuk kebutuhan yang benar-benar digunakan; jangan mengimpor seluruh contoh atau komponen bantu tanpa alasan. 11. Gunakan aset model tiga dimensi yang tersedia dan memiliki izin. Jangan mengarang file model atau alamat aset. 12. Jangan mengubah logo resmi menjadi model tiga dimensi, kecuali ada aset tiga dimensi resmi yang disediakan dan disetujui.
+
+**Aturan kinerja adegan:** - Muat adegan hanya saat bagian terkait dibutuhkan atau mendekati area pandang. - Gunakan satu kanvas utama pada satu halaman sebagai batas awal. - Hindari beberapa kanvas aktif yang berjalan bersamaan. - Gunakan `frameloop="demand"` untuk adegan yang tidak membutuhkan animasi terus-menerus. - Gunakan putaran terus-menerus hanya jika memang menjadi bagian dari rancangan dan tetap ringan. - Batasi rasio piksel perangkat, misalnya rentang awal `[1, 1.5]`, lalu uji pada perangkat sasaran. - Utamakan geometri sederhana, material ringan, dan jumlah objek yang wajar. - Hindari bayangan waktu nyata, efek pascaproses, partikel berlebihan, dan tekstur resolusi sangat tinggi. - Hentikan atau sederhanakan animasi saat adegan tidak terlihat. - Hormati `prefers-reduced-motion`. - Jangan menjalankan animasi tiga dimensi yang tidak terlihat atau tidak memberikan nilai bagi pengguna. - Uji pemakaian memori, waktu pemuatan, dan kelancaran pada perangkat kelas menengah serta telepon.
+
+**Aturan hubungan dengan Motion:** - Motion mengatur elemen HTML/SVG di luar kanvas. - React Three Fiber mengatur objek tiga dimensi di dalam kanvas. - Jangan menganimasikan elemen DOM yang sama dengan Motion dan mesin animasi lain secara bersamaan. - Sinkronisasi antara gerakan gulir dan adegan tiga dimensi hanya dilakukan bila dibutuhkan oleh rancangan dan tetap ringan. - Gerakan masuk/keluar tulisan dan ikon tetap mengikuti Motion, bukan dipindahkan ke Three.js.
+
+### 0.7.11 Aturan React Hook Form dan Zod
+
+- Gunakan React Hook Form untuk mengelola nilai, status, dan interaksi formulir.
+- Gunakan Zod untuk mendefinisikan aturan validasi dan bentuk data.
+- Gunakan `@hookform/resolvers` untuk menghubungkan Zod dengan React Hook Form.
+- Definisikan skema validasi terpisah dan gunakan kembali bila formulir memiliki aturan yang sama.
+- Tipe data formulir sebaiknya diturunkan dari skema Zod agar tidak terjadi perbedaan antara validasi dan tipe.
+- Pesan validasi wajib berbahasa Indonesia.
+- Tampilkan kesalahan di dekat kolom yang bermasalah.
+- Pertahankan nilai yang telah diisi ketika terjadi kesalahan validasi.
+- Bedakan kesalahan wajib isi, format, panjang karakter, dan ketentuan pilihan.
+- Pada tahap frontend, pengiriman formulir hanya menjalankan simulasi lokal dan umpan balik antarmuka.
+- Validasi sisi pengguna tidak boleh disebut sebagai pengamanan data atau validasi server.
+- Jangan menyimpan kata sandi asli atau data sensitif ke penyimpanan peramban.
+- Jangan mengklaim surel verifikasi benar-benar dikirim jika belum ada layanan backend.
+
+### 0.7.12 Aturan TanStack Table
+
+- Gunakan TanStack Table untuk tabel yang membutuhkan pengurutan, penyaringan, halaman data, pemilihan baris, visibilitas kolom, atau tindakan per baris.
+- Gunakan tabel HTML biasa untuk daftar sederhana yang tidak membutuhkan fitur tersebut.
+- TanStack Table bertugas mengelola logika tabel; seluruh tampilan tetap dibuat menggunakan komponen dan token HIPMI CENTRAL.
+- Jangan menggunakan tampilan bawaan dari pustaka lain tanpa penyesuaian.
+- Semua nama kolom, penyaring, tombol halaman, dan pesan kosong wajib berbahasa Indonesia.
+- Data tabel berasal dari data contoh yang terpusat dan bertipe.
+- Penyaringan, pengurutan, dan halaman data dilakukan secara lokal.
+- Kolom yang ditampilkan dapat menyesuaikan akun demo dan izin tampilan yang ditetapkan PRD.
+- Penyembunyian kolom berdasarkan peran pada tahap ini hanya simulasi antarmuka, bukan pengamanan akses data.
+- Pada telepon, gunakan kartu ringkas atau gulir mendatar dengan judul kolom yang tetap jelas.
+- Jangan menghilangkan informasi penting hanya untuk memaksakan tabel muat pada layar kecil.
+
+### 0.7.13 Aturan Recharts
+
+- Gunakan Recharts untuk grafik dua dimensi seperti batang, garis, area, dan lingkaran sesuai kebutuhan data.
+- Grafik hanya dibuat pada halaman yang memang membutuhkan ringkasan atau analisis visual berdasarkan PRD.
+- Gunakan warna Burgundy, Dark Wine, Gold, Copper, Mauve, dan warna status dari token.
+- Jangan menggunakan warna bawaan pustaka tanpa penyesuaian.
+- Judul, label sumbu, keterangan, tooltip, dan legenda wajib berbahasa Indonesia.
+- Tooltip harus menampilkan nilai yang jelas dan format angka/tanggal yang sesuai.
+- Setiap grafik harus memiliki ringkasan teks atau alternatif tabel agar informasi tidak hanya bergantung pada bentuk visual.
+- Animasi grafik harus singkat dan tidak mengaburkan perubahan nilai.
+- Gunakan pembungkus responsif dan pastikan grafik tidak terpotong pada telepon.
+- Grafik harus menggunakan data contoh yang konsisten dengan kartu ringkasan dan tabel terkait.
+- Jangan mengarang angka statistik organisasi seolah-olah data nyata.
+- Jangan menggunakan Three.js untuk grafik data dua dimensi.
+
+### 0.7.14 Struktur direktori acuan
+
+Struktur berikut adalah contoh pengelompokan, bukan perintah untuk merombak repository yang sudah ada. Ikuti pola yang sudah digunakan proyek apabila lebih konsisten.
+
+``` text
+src/
+├── app/
+│   ├── (public)/
+│   ├── (auth-demo)/
+│   ├── (personal)/
+│   ├── (organization)/
+│   ├── (workspace)/
+│   ├── (system-admin)/
+│   ├── layout.tsx
+│   ├── loading.tsx
+│   ├── error.tsx
+│   └── not-found.tsx
+├── components/
+│   ├── ui/
+│   ├── layout/
+│   ├── navigation/
+│   ├── forms/
+│   ├── tables/
+│   ├── charts/
+│   └── three/
+├── features/
+│   ├── public/
+│   ├── authentication-demo/
+│   ├── personal/
+│   ├── organization/
+│   ├── workspace/
+│   └── system-admin/
+├── data/
+│   ├── mock/
+│   └── fixtures/
+├── lib/
+│   ├── validation/
+│   ├── formatters/
+│   └── utilities/
+├── types/
+├── styles/
+└── assets/
+```
+
+Ketentuan struktur: - Jangan membuat seluruh halaman di satu berkas besar. - Pisahkan komponen visual umum dari komponen khusus fitur. - Pisahkan data contoh dari komponen tampilan. - Pisahkan skema validasi dari halaman formulir. - Pisahkan adegan tiga dimensi dari komponen teks dan tata letak. - Jangan memindahkan atau mengganti nama aset yang sudah digunakan tanpa pemeriksaan. - Nama direktori dan kode boleh berbahasa Inggris; seluruh teks antarmuka tetap Bahasa Indonesia.
+
+### 0.7.15 Dokumentasi teknologi resmi
+
+Gunakan dokumentasi resmi berikut ketika memeriksa API, kompatibilitas, dan pola implementasi:
+
+- [Next.js — Server dan Client Components](https://nextjs.org/docs/app/getting-started/server-and-client-components)
+- [Next.js — Lazy Loading](https://nextjs.org/docs/app/guides/lazy-loading)
+- [React Three Fiber — Pengenalan](https://r3f.docs.pmnd.rs/getting-started/introduction)
+- [Drei — Dokumentasi komponen](https://drei.docs.pmnd.rs/)
+- [Motion for React](https://motion.dev/docs/react)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Lucide React](https://lucide.dev/guide/packages/lucide-react)
+- [React Hook Form](https://react-hook-form.com/get-started)
+- [Zod](https://zod.dev/)
+- [TanStack Table](https://tanstack.com/table/latest/docs/introduction)
+- [Recharts](https://recharts.org/en-US/guide)
+
+Dokumentasi resmi menjadi rujukan API dan kecocokan versi. Namun, kebutuhan visual, alur, peran, izin, dan data tetap mengikuti PRD serta dokumen proyek.
+
+## 0.8 Batas implementasi frontend saja
+
+Tahap implementasi saat ini adalah **frontend terlebih dahulu**. Teknologi yang dipilih tidak boleh membuat AI Agent memperluas pekerjaan menjadi backend atau basis data.
+
+### 0.8.1 Yang wajib dibuat pada tahap frontend
+
+- Seluruh halaman dan tata letak sesuai PRD.
+- Seluruh navigasi publik, bilah samping, menu turun, tab, dan perpindahan halaman.
+- Komponen formulir, tabel, grafik, kartu, dialog, pemberitahuan, dan keadaan khusus.
+- Data contoh untuk setiap halaman.
+- Akun demo untuk setiap kelompok peran yang ditetapkan PRD.
+- Simulasi masuk, pendaftaran, keluar, pemilihan akun demo, dan perpindahan tampilan sesuai peran.
+- Simulasi pengiriman formulir, perubahan status, persetujuan, penyaringan, pengurutan, dan tindakan lain yang memang ditetapkan PRD.
+- Hubungan data contoh yang konsisten ant halaman.
+- Tampilan responsif dan seluruh keadaan interaksi.
+- Umpan balik lokal untuk tindakan berhasil, gagal, kosong, memuat, dan tidak memiliki izin.
+
+### 0.8.2 Yang tidak boleh dibuat pada tahap ini
+
+- Basis data, tabel basis data, migrasi, atau rancangan penyimpanan produksi.
+- API backend, route handler, layanan server bisnis, atau endpoint eksternal.
+- Server Actions untuk menyimpan atau mengubah data bisnis.
+- Integrasi autentikasi sungguhan, penyedia identitas, atau pengelolaan sesi produksi.
+- Pengiriman surel sungguhan, verifikasi surel sungguhan, dan pemulihan kata sandi melalui layanan.
+- Pembayaran, QRIS, tiket, pengiriman, pelacakan, atau integrasi pihak ketiga sungguhan.
+- Unggah berkas ke penyimpanan awan atau penyimpanan produksi.
+- Koneksi ke basis data atau layanan backend.
+- Pengaturan rahasia, kunci API, dan token produksi.
+
+### 0.8.3 Aturan data contoh dan simulasi
+
+- Semua data contoh diletakkan di satu tempat yang mudah ditemukan dan memiliki tipe TypeScript.
+- Data contoh harus mengikuti nama, relasi, status, dan struktur entitas dari PRD.
+- Gunakan identitas contoh yang jelas dan konsisten; jangan menyamarkan data contoh sebagai data nyata.
+- Satu akun demo harus menghasilkan tampilan, menu, dan data yang sesuai dengan peran yang sedang disimulasikan.
+- Jika status atau data diubah melalui antarmuka, perubahan cukup terjadi pada state lokal atau penyimpanan demo yang disetujui.
+- Jika simulasi perlu bertahan setelah halaman dimuat ulang, simpan hanya identitas sesi demo dan data non-sensitif. Jangan menyimpan kata sandi.
+- Jangan menyatakan data telah tersimpan secara permanen atau tersinkronisasi ke server.
+- Tindakan yang membutuhkan layanan backend harus menampilkan hasil simulasi yang jujur dan tidak mengklaim tindakan eksternal benar-benar terjadi.
+
+### 0.8.4 Keamanan dan batas simulasi
+
+- Akun demo bukan autentikasi aman.
+- Penyaringan tampilan berdasarkan peran bukan pengamanan data.
+- Validasi formulir di peramban bukan validasi server.
+- Data contoh tidak boleh memuat kata sandi, token, atau informasi pribadi sungguhan.
+- Jangan menaruh rahasia pada kode frontend atau variabel lingkungan yang diekspos ke peramban.
+- Beri komentar pada fungsi simulasi agar mudah diganti saat backend mulai dikerjakan.
+- Jangan membuat struktur backend sementara yang seolah-olah sudah siap produksi.
 
 # 1. DESIGN DIRECTION — AURORA GLASS EDITORIAL
 
@@ -261,19 +689,31 @@ Warna pendukung di bawah ini tidak menggantikan nilai brand resmi. Nilai EXTENSI
 | `neutral-border`     | `#E9E1DC` | OFFICIAL | Border netral                              |
 | `neutral-surface`    | `#FAF8F6` | OFFICIAL | Surface alternatif                         |
 
-## 3.3 Supporting color extensions
+## 3.3 Warna pendukung dan warna latar bagian
 
-| Token                 | HEX       | Status    | Fungsi                                             |
-|:----------------------|:----------|:----------|:---------------------------------------------------|
-| `surface-blush`       | `#F2E4DC` | EXTENSION | Surface lembut, section editorial, card background |
-| `surface-blush-hover` | `#F4E6E8` | EXTENSION | Hover surface yang hangat                          |
-| `accent-soft-gold`    | `#D4A76A` | EXTENSION | Ornamen gold yang lebih lembut                     |
-| `accent-copper-deep`  | `#B8734E` | EXTENSION | Copper highlight pada ilustrasi/ornamen            |
-| `accent-dusty-mauve`  | `#A07A8E` | EXTENSION | Variasi section/card pendukung                     |
-| `neutral-cool-mist`   | `#E6E9EF` | EXTENSION | Surface netral untuk chart/metadata                |
-| `stroke-soft`         | `#E7DDD5` | EXTENSION | Garis pemisah lembut                               |
+Warna pendukung berikut adalah warna perluasan untuk latar, permukaan, dan hiasan. Warna ini tidak menggantikan dua warna utama.
 
-Warna EXTENSION harus diuji kontras sebelum dipakai untuk teks atau status. Gold dan Copper terutama dipakai sebagai aksen/garis, bukan teks kecil di atas putih.
+| Token                  | HEX       | Status    | Fungsi                                                         |
+|------------------------|-----------|-----------|----------------------------------------------------------------|
+| `surface-warm-white`   | `#FCF8F6` | EXTENSION | Putih hangat untuk pergantian bagian yang sangat lembut        |
+| `surface-blush-mist`   | `#F8EFF1` | EXTENSION | Latar merah muda pucat untuk bagian editorial                  |
+| `surface-soft-rose`    | `#F2E5E8` | EXTENSION | Latar sorotan, panel, dan kelompok kartu                       |
+| `surface-warm-ivory`   | `#FDF7F2` | OFFICIAL  | Gading hangat sebagai warna pendamping resmi                   |
+| `surface-soft-neutral` | `#F5F3F2` | EXTENSION | Latar netral untuk tabel ringkas, panel informasi, dan pemisah |
+| `accent-soft-gold`     | `#D4A76A` | EXTENSION | Aksen emas lembut untuk garis dan penanda dekoratif            |
+| `accent-copper-deep`   | `#B8734E` | EXTENSION | Aksen tembaga pada ilustrasi dan garis                         |
+| `accent-dusty-mauve`   | `#A07A8E` | EXTENSION | Variasi visual kecil pada ilustrasi dan kartu khusus           |
+
+Warna pendukung hanya dipakai dalam bidang yang luas jika tingkat warnanya tetap sangat lembut. Teks utama tidak boleh menggunakan warna emas, tembaga, atau merah muda pucat jika kontrasnya tidak cukup.
+
+### Prinsip warna latar
+
+- Putih `#FFFFFF` adalah dasar utama layar dan tetap menjadi warna yang paling dominan.
+- Bagian halaman boleh memakai latar pendukung yang berbeda, tetapi perpindahannya harus menyatu.
+- Warna merah muda hanya menjadi semburat lembut, bukan warna dominan yang memenuhi seluruh halaman.
+- Burgundy digunakan sebagai penekanan, bukan sebagai latar semua bagian.
+- Dark Wine digunakan untuk bagian pernyataan, bilah samping, atau penutup yang memang membutuhkan kontras kuat.
+- Jangan membuat pola warna bergantian yang terlalu kontras atau tampak seperti garis-garis blok.
 
 ## 3.4 Semantic colors
 
@@ -289,15 +729,17 @@ Semantic colors dipakai untuk status sistem, bukan untuk mengganti brand.
 
 Nilai semantic di atas adalah EXTENSION awal dan wajib melalui contrast test pada prototype. Status tidak boleh disampaikan hanya dengan warna; sertakan label dan/atau ikon.
 
-## 3.5 Color hierarchy
+## 3.5 Hierarki penggunaan warna
 
-Gunakan proporsi visual sebagai panduan, bukan hitungan pixel kaku:
+Gunakan proporsi visual sebagai pedoman, bukan hitungan kaku:
 
-- 55–65%: White/Warm Ivory sebagai ruang bernapas.
-- 15–25%: Burgundy/Dark Wine untuk identitas, hero, sidebar, CTA, atau panel fokus.
-- 8–12%: Blush/Neutral Surface sebagai pemisah section.
-- 3–7%: Gold/Copper/Mauve sebagai aksen.
-- Semantic colors hanya muncul saat dibutuhkan oleh status.
+- 60–70%: putih dan putih hangat.
+- 12–20%: warna latar bagian yang sangat lembut, seperti Blush Mist, Soft Rose, Warm Ivory, dan Soft Neutral.
+- 10–18%: Burgundy dan Dark Wine untuk identitas, judul, tombol utama, bilah samping, serta bagian sorotan.
+- 2–5%: Emas antik, tembaga, dan mauve sebagai aksen.
+- Warna status hanya muncul ketika diperlukan oleh keadaan sistem.
+
+Jangan memaksa setiap halaman menggunakan seluruh warna. Setiap halaman cukup memakai putih, satu atau dua warna latar pendamping, warna utama, dan aksen seperlunya.
 
 ## 3.6 Hover, active, focus, disabled
 
@@ -311,54 +753,131 @@ Gunakan proporsi visual sebagai panduan, bukan hitungan pixel kaku:
 | Loading        | Dimensi komponen tetap, spinner/progress tampil tanpa menggeser layout |
 | Success/error  | Semantic surface + label/ikon yang eksplisit                           |
 
-## 3.7 Background palette
+## 3.7 Sistem latar layar dan bagian
 
-- Main page: White atau Warm Ivory sesuai konteks.
-- Editorial section: White, Warm Ivory, atau Blush Beige.
-- Dark statement panel: Burgundy/Dark Wine.
-- Glass panel: white translucent.
-- Dashboard canvas: Warm Ivory sangat lembut atau White.
-- Dashboard sidebar: Dark Wine/Burgundy.
-- Form dan tabel: White solid untuk keterbacaan.
+| Token                  | HEX       | Penggunaan                                                |
+|------------------------|-----------|-----------------------------------------------------------|
+| `screen-background`    | `#FFFFFF` | Dasar seluruh layar                                       |
+| `section-white`        | `#FFFFFF` | Bagian utama dan area yang membutuhkan keterbacaan tinggi |
+| `section-warm-white`   | `#FCF8F6` | Pergantian bagian yang hampir putih                       |
+| `section-blush-mist`   | `#F8EFF1` | Bagian pengenalan, sorotan, atau konten editorial         |
+| `section-soft-rose`    | `#F2E5E8` | Panel sorotan dan kelompok kartu tertentu                 |
+| `section-warm-ivory`   | `#FDF7F2` | Bagian cerita, nilai, dan konten yang terasa hangat       |
+| `section-soft-neutral` | `#F5F3F2` | Panel informasi sekunder dan permukaan netral             |
+| `section-dark`         | `#3D0F16` | Bagian penutup atau pernyataan khusus, secara terbatas    |
+
+**Putih tetap menjadi dasar layar.** Warna pendukung hanya dipakai pada bagian tertentu. Tidak semua bagian harus memiliki latar berbeda; bagian yang memuat tabel, formulir, atau informasi padat boleh tetap putih.
 
 ## 3.8 CSS color tokens
 
 ``` css
 :root {
-  /* Official brand */
+  /* Warna utama */
   --color-brand-burgundy: #5A1722;
   --color-brand-dark-wine: #3D0F16;
   --color-brand-antique-gold: #E8B577;
   --color-brand-muted-copper: #AF7D66;
-  --color-brand-warm-ivory: #FDF7F2;
 
-  /* Official neutrals */
-  --color-white: #FFFFFF;
-  --color-black: #171313;
-  --color-muted: #6B6260;
-  --color-border: #E9E1DC;
-  --color-surface: #FAF8F6;
+  /* Dasar layar */
+  --color-screen-background: #FFFFFF;
+  --color-surface-white: #FFFFFF;
+  --color-surface-warm-white: #FCF8F6;
+  --color-surface-blush-mist: #F8EFF1;
+  --color-surface-soft-rose: #F2E5E8;
+  --color-surface-warm-ivory: #FDF7F2;
+  --color-surface-soft-neutral: #F5F3F2;
 
-  /* Supporting extensions */
-  --color-blush: #F2E4DC;
-  --color-blush-hover: #F4E6E8;
-  --color-soft-gold: #D4A76A;
-  --color-deep-copper: #B8734E;
-  --color-dusty-mauve: #A07A8E;
-  --color-cool-mist: #E6E9EF;
+  /* Aksen pendukung */
+  --color-accent-soft-gold: #D4A76A;
+  --color-accent-deep-copper: #B8734E;
+  --color-accent-dusty-mauve: #A07A8E;
+
+  /* Teks dan garis */
+  --color-text-primary: #171313;
+  --color-text-secondary: #6B6260;
+  --color-border-default: #E9E1DC;
   --color-stroke-soft: #E7DDD5;
 
-  /* Semantic aliases */
+  /* Status */
+  --color-status-success: #2F7A59;
+  --color-status-warning: #A96C16;
+  --color-status-error: #B83A42;
+  --color-status-info: #356C9A;
+  --color-status-neutral: #6B6260;
+
+  /* Alias */
   --color-primary: var(--color-brand-burgundy);
   --color-primary-strong: var(--color-brand-dark-wine);
-  --color-background: var(--color-brand-warm-ivory);
-  --color-surface-primary: var(--color-white);
-  --color-text-primary: var(--color-black);
-  --color-text-secondary: var(--color-muted);
+  --color-background: var(--color-screen-background);
+  --color-surface: var(--color-surface-white);
 }
 ```
 
-------------------------------------------------------------------------
+## 3.9 Perpindahan warna antarbagiannya
+
+Perpindahan latar harus terasa seperti satu bidang visual yang berlanjut, bukan kumpulan kotak warna yang berdiri sendiri.
+
+### Pola urutan yang disarankan
+
+``` text
+Putih
+  ↓ gradasi putih ke putih hangat
+Putih Hangat
+  ↓ lengkungan lembut dan garis kontur
+Merah Muda Pucat
+  ↓ pita mengalir beropacity rendah
+Putih
+  ↓ semburat gading hangat
+Gading Hangat
+  ↓ kembali memudar ke putih
+Putih
+  ↓ bagian penutup khusus
+Dark Wine
+```
+
+Urutan tersebut adalah contoh ritme, bukan susunan wajib untuk setiap halaman. Pilih warna sesuai isi dan panjang halaman.
+
+### Aturan penyambung bagian
+
+- Gunakan gradasi vertikal atau radial yang sangat lembut pada tepi bagian.
+- Bentuk gelombang, lengkungan, atau pita boleh melewati batas dua bagian sebagai penghubung visual.
+- Garis kontur boleh berlanjut dari satu bagian ke bagian berikutnya, tetapi jangan menutupi tulisan atau gambar.
+- Hindari pergantian langsung dari putih ke merah muda pekat atau dari putih ke Dark Wine tanpa alasan komposisi.
+- Hindari memakai warna latar berbeda pada setiap kartu dalam satu kelompok.
+- Bagian formulir, tabel, dan data padat tetap menggunakan permukaan putih atau warna sangat netral.
+- Pada layar kecil, sederhanakan bentuk sambungan agar tidak menimbulkan gulir mendatar.
+
+### Contoh penerapan
+
+``` css
+.section-intro {
+  background: linear-gradient(
+    180deg,
+    #FFFFFF 0%,
+    #FCF8F6 100%
+  );
+}
+
+.section-feature {
+  background:
+    radial-gradient(
+      circle at 85% 12%,
+      rgba(242, 229, 232, 0.72),
+      transparent 38%
+    ),
+    #F8EFF1;
+}
+
+.section-content {
+  background: linear-gradient(
+    180deg,
+    #F8EFF1 0%,
+    #FFFFFF 34%
+  );
+}
+```
+
+Contoh ini adalah pola awal. Jangan menerapkan gradasi yang sama pada semua bagian; pilih komposisi berdasarkan kebutuhan visual dan keterbacaan.
 
 # 4. TYPOGRAPHY — ARTHAKARSA SERIF DISPLAY + POPPINS
 
@@ -514,17 +1033,18 @@ Penggunaan: - frame hero; - container editorial; - background poster/cover; - pa
 
 Aturan: - Stroke 1 px. - Radius mengikuti container. - Opacity rendah. - Frame tidak boleh mengurangi ruang visual atau menabrak navbar.
 
-## 5.3 Warna dan opacity garis
+## 5.3 Warna dan tingkat kepekatan garis
 
-| Token                | Warna dasar | Opacity baseline | Penggunaan                           |
-|:---------------------|:------------|-----------------:|:-------------------------------------|
-| `line-gold-soft`     | `#E8B577`   |        0.16–0.32 | Contour dan ribbon di surface terang |
-| `line-copper-soft`   | `#AF7D66`   |        0.12–0.24 | Garis pendamping                     |
-| `line-burgundy-soft` | `#5A1722`   |        0.05–0.12 | Background line pada Ivory           |
-| `line-ivory-soft`    | `#FDF7F2`   |        0.12–0.28 | Garis di atas Burgundy               |
-| `line-white-soft`    | `#FFFFFF`   |        0.10–0.24 | Frame/contour di dark surface        |
+| Token                | Warna dasar | Tingkat kepekatan awal | Penggunaan                            |
+|----------------------|-------------|-----------------------:|---------------------------------------|
+| `line-gold-soft`     | `#E8B577`   |              0.12–0.26 | Garis kontur dan pita di atas putih   |
+| `line-copper-soft`   | `#AF7D66`   |              0.10–0.22 | Garis pendamping                      |
+| `line-burgundy-soft` | `#5A1722`   |              0.04–0.10 | Garis tipis di atas putih hangat      |
+| `line-rose-soft`     | `#F2E5E8`   |              0.45–0.70 | Garis terang di atas Burgundy         |
+| `line-ivory-soft`    | `#FDF7F2`   |              0.12–0.24 | Garis di atas Dark Wine               |
+| `line-white-soft`    | `#FFFFFF`   |              0.10–0.22 | Bingkai dan kontur di permukaan gelap |
 
-Garis dekoratif tidak boleh menjadi satu-satunya penanda informasi.
+Garis dekoratif harus tetap terlihat lembut. Jika garis lebih menonjol daripada judul, foto, atau isi bagian, turunkan tingkat kepekatannya.
 
 ## 5.4 Aturan penempatan
 
@@ -875,78 +1395,86 @@ Referensi KPM hanya digunakan sebagai inspirasi komposisi dan hierarki. Jangan m
 - Jangan menggunakan logo ARTHAKARSA sebagai pengganti.
 - Jika nama kabinet ditampilkan, letakkan sebagai teks/brand area terpisah dan sesuai konteks.
 
-## 9.5 Public menu
+## 9.5 Enam menu utama dan pemetaan aset visual
 
-Struktur menu tetap mengikuti PRD:
+Nama, urutan, tujuan, dan submenu tetap mengikuti PRD. Tampilan bilah navigasi utama tetap ringkas dan mengutamakan tulisan. Aset visual ditampilkan pada panel menu turun, pratinjau menu jika tersedia, dan bagian pembuka halaman tujuan. Jangan memaksa gambar besar masuk ke bilah navigasi horizontal.
 
-1.  Beranda
-2.  Tentang Kami
-3.  Organisasi
-    - Kabinet
-    - Bidang
-    - Kompartemen
-    - Program Kerja
-4.  Aktivitas
-    - Agenda & Tiket
-    - Berita & Artikel
-    - Media Partner
-5.  Karya Kader
-    - Bisnis Kader
-    - Prestasi Kader
-6.  Kotak Suara
+| Menu utama   | Aset visual yang harus dicari                                                              | Penggunaan pada panel menu/halaman                   |
+|--------------|--------------------------------------------------------------------------------------------|------------------------------------------------------|
+| Beranda      | Foto resmi kegiatan atau foto utama kabinet yang telah diizinkan; ornamen resmi ARTHAKARSA | Visual utama halaman Beranda dan pratinjau identitas |
+| Tentang Kami | Foto resmi organisasi, kegiatan, atau dokumentasi sejarah yang sah                         | Panel pengenalan dan bagian cerita organisasi        |
+| Organisasi   | Logo kabinet, foto pengurus resmi, ikon Bidang dan Kompartemen, aset struktur organisasi   | Panel menu Organisasi dan halaman struktur           |
+| Aktivitas    | Poster agenda, sampul berita/artikel, dan materi kegiatan                                  | Panel menu Aktivitas, kartu agenda, dan kartu berita |
+| Karya Kader  | Logo usaha, foto produk, dokumentasi prestasi, atau gambar penghargaan yang sah            | Panel menu Karya Kader dan halaman pameran karya     |
+| Kotak Suara  | Ilustrasi kotak aspirasi, pesan, atau penyampaian masukan                                  | Panel pengantar dan halaman Kotak Suara              |
+
+### 9.5.1 Daftar submenu dan aset pendukung
+
+| Menu dan submenu             | Aset yang dicari                                                                    |
+|------------------------------|-------------------------------------------------------------------------------------|
+| Organisasi → Kabinet         | Logo kabinet yang sesuai periode dan foto resmi kabinet                             |
+| Organisasi → Bidang          | Ikon atau lambang resmi Bidang dan foto kegiatan terkait                            |
+| Organisasi → Kompartemen     | Ikon atau lambang resmi Kompartemen dan foto kegiatan terkait                       |
+| Organisasi → Program Kerja   | Poster, sampul, atau dokumentasi Program Kerja yang sah                             |
+| Aktivitas → Agenda & Tiket   | Poster agenda, gambar lokasi, atau materi kegiatan                                  |
+| Aktivitas → Berita & Artikel | Sampul berita, foto artikel, atau dokumentasi yang relevan                          |
+| Aktivitas → Mitra Media      | Ilustrasi kemitraan atau logo mitra yang telah diizinkan                            |
+| Karya Kader → Bisnis Kader   | Logo usaha, foto produk, atau foto layanan milik kader                              |
+| Karya Kader → Prestasi Kader | Foto penghargaan, sertifikat yang boleh dipublikasikan, atau dokumentasi pencapaian |
+
+### 9.5.2 Aturan visual aset pada navigasi
+
+- Setiap menu utama harus memiliki satu pemetaan aset pada daftar aset proyek.
+- Menu yang memiliki submenu wajib menampilkan satu aset unggulan pada panel menu turun dan ikon atau gambar pendamping yang sesuai untuk setiap submenu.
+- Menu yang langsung menuju halaman tanpa submenu menggunakan aset terkait pada bagian pembuka halaman tujuannya.
+- Bilah navigasi utama tidak boleh dipenuhi gambar kecil yang membuat menu sulit dibaca.
+- Aset pada panel menu harus membantu pengguna mengenali isi menu, bukan hanya menjadi hiasan.
+- Jangan menampilkan aset kabinet aktif pada arsip kabinet lain.
+- Jangan menampilkan foto, logo usaha, atau prestasi yang belum memiliki izin publikasi.
+- Jika aset belum tersedia, catat sebagai aset yang belum tersedia dan gunakan pengganti sementara yang terarah. Jangan mengarang nama berkas atau mengambil foto acak.
+
+Nama menu: 1. Beranda 2. Tentang Kami 3. Organisasi - Kabinet - Bidang - Kompartemen - Program Kerja 4. Aktivitas - Agenda & Tiket - Berita & Artikel - Mitra Media 5. Karya Kader - Bisnis Kader - Prestasi Kader 6. Kotak Suara
 
 Jangan mengganti nama menu atau menghilangkan submenu hanya demi komposisi desain.
 
-## 9.6 Navbar states
+## 9.6 Keadaan bilah navigasi
 
-| State         | Tampilan                                               |
-|:--------------|:-------------------------------------------------------|
-| Default top   | White glass capsule, border tipis, shadow ringan       |
-| Scrolled      | Background lebih opaque, blur/shadow sedikit meningkat |
-| Active route  | Sliding underline Burgundy atau soft Burgundy pill     |
-| Hover         | Teks Burgundy lebih tegas, surface blush tipis         |
-| Dropdown open | Trigger active, chevron rotate                         |
-| Focus         | Focus ring jelas                                       |
-| Mobile open   | Drawer/mega panel dengan backdrop lembut               |
+| Keadaan              | Tampilan                                                       |
+|----------------------|----------------------------------------------------------------|
+| Awal halaman         | Kapsul kaca putih, garis tepi tipis, bayangan lembut           |
+| Setelah digulir      | Latar lebih pekat, efek kabur dan bayangan sedikit meningkat   |
+| Menu aktif           | Garis bawah Burgundy atau bidang Burgundy lembut yang bergeser |
+| Saat disorot         | Teks Burgundy lebih tegas, latar merah muda sangat lembut      |
+| Menu turun terbuka   | Pemicu terlihat aktif, tanda panah berputar                    |
+| Fokus papan ketik    | Garis fokus terlihat jelas                                     |
+| Menu telepon terbuka | Panel samping atau panel menu dengan latar penutup lembut      |
 
-## 9.7 Action buttons
+## 9.7 Tombol tindakan
 
-- Search: icon button dengan accessible label.
-- Masuk: secondary button dengan background Ivory/White.
-- Gabung HIPMI: primary Burgundy pill, teks White, arrow icon.
+- Pencarian: tombol ikon dengan nama aksesibel “Cari”.
+- Masuk: tombol sekunder dengan latar putih atau gading.
+- Gabung HIPMI: tombol utama Burgundy, tulisan putih, dan ikon panah.
 - Jangan menambahkan tombol bahasa atau tombol lain jika tidak ada dalam PRD/keputusan produk.
 
-## 9.8 Dropdown/mega menu
+## 9.8 Menu turun dan panel menu bergambar
 
-Dropdown bukan panel teks polos. Gunakan layout visual yang memiliki asset slot.
+Menu turun bukan panel tulisan polos. Gunakan susunan visual yang memiliki tempat khusus untuk aset.
 
-**Mega menu layout:**
+**Susunan panel menu:** - Kolom kiri: aset unggulan, kategori, judul serif, keterangan singkat, dan tautan tindakan. - Kolom tengah: daftar submenu dengan ikon atau gambar pendamping, judul, keterangan singkat, dan tanda panah. - Kolom kanan jika diperlukan: kartu visual unggulan atau informasi terkait. - Latar: putih hangat dengan efek kaca yang ringan. - Sudut: 24–30 px. - Garis tepi: netral lembut. - Bayangan: mengambang dan lembut. - Saat dibuka: memudar, bergerak naik 8–14 px, dan membesar sangat sedikit. - Saat ditutup: memudar dan bergerak 4–8 px. - Komputer: dapat dibuka dengan klik dan papan ketik; sorotan penunjuk hanya sebagai bantuan tambahan. - Telepon: gunakan panel atau daftar buka-tutup, bukan tindakan sorot penunjuk.
 
-- Kolom kiri: feature asset/illustration, eyebrow, title serif, short description, CTA.
-- Kolom tengah: daftar submenu dengan icon tile, title, description, arrow.
-- Kolom kanan (opsional): featured visual card/illustration.
-- Background: white warm glass.
-- Radius: 24–30 px.
-- Border: soft.
-- Shadow: floating.
-- Entrance: fade + y 8–14 px + scale sangat ringan.
-- Exit: fade + y 4–8 px.
-- Desktop trigger: click/keyboard; hover hanya enhancement.
-- Mobile: accordion/drawer, bukan hover.
+Jika aset belum tersedia, tampilkan tempat gambar pengganti yang sudah dirancang, bukan gambar acak.
 
-Jika asset tidak tersedia, tampilkan slot ilustrasi fallback yang sesuai, bukan gambar acak.
-
-## 9.9 Mobile navbar
+## 9.9 Navigasi pada telepon
 
 - Logo tetap terbaca.
-- Search dapat menjadi icon atau item di drawer sesuai ruang.
-- Hamburger menjadi X dengan motion halus.
-- Drawer memuat semua menu dan submenu.
-- Login/Daftar atau Profile tetap tersedia.
-- Body scroll dikunci saat drawer terbuka.
-- Escape menutup drawer.
-- Focus kembali ke tombol pembuka.
-- Semua item dapat diakses tanpa hover.
+- Pencarian dapat menjadi tombol ikon atau item di panel navigasi sesuai ruang.
+- Tombol menu berubah menjadi tanda tutup dengan gerakan halus.
+- Panel navigasi memuat semua menu dan submenu.
+- Tombol Masuk/Daftar atau Profil tetap tersedia sesuai keadaan akun.
+- Gulir halaman di belakang panel dikunci saat panel terbuka.
+- Tombol Escape menutup panel pada perangkat yang memiliki papan ketik.
+- Fokus dikembalikan ke tombol pembuka setelah panel ditutup.
+- Semua item dapat diakses tanpa mengandalkan sorotan penunjuk.
 
 ------------------------------------------------------------------------
 
@@ -1130,11 +1658,13 @@ Jika `prefers-reduced-motion: reduce`: - hilangkan slide panjang; - gunakan peru
 
 Mega dropdown dapat memiliki: - featured illustration/photo di kiri; - kategori/eyebrow; - heading serif; - deskripsi pendek; - daftar submenu; - icon tile; - featured CTA card di kanan.
 
-## 12.3 Asset slots
+## 12.3 Tempat aset visual
 
-Gunakan asset slots untuk: - ilustrasi program; - image feature; - banner kegiatan; - logo kabinet; - icon khusus; - artwork kategori.
+Gunakan tempat aset visual untuk: - ilustrasi setiap kelompok menu utama dan submenu; - ilustrasi program dan Program Kerja; - foto utama atau foto unggulan; - poster kegiatan; - logo kabinet dan logo mitra yang diizinkan; - gambar produk dan usaha kader; - dokumentasi prestasi; - ilustrasi halaman tidak ditemukan dan halaman kesalahan; - ilustrasi keadaan kosong per kelompok data.
 
-Asset slots memiliki: - aspect ratio; - object-fit yang sesuai; - fallback background; - alt text; - ukuran yang konsisten; - tidak mengubah rasio master logo.
+Setiap tempat aset harus memiliki: - kunci aset yang jelas; - nama berkas dan alamat berkas aktual setelah diverifikasi; - rasio gambar; - cara penyesuaian gambar; - latar pengganti; - teks alternatif dalam Bahasa Indonesia; - sumber dan status izin penggunaan; - ukuran yang konsisten; - aturan pengganti jika gambar gagal dimuat.
+
+Jangan menulis alamat berkas berdasarkan tebakan. Kunci aset boleh memakai nama fungsi, tetapi alamat berkas wajib diambil dari hasil pemeriksaan folder aset.
 
 ## 12.4 Dropdown state
 
@@ -1200,15 +1730,36 @@ Asset slots memiliki: - aspect ratio; - object-fit yang sesuai; - fallback backg
 
 Form harus menggunakan surface solid agar field mudah dibaca.
 
+**Teknologi:** React Hook Form + Zod + `@hookform/resolvers`.
+
+- React Hook Form mengelola nilai, status, dan interaksi formulir.
+
+- Zod mendefinisikan skema dan aturan validasi.
+
+- Gunakan resolver Zod agar aturan validasi dan tipe formulir konsisten.
+
+- Pesan kesalahan dan bantuan wajib menggunakan Bahasa Indonesia.
+
+- Pengiriman pada tahap ini hanya simulasi lokal; tidak boleh mengaku tersimpan ke server.
+
 - Label selalu terlihat.
+
 - Placeholder bukan pengganti label.
+
 - Helper text berada dekat field.
+
 - Error message langsung di bawah field.
+
 - Required marker konsisten.
+
 - Grouping field menggunakan heading Poppins.
+
 - Form panjang dibagi section/step bila PRD memang menetapkan.
+
 - Button action memiliki hirarki jelas.
+
 - Focus ring konsisten.
+
 - Pada mobile, keyboard tidak menutupi tombol submit.
 
 ## 14.2 Inputs
@@ -1224,6 +1775,8 @@ Form harus menggunakan surface solid agar field mudah dibaca.
 - Date/time/select mengikuti komponen yang konsisten.
 
 ## 14.3 Tables
+
+**Teknologi:** TanStack Table (`@tanstack/react-table`) untuk tabel yang memerlukan pengurutan, penyaringan, halaman data, pemilihan baris, atau pengaturan kolom. Tabel sederhana boleh menggunakan elemen tabel HTML biasa.
 
 **Table tidak menggunakan glass.**
 
@@ -1241,6 +1794,8 @@ Form harus menggunakan surface solid agar field mudah dibaca.
 
 ## 14.4 Data visualization
 
+**Teknologi:** Recharts (`recharts`) untuk grafik dua dimensi. TanStack Table tetap digunakan untuk rincian data berbentuk tabel.
+
 - Warna chart memakai Burgundy, Dark Wine, Gold, Copper, Mauve, dan semantic colors.
 - Jangan menggunakan palet default library tanpa token.
 - Selalu sertakan label/legend.
@@ -1250,100 +1805,154 @@ Form harus menggunakan surface solid agar field mudah dibaca.
 
 ------------------------------------------------------------------------
 
-# 15. LOADING EXPERIENCE — CENTERED ARTHAKARSA BRAND LOADER
+# 15. PENGALAMAN PEMUATAN — LOGO ARTHAKARSA DI TENGAH
 
 ## 15.1 Tujuan
 
-Loading screen harus menjadi pengalaman brand yang berkesan, tetapi tidak boleh membuat pengguna menunggu lebih lama dari proses sebenarnya.
+Layar pemuatan harus menjadi pengalaman merek yang berkesan, tetapi tidak boleh membuat pengguna menunggu lebih lama dari proses sebenarnya. Semua tulisan pada layar pemuatan wajib menggunakan Bahasa Indonesia.
 
-## 15.2 Komposisi
+## 15.2 Susunan visual
 
-- Full viewport.
-- Background Dark Wine/Burgundy gradient yang sangat lembut.
-- Line art gold/copper berupa orbit/contour di area luar.
+- Memenuhi layar.
+- Latar putih hangat atau Dark Wine sesuai konteks pemuatan.
+- Garis kontur emas dan tembaga di bagian luar.
 - Logo ARTHAKARSA asli di tengah.
-- Nama ARTHAKARSA di bawah logo bila sesuai asset/branding.
-- Teks status seperti “Menyiapkan pengalaman terbaik…” atau status yang sesuai.
-- Indikator loading berupa arc/ring yang mengitari area logo atau progress line di bawah.
-- Tidak menggunakan logo HIPMI sebagai pengganti logo kabinet pada branded loader.
+- Nama ARTHAKARSA di bawah logo bila sesuai kebutuhan.
+- Tulisan status seperti “Sedang menyiapkan halaman…” atau pesan Bahasa Indonesia yang sesuai.
+- Indikator pemuatan berupa lingkaran gerak yang mengitari area logo atau garis kemajuan di bawah.
+- Jangan menggunakan logo HIPMI sebagai pengganti logo kabinet pada pemuatan bermerek kabinet.
 
-## 15.3 Motion
+## 15.3 Gerakan
 
-1.  Background glow fade-in.
-2.  Logo fade + scale dari 0.96 ke 1.
-3.  Fine orbit/arc bergerak perlahan.
-4.  Gold highlight berjalan pada ring.
-5.  Status text fade-in.
-6.  Progress bar hanya menampilkan nilai nyata jika tersedia; jika tidak, gunakan indeterminate loader.
+1.  Cahaya latar muncul perlahan.
+2.  Logo memudar masuk dan membesar dari 0,96 menjadi 1.
+3.  Garis orbit bergerak perlahan.
+4.  Kilau emas bergerak di sepanjang lingkaran.
+5.  Tulisan status muncul setelah logo.
+6.  Garis kemajuan hanya menunjukkan nilai nyata jika tersedia. Jika tidak, gunakan indikator bergerak tanpa angka.
 
-## 15.4 Duration dan behavior
+## 15.4 Durasi dan perilaku
 
-- Entrance: 350–600 ms.
-- Orbit: 2.4–4.0 detik per putaran, jika continuous.
-- Text reveal: 250–400 ms.
-- Tidak boleh menambahkan delay palsu.
-- Jangan membuat loading screen menutupi halaman setelah data sudah siap.
-- Gunakan skeleton untuk loading konten lokal yang lebih singkat.
-- Reduced-motion: logo tetap statis, ring menjadi progress indicator sederhana.
+- Kemunculan awal: 350–600 milidetik.
+- Gerakan orbit: 2,4–4 detik per putaran jika bergerak terus-menerus.
+- Kemunculan tulisan: 250–400 milidetik.
+- Jangan menambahkan waktu tunggu palsu.
+- Jangan menutupi halaman setelah konten siap.
+- Gunakan tampilan kerangka untuk pemuatan bagian yang singkat.
+- Jika pengguna mengurangi gerakan, logo tetap diam dan lingkaran berubah menjadi indikator sederhana.
 
-## 15.5 Loading variants
+## 15.5 Jenis pemuatan
 
-| Variant            | Penggunaan                                     |
-|:-------------------|:-----------------------------------------------|
-| `brand-fullscreen` | Initial app load/transition tertentu           |
-| `page-overlay`     | Perubahan area yang memang memerlukan blocking |
-| `inline-spinner`   | Button/action                                  |
-| `skeleton`         | Card/list/table loading                        |
-| `section-loader`   | Panel data tertentu                            |
+| Jenis                    | Penggunaan                                                                     |
+|--------------------------|--------------------------------------------------------------------------------|
+| Pemuatan layar penuh     | Pembukaan aplikasi atau perpindahan besar yang benar-benar memerlukan pemuatan |
+| Pemuatan lapisan halaman | Perubahan bagian yang membutuhkan penguncian sementara                         |
+| Pemuatan tombol          | Pengiriman formulir atau tindakan                                              |
+| Tampilan kerangka        | Kartu, daftar, dan tabel yang sedang dimuat                                    |
+| Pemuatan bagian          | Panel data tertentu                                                            |
 
 ------------------------------------------------------------------------
 
-# 16. ERROR, 404, 403, 500 & EMPTY STATES
+# 16. HALAMAN TIDAK DITEMUKAN, HALAMAN TANPA IZIN, KESALAHAN, DAN KEADAAN KOSONG
 
-## 16.1 Visual direction
+## 16.1 Arah visual
 
-Error page harus tetap terasa bagian dari ARTHAKARSA: - background Ivory/White; - headline serif display untuk kode/status utama; - body Poppins; - illustration asset yang relevan; - line art lembut; - CTA yang jelas; - tidak menggunakan ilustrasi generik yang tidak berkaitan dengan konteks.
+Semua halaman khusus ini harus tetap menjadi bagian dari identitas ARTHAKARSA: - latar putih, putih hangat, atau warna lembut sesuai konteks; - judul besar menggunakan huruf serif ARTHAKARSA; - isi menggunakan Poppins; - ilustrasi aset yang sesuai dengan jenis keadaan; - garis kontur yang lembut; - tombol tindakan yang jelas; - seluruh tulisan menggunakan Bahasa Indonesia; - jangan menampilkan pesan teknis, alamat berkas, atau rincian kesalahan internal.
 
-## 16.2 404 — Not Found
+## 16.2 Halaman tidak ditemukan
 
-- Kode `404` besar.
-- Judul “Halaman Tidak Ditemukan”.
-- Deskripsi singkat.
-- Ilustrasi signpost/path/arah atau asset resmi yang tersedia.
-- CTA “Kembali ke Beranda”.
-- CTA alternatif hanya jika tujuan benar-benar tersedia.
-- Background ivory dengan contour lines di sudut.
+- Kode `404` boleh ditampilkan sebagai kode teknis, tetapi judul dan seluruh penjelasan harus berbahasa Indonesia.
+- Judul: “Halaman Tidak Ditemukan”.
+- Penjelasan: “Halaman yang Anda cari tidak tersedia atau alamatnya telah berubah.”
+- Aset utama: ilustrasi arah, jalan, penunjuk, atau perjalanan yang tidak menemukan tujuan.
+- Tombol utama: “Kembali ke Beranda”.
+- Tombol tambahan hanya ditampilkan jika tujuan tersebut benar-benar tersedia.
+- Latar putih hangat dengan garis kontur di sudut.
+- Ilustrasi harus menjadi aset khusus halaman tidak ditemukan, bukan foto profil atau logo yang dimodifikasi.
 
-## 16.3 403 — Access Denied
+## 16.3 Halaman akses tidak diizinkan
 
-- Ilustrasi shield/lock/access.
-- Judul “Akses Tidak Diizinkan”.
-- Penjelasan singkat bahwa akun tidak memiliki izin.
-- Tombol kembali.
-- Tombol ajukan akses hanya jika proses tersebut memang tersedia dalam PRD.
-- Jangan membocorkan nama halaman/data yang tidak boleh diakses.
+- Kode `403` boleh menjadi penanda teknis kecil.
+- Judul: “Akses Tidak Diizinkan”.
+- Penjelasan: “Akun Anda tidak memiliki izin untuk membuka halaman ini.”
+- Aset utama: ilustrasi perisai, kunci, atau pintu tertutup.
+- Tombol: “Kembali”.
+- Tombol pengajuan akses hanya jika proses tersebut memang tersedia dalam PRD.
+- Jangan membocorkan nama halaman, data, atau tindakan yang tidak boleh diketahui pengguna.
 
-## 16.4 500 — System Error
+## 16.4 Halaman gangguan sistem
 
-- Ilustrasi abstrak broken connection/technical state.
-- Judul “Terjadi Kesalahan”.
-- Pesan yang tidak membocorkan detail internal.
-- Tombol coba lagi jika aman.
-- Tautan kembali ke halaman sebelumnya/beranda.
-- Hindari menampilkan stack trace.
+- Kode `500` boleh menjadi penanda teknis kecil.
+- Judul: “Terjadi Gangguan pada Sistem”.
+- Penjelasan: “Kami belum dapat memuat halaman ini. Silakan coba kembali beberapa saat lagi.”
+- Aset utama: ilustrasi sambungan terputus, bagian sistem yang tidak tersambung, atau gangguan teknis.
+- Tombol utama: “Coba Lagi”.
+- Tombol tambahan: “Kembali ke Beranda”.
+- Jangan menampilkan jejak kesalahan, nama tabel, nama layanan, atau pesan pemrograman.
 
-## 16.5 Empty state
+## 16.5 Halaman layanan sedang tidak tersedia
 
-Setiap domain memiliki ilustrasi/ikon yang sesuai: - Agenda kosong → calendar. - Surat kosong → file-text. - Transaksi kosong → receipt/wallet. - Proker kosong → folder. - Prestasi kosong → award. - Bisnis kosong → store. - Notifikasi kosong → bell. - Search tidak ditemukan → search. - Anggota kosong → users.
+- Judul: “Layanan Sementara Tidak Tersedia”.
+- Penjelasan: “Layanan sedang diperiksa. Silakan kembali beberapa saat lagi.”
+- Aset utama: ilustrasi pemeliharaan, perkakas, atau perbaikan.
+- Tombol: “Kembali ke Beranda” jika sesuai.
+- Jangan menampilkan perkiraan waktu selesai jika belum ada informasi yang pasti.
 
-Empty state memuat: 1. ilustrasi/ikon; 2. judul; 3. deskripsi; 4. CTA hanya jika pengguna memiliki permission; 5. state tidak boleh tampak seperti error jika memang datanya belum ada.
+## 16.6 Gangguan jaringan
 
-## 16.6 Asset rule
+- Judul: “Koneksi Terputus”.
+- Penjelasan: “Periksa sambungan internet Anda, lalu coba kembali.”
+- Aset utama: ilustrasi perangkat atau sambungan jaringan yang terputus.
+- Tombol: “Coba Lagi”.
+- Jangan menyatakan data telah tersimpan jika penyimpanan belum berhasil.
 
-- Gunakan asset ilustrasi dari repository jika tersedia.
-- Jangan mengarang nama path.
-- Jika tidak ada asset, gunakan komposisi icon Lucide + line art CSS/SVG yang tidak meniru logo resmi.
-- `siluet.png` hanya untuk fallback foto profil manusia, bukan untuk error page atau empty state umum.
+## 16.7 Keadaan kosong per kelompok data
+
+Setiap kelompok data memiliki ilustrasi atau aset pendukung yang sesuai:
+
+| Keadaan                | Aset yang dicari                 | Judul Bahasa Indonesia  |
+|------------------------|----------------------------------|-------------------------|
+| Agenda kosong          | Kalender atau ilustrasi kegiatan | Belum Ada Agenda        |
+| Surat kosong           | Dokumen atau amplop              | Belum Ada Surat         |
+| Transaksi kosong       | Bukti transaksi atau dompet      | Belum Ada Transaksi     |
+| Program Kerja kosong   | Folder atau ilustrasi program    | Belum Ada Program Kerja |
+| Prestasi kosong        | Piala atau medali                | Belum Ada Prestasi      |
+| Bisnis kader kosong    | Toko atau produk                 | Belum Ada Bisnis Kader  |
+| Pemberitahuan kosong   | Lonceng atau pesan               | Belum Ada Pemberitahuan |
+| Hasil pencarian kosong | Kaca pembesar                    | Data Tidak Ditemukan    |
+| Anggota kosong         | Kelompok orang                   | Belum Ada Anggota       |
+| Dokumen kosong         | Berkas                           | Belum Ada Dokumen       |
+
+Keadaan kosong memuat: 1. ilustrasi atau ikon; 2. judul; 3. penjelasan singkat; 4. tombol tindakan hanya jika pengguna memiliki izin; 5. penjelasan bahwa data memang belum tersedia, bukan pesan kesalahan.
+
+## 16.8 Aturan aset halaman tidak ditemukan dan kesalahan
+
+Aset berikut wajib dicari di folder aset proyek dan dicatat dalam daftar aset:
+
+| Kunci fungsi aset                | Halaman                          | Ciri ilustrasi                                          |
+|----------------------------------|----------------------------------|---------------------------------------------------------|
+| `illustration-not-found`         | Halaman tidak ditemukan          | Arah, jalan, penunjuk, atau tujuan yang tidak ditemukan |
+| `illustration-no-access`         | Akses tidak diizinkan            | Perisai, kunci, atau pintu tertutup                     |
+| `illustration-system-error`      | Gangguan sistem                  | Sambungan atau susunan sistem yang terganggu            |
+| `illustration-maintenance`       | Layanan sementara tidak tersedia | Perkakas atau perbaikan                                 |
+| `illustration-offline`           | Gangguan jaringan                | Sambungan jaringan terputus                             |
+| `illustration-empty-calendar`    | Agenda kosong                    | Kalender                                                |
+| `illustration-empty-document`    | Dokumen kosong                   | Dokumen                                                 |
+| `illustration-empty-transaction` | Transaksi kosong                 | Bukti transaksi                                         |
+| `illustration-empty-members`     | Anggota kosong                   | Kelompok orang                                          |
+| `illustration-empty-achievement` | Prestasi kosong                  | Piala atau medali                                       |
+| `illustration-empty-business`    | Bisnis kader kosong              | Toko atau produk                                        |
+| `illustration-empty-search`      | Hasil pencarian kosong           | Kaca pembesar                                           |
+
+Nama di tabel adalah **kunci fungsi**, bukan alamat berkas. AI Agent harus memeriksa nama berkas sebenarnya sebelum menggunakannya.
+
+- Gunakan aset ilustrasi dari folder proyek jika tersedia.
+- Jangan mengarang alamat berkas.
+- Jangan memakai satu ilustrasi untuk semua jenis kesalahan jika maknanya berbeda.
+- Jika aset khusus belum tersedia, gunakan susunan ikon Lucide dan garis dekoratif sebagai pengganti sementara yang konsisten; catat aset yang belum tersedia.
+- Jangan mengganti ilustrasi kesalahan dengan `siluet.png`. Berkas tersebut hanya untuk foto profil manusia.
+- Semua teks alternatif ilustrasi harus berbahasa Indonesia.
+- Pastikan ilustrasi tidak mengandung tulisan Inggris yang tertanam di dalam gambar. Jika aset memiliki tulisan asing, gunakan versi tanpa tulisan atau buat lapisan teks antarmuka berbahasa Indonesia di luar gambar.
 
 ------------------------------------------------------------------------
 
@@ -1393,7 +2002,7 @@ Hero: - jangan memakai data foto yang belum tersedia; - jangan mengarang angka s
 - Filter dan tabs menggunakan sliding indicator.
 - Agenda menggunakan event cards dengan poster/tanggal/status.
 - Berita & Artikel menggunakan editorial cards.
-- Media Partner menggunakan form/data-first surface.
+- Mitra Media menggunakan form/data-first surface.
 - Bukti pembayaran dan data peserta tetap solid/terbaca, tidak memakai glass yang mengganggu.
 
 ## 17.5 Karya Kader
@@ -1577,11 +2186,11 @@ Admin Panel mengutamakan kontrol, struktur, dan kejelasan. Visual premium tidak 
 
 ------------------------------------------------------------------------
 
-# 22. MOTION SYSTEM — FRAMER MOTION / MOTION FOR REACT
+# 22. MOTION SYSTEM — MOTION FOR REACT
 
 ## 22.1 Prinsip motion
 
-Gunakan satu motion system terpusat. Implementasi mengikuti dependency Motion/Framer Motion yang tersedia di repository. Jangan memasang dua engine animasi yang mengontrol properti yang sama.
+Gunakan satu motion system terpusat. Untuk implementasi baru, gunakan paket `motion` dengan API React dari `motion/react`. Jika repository sudah menggunakan `framer-motion`, pertahankan paket yang tersedia sampai ada keputusan migrasi. Jangan memasang dua engine animasi yang mengontrol properti yang sama.
 
 ## 22.2 Motion tokens
 
@@ -1602,35 +2211,99 @@ Baseline easing: - `ease-out`: `cubic-bezier(0.22, 1, 0.36, 1)` - `ease-standard
 
 Hindari overshoot berlebihan, elastic bounce, dan gerakan yang membuat elemen terlihat tidak stabil.
 
-## 22.4 Motion registry
+## 22.4 Daftar gerakan antarmuka
 
-| ID       | Nama               | Trigger                | Perilaku                              |
-|:---------|:-------------------|:-----------------------|:--------------------------------------|
-| `MOT-01` | `nav-active-slide` | Route berubah          | Underline/pill bergerak ke item aktif |
-| `MOT-02` | `tab-glide`        | Tab dipilih            | Indicator menggelinding ke samping    |
-| `MOT-03` | `sidebar-pill`     | Sidebar route berubah  | Active background berpindah           |
-| `MOT-04` | `dropdown-reveal`  | Dropdown dibuka        | Fade + y 8–14 px                      |
-| `MOT-05` | `mega-menu-enter`  | Mega menu dibuka       | Fade + scale 0.98→1                   |
-| `MOT-06` | `section-fade-up`  | Section masuk viewport | Fade + y 16–24 px                     |
-| `MOT-07` | `card-stagger`     | List masuk viewport    | Card muncul bertahap                  |
-| `MOT-08` | `card-hover-lift`  | Pointer hover          | Lift 1–4 px + shadow                  |
-| `MOT-09` | `hero-image-enter` | Initial load           | Photo reveal/scale halus              |
-| `MOT-10` | `line-draw`        | Section reveal         | Decorative SVG line tergambar         |
-| `MOT-11` | `ribbon-reveal`    | Section reveal         | Ribbon fade/mask reveal               |
-| `MOT-12` | `workspace-switch` | Workspace berubah      | Content crossfade/slide pendek        |
-| `MOT-13` | `loading-orbit`    | Loading aktif          | Ring/orbit berputar                   |
-| `MOT-14` | `notification-pop` | Notification muncul    | Fade/scale ringan                     |
-| `MOT-15` | `modal-enter`      | Modal dibuka           | Fade + scale ringan                   |
+| Kode     | Gerakan                   | Pemicu                        | Perilaku                                                       |
+|----------|---------------------------|-------------------------------|----------------------------------------------------------------|
+| `MOT-01` | Penanda menu bergeser     | Alamat halaman berubah        | Garis atau bidang aktif bergerak ke menu terpilih              |
+| `MOT-02` | Penanda tab bergeser      | Tab dipilih                   | Penanda bergerak mendatar                                      |
+| `MOT-03` | Penanda bilah samping     | Menu area pribadi berubah     | Bidang aktif berpindah                                         |
+| `MOT-04` | Menu turun muncul         | Menu dibuka                   | Memudar dan bergerak turun atau naik sedikit                   |
+| `MOT-05` | Panel menu bergambar      | Panel dibuka                  | Memudar dan membesar sangat sedikit                            |
+| `MOT-06` | Judul bagian muncul       | Bagian memasuki layar         | Huruf muncul bertahap dengan gerakan dari bawah                |
+| `MOT-07` | Isi bagian muncul         | Bagian memasuki layar         | Paragraf memudar dan bergerak naik sedikit                     |
+| `MOT-08` | Ikon bagian muncul        | Bagian memasuki layar         | Ikon membesar, memudar, atau berputar ringan                   |
+| `MOT-09` | Kartu muncul bertahap     | Kelompok kartu memasuki layar | Kartu muncul satu demi satu                                    |
+| `MOT-10` | Gambar utama muncul       | Halaman atau bagian dibuka    | Gambar terlihat melalui pembukaan bidang atau pembesaran halus |
+| `MOT-11` | Garis tergambar           | Bagian memasuki layar         | Garis SVG tergambar mengikuti jalurnya                         |
+| `MOT-12` | Pita mengalir muncul      | Bagian memasuki layar         | Pita memudar atau terbuka melalui bidang pembatas              |
+| `MOT-13` | Bagian meninggalkan layar | Bagian keluar dari layar      | Tulisan, ikon, dan kartu memudar serta bergeser sedikit        |
+| `MOT-14` | Perpindahan ruang kerja   | Ruang kerja berubah           | Isi memudar dan bergeser pendek                                |
+| `MOT-15` | Orbit pemuatan            | Pemuatan aktif                | Lingkaran bergerak perlahan                                    |
+| `MOT-16` | Pemberitahuan muncul      | Pemberitahuan diterima        | Memudar dan membesar ringan                                    |
+| `MOT-17` | Jendela dialog muncul     | Dialog dibuka                 | Memudar dan membesar ringan                                    |
+| `MOT-18` | Ikon tindakan             | Tindakan berhasil/gagal       | Ikon muncul dengan gerakan singkat dan jelas                   |
 
-## 22.5 Scroll reveal
+## 22.5 Gerakan masuk dan keluar setiap bagian
 
-- Trigger ketika section mendekati viewport.
-- Gunakan once untuk konten yang tidak perlu muncul berulang.
-- Jangan menyembunyikan konten utama sebelum animation engine siap.
-- Jangan membuat user harus scroll pelan untuk melihat konten.
-- Jangan memakai parallax berat pada semua section.
-- Pada mobile, kurangi jarak gerak dan jumlah stagger.
-- Konten tetap terlihat bila JavaScript/motion gagal.
+**Setiap bagian yang memiliki judul, tulisan, ikon, gambar, kartu, atau tombol wajib memiliki gerakan masuk dan gerakan keluar yang terkoordinasi.** Ketentuan ini berlaku untuk halaman publik, area pribadi, pengelolaan organisasi, ruang kerja, dan panel pengelola sistem. Tingkat gerak boleh lebih tenang pada halaman yang padat data.
+
+### 22.5.1 Urutan gerakan ketika bagian masuk
+
+Urutan dasar ketika bagian mulai terlihat:
+
+1.  Hiasan garis atau bentuk latar muncul lebih dahulu dengan memudar atau tergambar.
+2.  Label kecil bagian muncul dengan memudar dan bergerak naik sedikit.
+3.  Judul utama muncul dengan gerakan dari bawah ke atas; judul dapat muncul per kata atau per baris.
+4.  Paragraf muncul setelah judul dengan jeda singkat.
+5.  Ikon atau ilustrasi muncul dengan perubahan ukuran dan tingkat kepekatan.
+6.  Kartu muncul satu demi satu dengan jeda teratur.
+7.  Tombol tindakan muncul terakhir agar urutan perhatian tetap jelas.
+
+Urutan dapat disederhanakan jika bagian hanya memiliki sedikit elemen. Jangan membuat semua elemen bergerak bersamaan.
+
+### 22.5.2 Gerakan ketika bagian keluar
+
+Ketika bagian meninggalkan area pandang: - judul memudar dan bergeser sedikit ke arah atas atau bawah; - paragraf memudar dengan jarak gerak lebih kecil daripada judul; - ikon mengecil sangat sedikit dan memudar; - kartu memudar secara berurutan atau sebagai satu kelompok; - hiasan garis kembali memudar atau berhenti pada posisi akhir; - tombol tidak boleh bergerak jauh atau terlihat seperti sedang ditekan.
+
+Gerakan keluar harus lebih singkat dan lebih halus daripada gerakan masuk. Jangan menggeser elemen terlalu jauh hingga tampak terlempar keluar layar.
+
+### 22.5.3 Gerakan berbeda sesuai jenis elemen
+
+| Elemen             | Ketika masuk                             | Ketika keluar                              |
+|--------------------|------------------------------------------|--------------------------------------------|
+| Label kecil bagian | Memudar + naik 6–10 px                   | Memudar + naik 3–6 px                      |
+| Judul utama        | Memudar + naik 16–24 px; dapat per kata  | Memudar + bergeser 8–12 px                 |
+| Paragraf           | Memudar + naik 10–16 px                  | Memudar + bergeser 5–8 px                  |
+| Ikon sederhana     | Memudar + membesar dari 0,88 ke 1        | Memudar + mengecil ke 0,94                 |
+| Ikon garis         | Garis tergambar atau putaran ringan      | Garis memudar atau kembali ke keadaan awal |
+| Ilustrasi          | Memudar + membesar dari 0,96 ke 1        | Memudar + mengecil ke 0,98                 |
+| Kartu              | Memudar + naik 14–20 px secara bertahap  | Memudar + naik/turun 6–10 px               |
+| Gambar             | Bidang pembuka atau pembesaran 1,02 ke 1 | Memudar ringan; jangan mengubah rasio      |
+| Tombol             | Memudar + naik 6–10 px setelah isi       | Memudar ringan tanpa gerakan besar         |
+| Garis dekoratif    | Tergambar mengikuti jalur                | Memudar atau berhenti dengan halus         |
+
+### 22.5.4 Pemicu gulir
+
+- Gunakan pengamatan area layar untuk mengetahui kapan bagian masuk dan keluar.
+- Gerakan masuk dimulai saat bagian mulai terlihat, bukan setelah seluruh bagian melewati layar.
+- Gerakan keluar dimulai saat bagian benar-benar meninggalkan area pandang atau melewati ambang yang telah ditetapkan.
+- Gunakan ambang yang stabil agar animasi tidak berkedip saat pengguna berhenti menggulir di batas layar.
+- Gerakan dapat diputar kembali ketika pengguna kembali ke bagian tersebut, sesuai aturan pengulangan.
+- Pada bagian yang sangat panjang, gunakan pemicu untuk kelompok konten, bukan satu pemicu untuk setiap baris teks.
+- Jangan menyembunyikan isi sebelum mesin gerak siap. Jika skrip gagal, seluruh tulisan dan gambar harus tetap terlihat.
+
+### 22.5.5 Aturan khusus area padat data
+
+Pada tabel, formulir, matriks izin, dan daftar panjang: - gerakan masuk cukup berupa pemudaran dan pergeseran 4–8 px; - gerakan keluar tidak boleh membuat pengguna kehilangan konteks saat membaca; - jangan menganimasikan setiap sel tabel; - animasikan judul bagian dan panel utama saja; - data harus tetap terlihat dan dapat dipilih saat animasi berjalan.
+
+### 22.5.6 Pengulangan gerakan
+
+- Halaman publik dapat mengulang gerakan masuk dan keluar ketika pengguna kembali menggulir ke bagian yang sama.
+- Gerakan yang terus berulang tidak boleh terjadi selama pengguna diam.
+- Untuk halaman operasional, utamakan gerakan pertama kali dan transisi yang lebih singkat.
+- Jangan mengulang gerakan pada setiap perubahan satu atau dua piksel posisi gulir.
+- Gunakan jeda pemicu dan ambang yang stabil untuk mencegah gerakan berulang tanpa sengaja.
+
+### 22.5.7 Durasi dan jeda
+
+- Judul dan isi bagian: 400–700 milidetik.
+- Ikon: 300–550 milidetik.
+- Kartu: 350–600 milidetik.
+- Gerakan keluar: 180–350 milidetik.
+- Jeda antarkelompok: 50–100 milidetik.
+- Gerakan hover: 150–220 milidetik.
+- Semua angka merupakan nilai awal dan harus diuji pada perangkat nyata.
 
 ## 22.6 Hover motion
 
@@ -1692,6 +2365,35 @@ Asset dipilih berdasarkan isi submenu, bukan random.
 Gunakan ilustrasi sesuai konteks: - 404: arah/jalan/signpost. - 403: shield/lock. - 500: broken connection/system. - Empty event: calendar. - Empty document: file. - Empty member: people. - Empty achievement: award.
 
 ------------------------------------------------------------------------
+
+## 23.5 Pemetaan aset ilustrasi untuk semua menu dan keadaan khusus
+
+Aset berikut harus diperiksa pada folder aset dan dimasukkan ke daftar aset proyek. Pemetaan ini tidak berarti berkas dengan nama tersebut sudah tersedia.
+
+| Kunci fungsi aset              | Menu/keadaan                 | Isi visual yang dibutuhkan                             |
+|--------------------------------|------------------------------|--------------------------------------------------------|
+| `menu-home-visual`             | Beranda                      | Foto utama atau dokumentasi resmi yang sesuai          |
+| `menu-about-visual`            | Tentang Kami                 | Foto organisasi atau kegiatan resmi                    |
+| `menu-organization-visual`     | Organisasi                   | Logo kabinet, struktur, atau foto pengurus resmi       |
+| `menu-activity-visual`         | Aktivitas                    | Poster agenda atau sampul berita                       |
+| `menu-karya-kader-visual`      | Karya Kader                  | Foto produk, logo usaha, atau dokumentasi prestasi     |
+| `menu-kotak-suara-visual`      | Kotak Suara                  | Ilustrasi penyampaian aspirasi atau kotak pesan        |
+| `submenu-kabinet-visual`       | Organisasi → Kabinet         | Logo kabinet dan foto resmi                            |
+| `submenu-bidang-visual`        | Organisasi → Bidang          | Ikon atau lambang Bidang                               |
+| `submenu-kompartemen-visual`   | Organisasi → Kompartemen     | Ikon atau lambang Kompartemen                          |
+| `submenu-program-kerja-visual` | Organisasi → Program Kerja   | Poster atau sampul Program Kerja                       |
+| `submenu-agenda-visual`        | Aktivitas → Agenda & Tiket   | Poster agenda                                          |
+| `submenu-berita-visual`        | Aktivitas → Berita & Artikel | Sampul berita atau foto artikel                        |
+| `submenu-media-partner-visual` | Aktivitas → Mitra Media      | Ilustrasi kemitraan atau logo mitra yang diizinkan     |
+| `submenu-bisnis-visual`        | Karya Kader → Bisnis Kader   | Logo usaha atau foto produk                            |
+| `submenu-prestasi-visual`      | Karya Kader → Prestasi Kader | Foto penghargaan atau dokumentasi prestasi             |
+| `page-not-found-visual`        | Halaman tidak ditemukan      | Ilustrasi arah atau tujuan yang tidak ditemukan        |
+| `page-no-access-visual`        | Akses tidak diizinkan        | Ilustrasi pintu tertutup, kunci, atau perisai          |
+| `page-system-error-visual`     | Gangguan sistem              | Ilustrasi sambungan atau susunan sistem yang terganggu |
+| `page-maintenance-visual`      | Pemeliharaan layanan         | Ilustrasi perbaikan atau perkakas                      |
+| `page-offline-visual`          | Gangguan jaringan            | Ilustrasi sambungan jaringan terputus                  |
+
+Setiap menu utama dan submenu harus memiliki satu pemetaan aset. Jika aset foto/ilustrasi belum tersedia, gunakan ikon yang tepat dan ornamen garis sebagai pengganti sementara; catat kekurangannya dan jangan mengarang alamat berkas.
 
 # 24. RESPONSIVE DESIGN
 
@@ -1837,7 +2539,73 @@ Gunakan WCAG 2.2 AA sebagai target evaluasi. Jangan menyatakan sudah compliant s
 - Jangan membuat button yang hanya dekoratif tetapi tampak aktif.
 - Jangan membuat fake progress bar yang menunjukkan angka palsu.
 
-------------------------------------------------------------------------
+## 26.5 Three.js dan visual tiga dimensi
+
+- Three.js hanya digunakan pada adegan yang telah disetujui dan memiliki nilai visual yang jelas.
+- Adegan tiga dimensi harus berada pada komponen klien yang terisolasi.
+- Gunakan pemuatan dinamis dan pemisahan kode agar halaman yang tidak memakai 3D tidak mengunduh paket 3D.
+- Gunakan `next/dynamic` dengan `ssr: false` hanya dari Client Component ketika komponen memerlukan lingkungan peramban.
+- Gunakan `Suspense`, tampilan pengganti, dan penanganan kegagalan adegan.
+- Sediakan gambar, SVG, atau CSS sebagai pengganti jika WebGL tidak tersedia.
+- Batasi jumlah kanvas aktif dan hentikan animasi saat tidak terlihat.
+- Gunakan `frameloop="demand"` untuk adegan statis atau interaksi yang tidak memerlukan render terus-menerus.
+- Batasi rasio piksel perangkat, misalnya rentang awal `[1, 1.5]`, lalu uji pada perangkat sasaran.
+- Utamakan geometri sederhana, material ringan, dan jumlah objek yang wajar.
+- Hindari bayangan waktu nyata, efek pascaproses, partikel besar, dan tekstur resolusi sangat tinggi.
+- Jangan membuat kanvas tiga dimensi sebagai latar penuh untuk setiap halaman.
+- Jangan menjalankan adegan tiga dimensi di halaman formulir, tabel, atau panel data padat tanpa alasan yang kuat.
+- Hormati `prefers-reduced-motion` dan sediakan tampilan statis.
+- Jangan biarkan kanvas menutupi tombol, teks, navigasi, atau sasaran sentuh.
+- Pastikan sumber daya geometri, material, tekstur, dan model dibersihkan ketika komponen dilepas.
+- Uji pemakaian memori, waktu pemuatan, dan kelancaran pada telepon kelas menengah.
+
+## 26.6 Pemisahan animasi DOM dan adegan 3D
+
+- Motion mengatur animasi elemen HTML/SVG.
+- React Three Fiber mengatur animasi objek di dalam kanvas.
+- Jangan menerapkan dua mesin animasi pada elemen DOM yang sama.
+- Jangan membuat gerakan teks, ikon, tombol, dan kartu melalui Three.js.
+- Sinkronisasi gerak gulir dengan adegan tiga dimensi harus terbatas, terukur, dan tidak menghambat gulir.
+- Jika adegan tiga dimensi gagal, konten halaman harus tetap lengkap dan dapat digunakan.
+
+## 26.7 Kinerja formulir, tabel, dan grafik
+
+- Formulir panjang harus menggunakan komponen dan skema yang dapat digunakan kembali.
+- Jangan menjalankan validasi berat pada setiap perubahan karakter jika validasi saat blur atau submit sudah cukup.
+- Gunakan TanStack Table hanya untuk tabel yang membutuhkan fitur interaktif.
+- Hindari merender ulang seluruh tabel ketika satu kontrol kecil berubah.
+- Grafik Recharts harus memiliki ukuran wadah yang jelas dan responsif.
+- Jangan merender grafik yang tidak terlihat atau tidak dibutuhkan pada halaman aktif.
+- Hindari animasi grafik yang berlebihan.
+- Gunakan data contoh dengan ukuran yang wajar; jangan membuat ribuan baris hanya untuk memenuhi tampilan.
+- Jika data contoh berukuran besar diperlukan untuk menguji tabel, buat skenario uji terpisah dan bukan data awal setiap halaman.
+
+## 26.8 Pengelolaan dependency
+
+- Satu fungsi utama hanya boleh memiliki satu pustaka utama.
+- Jangan memasang pustaka animasi kedua jika Motion sudah tersedia.
+- Jangan memasang pustaka tabel visual tambahan jika TanStack Table dan komponen proyek sudah mencukupi.
+- Jangan memasang pustaka grafik tambahan jika Recharts sudah mencukupi.
+- Jangan memasang pustaka formulir tambahan jika React Hook Form dan Zod sudah mencukupi.
+- Jangan memasang pustaka 3D lain di luar Three.js, React Three Fiber, dan Drei tanpa persetujuan.
+- Hapus dependency yang tidak digunakan hanya setelah memastikan tidak dipakai bagian lain.
+- Semua penambahan dan penghapusan dependency harus dicatat pada perubahan proyek.
+
+## 26.9 Batas backend dan basis data
+
+- Jangan membuat API Route, Route Handler, Server Action, layanan server bisnis, koneksi basis data, migrasi, atau skema basis data pada tahap frontend ini.
+
+- Jangan membuat autentikasi produksi atau mengklaim simulasi akun demo sebagai autentikasi sungguhan.
+
+- Jangan menghubungkan formulir ke layanan eksternal.
+
+- Jangan menyimpan data bisnis sebagai data produksi.
+
+- Gunakan data contoh lokal yang bertipe dan konsisten.
+
+- Jika suatu tampilan membutuhkan respons server, simulasikan respons tersebut pada lapisan data contoh dan beri penamaan yang jelas.
+
+- ## Jangan menambahkan paket backend hanya karena Next.js menyediakan kemampuan server.
 
 # 27. COMPONENT REGISTRY
 
@@ -1870,7 +2638,12 @@ Komponen di bawah menjadi baseline visual reusable. Props teknis mengikuti imple
 | `Button`                 | Primary, Secondary, Ghost, CTA, Destructive | Actions                                      |
 | `Input`                  | Text, Search, Date, Select                  | Form controls                                |
 | `FormSection`            | Standard, Grouped                           | Form hierarchy                               |
-| `DataTable`              | Standard, Dense, Responsive                 | Solid data display                           |
+| `DataTable`              | Standard, Dense, Responsive                 | TanStack Table logic + custom solid UI       |
+| `DataChart`              | Bar, Line, Area, Pie                        | Recharts chart with Indonesian labels        |
+| `FormProvider`           | Standard, MultiStep                         | React Hook Form context and field state      |
+| `FormField`              | Text, Email, Password, Select, Date         | React Hook Form field and Zod validation     |
+| `ThreeScene`             | Hero, Editorial, Decorative                 | Isolated React Three Fiber canvas            |
+| `ThreeSceneFallback`     | Image, SVG, Static                          | Static visual when WebGL is unavailable      |
 | `StatusBadge`            | Success, Warning, Error, Info, Neutral      | Text + semantic state                        |
 | `ActivityTimeline`       | Compact, Detailed                           | Activity history                             |
 | `AgendaList`             | Compact, Detailed                           | Upcoming agenda                              |
@@ -2023,7 +2796,7 @@ Urutan implementasi: 1. Font loading dan color tokens. 2. Global background, lin
 
 ## 30.3 Larangan AI Agent
 
-AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah official logo; - mengarang path asset; - mengganti nama public menu; - mengubah route/Screen ID; - mengubah role/permission; - mengubah business flow; - membuat setiap halaman dengan layout yang tidak konsisten; - menggunakan glass pada seluruh komponen; - menambahkan warna baru secara acak; - membuat animasi berat tanpa fallback; - menampilkan dummy data seolah data organisasi asli; - menambahkan tombol yang tidak memiliki fungsi; - menghilangkan informasi penting pada mobile; - mengklaim visual sudah identik dengan moodboard sebelum diperiksa di browser.
+AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah logo resmi; - mengarang alamat berkas aset; - menghilangkan pemetaan aset untuk salah satu menu utama atau submenu; - mengganti nama menu resmi pada PRD; - mengubah alamat halaman, identitas layar, peran, izin, cakupan akses, atau alur bisnis; - membuat setiap halaman dengan susunan yang tidak konsisten; - menggunakan efek kaca pada seluruh komponen; - menambahkan warna baru secara acak; - membuat animasi berat tanpa pengganti untuk pengurangan gerakan; - menampilkan data contoh seolah-olah data organisasi asli; - menambahkan tombol yang tidak memiliki fungsi; - menampilkan tulisan antarmuka berbahasa Inggris atau singkatan yang tidak diperlukan; - membiarkan tulisan bawaan pustaka atau templat muncul pada halaman; - membuat halaman tidak ditemukan atau halaman kesalahan tanpa ilustrasi aset/pengganti visual yang sesuai; - menghilangkan informasi penting pada telepon; - mengklaim visual sudah sama dengan acuan sebelum diperiksa di peramban.
 
 ## 30.4 Jika asset belum tersedia
 
@@ -2044,6 +2817,10 @@ AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah off
 - Perubahan visual tidak mengubah business rule.
 - Jika konflik tidak dapat diselesaikan dari dokumen, tandai sebagai unresolved dan minta keputusan; jangan menebak.
 
+## 30.6 Pemeriksaan Bahasa Indonesia dan kelengkapan aset
+
+Sebelum menyatakan satu halaman selesai, AI Agent wajib: 1. Memeriksa semua tulisan yang terlihat pada halaman dalam keadaan awal, sorotan, fokus, terbuka, memuat, berhasil, gagal, kosong, dan tidak memiliki izin. 2. Memastikan semua tulisan menggunakan Bahasa Indonesia sesuai Bagian 0.5. 3. Memeriksa teks pada gambar, poster, ilustrasi, dan aset yang mengandung tulisan. Jangan memakai aset yang memuat tulisan asing jika tulisan tersebut menjadi bagian penting dari tampilan. 4. Memastikan semua enam menu utama memiliki pemetaan aset dan semua submenu memiliki aset pendamping atau catatan pengganti sementara. 5. Memastikan halaman tidak ditemukan, halaman akses tidak diizinkan, gangguan sistem, pemeliharaan, gangguan jaringan, dan keadaan kosong memakai ilustrasi yang sesuai. 6. Memastikan teks alternatif, nama aksesibel, judul halaman, dan pesan pembaca layar juga berbahasa Indonesia. 7. Menjalankan pencarian teks pada kode sumber untuk menemukan tulisan antarmuka berbahasa Inggris yang tertinggal. 8. Mencatat setiap aset yang belum tersedia. Jangan menandai aset sebagai selesai hanya karena pengganti sementara telah dipasang.
+
 ------------------------------------------------------------------------
 
 # 31. VISUAL QUALITY ASSURANCE CHECKLIST
@@ -2056,6 +2833,9 @@ AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah off
 - [ ] Tidak ada logo yang di-recolor/redraw/crop/stretch.
 - [ ] Lima pecahan logo digunakan sesuai makna.
 - [ ] Foto pengurus/kader sesuai sumber dan izin.
+- [ ] Semua aset menu utama dan submenu sudah dipetakan.
+- [ ] Ilustrasi halaman tidak ditemukan dan seluruh jenis kesalahan sudah dipetakan.
+- [ ] Tidak ada tulisan asing yang tertanam pada aset visual tanpa alasan resmi.
 
 ## 31.2 Typography
 
@@ -2117,8 +2897,32 @@ AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah off
 - [ ] Loading mempertahankan ukuran.
 - [ ] Reduced motion tersedia.
 - [ ] Tidak ada motion yang menghambat penggunaan.
+- [ ] Tulisan setiap bagian memiliki gerakan masuk dan keluar.
+- [ ] Ikon dan ilustrasi setiap bagian memiliki gerakan masuk dan keluar yang terkoordinasi.
+- [ ] Gerakan keluar tidak membuat isi sulit dibaca atau hilang ketika skrip gagal.
 
-## 31.8 Loading/error/responsive
+## 31.8 Teknologi dan implementasi frontend
+
+- [ ] Next.js dan App Router mengikuti struktur repository yang disepakati.
+- [ ] React dan TypeScript digunakan untuk komponen dan data contoh.
+- [ ] Tidak ada kesalahan pemeriksaan tipe TypeScript.
+- [ ] Tailwind CSS menggunakan token design system yang sama.
+- [ ] Hanya ada satu mesin animasi antarmuka.
+- [ ] Lucide React digunakan untuk ikon antarmuka, bukan untuk mengganti logo resmi.
+- [ ] Three.js hanya dimuat pada halaman yang benar-benar membutuhkan adegan 3D.
+- [ ] React Three Fiber cocok dengan versi utama React yang terpasang.
+- [ ] Drei cocok dengan versi React Three Fiber yang digunakan.
+- [ ] Adegan 3D memiliki pemuatan dinamis dan pengganti statis.
+- [ ] Adegan 3D tidak menghalangi teks, tombol, atau navigasi.
+- [ ] React Hook Form dan Zod digunakan untuk formulir interaktif.
+- [ ] TanStack Table digunakan hanya pada tabel yang membutuhkan fitur interaktif.
+- [ ] Recharts digunakan untuk grafik dua dimensi yang diperlukan PRD.
+- [ ] Semua formulir, tabel, grafik, dan adegan 3D memakai data contoh lokal.
+- [ ] Tidak ada integrasi backend, basis data, atau autentikasi produksi.
+- [ ] Tidak ada dependency ganda untuk fungsi yang sama.
+- [ ] Versi dependency dan lockfile tetap konsisten.
+
+## 31.9 Loading/error/responsive
 
 - [ ] Loader menggunakan logo master ARTHAKARSA.
 - [ ] Loader tidak membuat fake progress.
@@ -2127,7 +2931,9 @@ AI Agent dilarang: - mengganti font tanpa alasan dan persetujuan; - mengubah off
 - [ ] Responsive 320 px ke atas diuji.
 - [ ] Zoom 200% tidak merusak halaman.
 - [ ] Tidak ada horizontal overflow.
-- [ ] Tidak ada image broken.
+- [ ] Tidak ada gambar yang gagal dimuat.
+- [ ] Semua pesan halaman tidak ditemukan dan kesalahan menggunakan Bahasa Indonesia.
+- [ ] Semua tombol, label, petunjuk, pesan validasi, dan pemberitahuan menggunakan Bahasa Indonesia.
 
 ------------------------------------------------------------------------
 
@@ -2151,50 +2957,128 @@ Dokumen visual dianggap telah diterapkan dengan benar pada frontend apabila:
 14. Error/empty page memiliki artwork/asset yang sesuai atau fallback terarah.
 15. Seluruh halaman tetap mengikuti route, data, role, permission, dan flow pada PRD.
 16. Seluruh tampilan responsive dan tetap dapat digunakan dengan keyboard.
-17. Tidak ada klaim lulus accessibility/performance sebelum pengujian aktual.
+17. Tidak ada klaim lulus aksesibilitas/kinerja sebelum pengujian aktual.
+18. Putih menjadi dasar layar, sedangkan warna latar bagian berganti secara lembut dan saling menyambung.
+19. Semua tulisan yang terlihat oleh pengguna menggunakan Bahasa Indonesia tanpa istilah Inggris atau singkatan yang tidak diperlukan.
+20. Keenam menu utama dan seluruh submenu memiliki pemetaan aset visual yang sesuai.
+21. Halaman tidak ditemukan, akses tidak diizinkan, gangguan sistem, pemeliharaan, gangguan jaringan, dan keadaan kosong memiliki ilustrasi aset yang sesuai atau pengganti sementara yang tercatat.
+22. Tulisan, ikon, kartu, dan hiasan setiap bagian memiliki gerakan masuk dan keluar yang halus.
+23. Semua gerakan tetap dapat digunakan dengan pengaturan pengurangan gerakan dan ketika pustaka animasi gagal dimuat.
+24. Frontend menggunakan Next.js, React, dan TypeScript sesuai struktur repository.
+25. Tailwind CSS dan CSS Variables menggunakan satu sumber token visual.
+26. Motion menjadi satu-satunya mesin animasi antarmuka.
+27. Three.js, React Three Fiber, dan Drei hanya digunakan pada bagian yang disetujui serta memiliki pengganti statis.
+28. React Three Fiber dan Drei kompatibel dengan versi React yang digunakan.
+29. Formulir menggunakan React Hook Form dan Zod untuk simulasi serta validasi sisi pengguna.
+30. Tabel interaktif menggunakan TanStack Table dengan tampilan khusus design system.
+31. Grafik dua dimensi menggunakan Recharts dengan alternatif tabel atau ringkasan.
+32. Data seluruh halaman berasal dari data contoh lokal yang konsisten.
+33. Tidak ada backend, basis data, API bisnis, atau autentikasi produksi pada tahap frontend.
 
 ------------------------------------------------------------------------
 
 # 33. OPEN ITEMS / PERLU VERIFIKASI
 
-| Item                          | Status                                            | Tindakan                                         |
-|:------------------------------|:--------------------------------------------------|:-------------------------------------------------|
-| Logo ARTHAKARSA master        | Path disebut `public/assets/logo.png` pada sumber | Cocokkan file aktual                             |
-| Logo HIPMI                    | File aktual perlu dicocokkan                      | Gunakan asset resmi                              |
-| Wordmark Telkom University    | File aktual perlu dicocokkan                      | Gunakan asset resmi                              |
-| Font Poppins                  | Perlu pemeriksaan asset/dependency                | Pastikan file/loading/lisensi                    |
-| Font ARTHAKARSA Serif Display | Perlu pemeriksaan asset                           | Cari file font resmi; jangan mengganti diam-diam |
-| Lima pecahan logo             | Perlu asset manifest                              | Cocokkan nama dan fungsi                         |
-| `siluet.png`                  | Nama keputusan tersedia; path perlu diverifikasi  | Cocokkan file aktual                             |
-| Ilustrasi dropdown            | Perlu asset manifest                              | Gunakan asset sesuai kategori                    |
-| Ilustrasi 404/403/500         | Perlu asset manifest                              | Gunakan asset/fallback                           |
-| Motion dependency             | Perlu cek package/lockfile                        | Gunakan satu engine                              |
-| Glass fallback                | Perlu uji browser                                 | Sediakan solid fallback                          |
-| Semantic colors               | Extension awal                                    | Contrast test                                    |
-| Responsive                    | Belum diuji di build                              | QA seluruh breakpoint                            |
-| Visual match                  | Belum diukur di browser                           | Review screenshot setelah implementasi           |
+| Item                             | Status                                            | Tindakan                                                                      |
+|:---------------------------------|:--------------------------------------------------|:------------------------------------------------------------------------------|
+| Logo ARTHAKARSA master           | Path disebut `public/assets/logo.png` pada sumber | Cocokkan file aktual                                                          |
+| Logo HIPMI                       | File aktual perlu dicocokkan                      | Gunakan asset resmi                                                           |
+| Wordmark Telkom University       | File aktual perlu dicocokkan                      | Gunakan asset resmi                                                           |
+| Font Poppins                     | Perlu pemeriksaan asset/dependency                | Pastikan file/loading/lisensi                                                 |
+| Font ARTHAKARSA Serif Display    | Perlu pemeriksaan asset                           | Cari file font resmi; jangan mengganti diam-diam                              |
+| Lima pecahan logo                | Perlu asset manifest                              | Cocokkan nama dan fungsi                                                      |
+| `siluet.png`                     | Nama keputusan tersedia; path perlu diverifikasi  | Cocokkan file aktual                                                          |
+| Ilustrasi dropdown               | Perlu asset manifest                              | Gunakan asset sesuai kategori                                                 |
+| Ilustrasi 404/403/500            | Perlu asset manifest                              | Gunakan asset/fallback                                                        |
+| Motion dependency                | Perlu cek package/lockfile                        | Gunakan satu engine                                                           |
+| Glass fallback                   | Perlu uji browser                                 | Sediakan solid fallback                                                       |
+| Semantic colors                  | Extension awal                                    | Contrast test                                                                 |
+| Responsive                       | Belum diuji di build                              | QA seluruh breakpoint                                                         |
+| Aset enam menu utama dan submenu | Belum diverifikasi satu per satu                  | Cocokkan semua aset dengan folder proyek                                      |
+| Ilustrasi halaman khusus         | Belum diverifikasi                                | Periksa aset 404, akses, gangguan, pemeliharaan, jaringan, dan keadaan kosong |
+| Bahasa antarmuka                 | Belum diaudit pada hasil implementasi             | Periksa seluruh teks yang terlihat dalam Bahasa Indonesia                     |
+| Gerakan masuk dan keluar         | Belum diuji pada halaman nyata                    | Uji judul, paragraf, ikon, kartu, dan ilustrasi saat digulir                  |
+| Framework Next.js dan App Router | Belum diverifikasi pada repository                | Cocokkan struktur dan versi yang terpasang                                    |
+| React dan TypeScript             | Belum diverifikasi pada repository                | Periksa package.json, konfigurasi, dan lockfile                               |
+| Tailwind CSS                     | Perlu pemeriksaan versi                           | Cocokkan versi dan pola konfigurasi yang digunakan                            |
+| Motion                           | Perlu pemeriksaan dependency                      | Gunakan satu mesin animasi saja                                               |
+| Lucide React                     | Perlu pemeriksaan dependency                      | Pastikan paket ikon tersedia                                                  |
+| Three.js dan React Three Fiber   | Belum dipasang/diperiksa                          | Pilih versi yang cocok dengan React                                           |
+| Drei                             | Belum dipasang/diperiksa                          | Cocokkan dengan versi React Three Fiber                                       |
+| React Hook Form dan Zod          | Belum dipasang/diperiksa                          | Pastikan resolver dan tipe formulir konsisten                                 |
+| TanStack Table                   | Belum dipasang/diperiksa                          | Terapkan hanya pada tabel interaktif                                          |
+| Recharts                         | Belum dipasang/diperiksa                          | Terapkan pada grafik dua dimensi yang dibutuhkan                              |
+| Batas frontend saja              | Harus dijaga selama implementasi                  | Gunakan data contoh; jangan membuat backend atau basis data                   |
+| Visual match                     | Review screenshot setelah implementasi            |                                                                               |
 
 ------------------------------------------------------------------------
 
 # 34. CHANGELOG
 
+## v1.2 — 18 November 2026
+
+Pembaruan spesifikasi teknologi frontend berdasarkan keputusan pengguna.
+
+Perubahan: - Menetapkan Next.js sebagai kerangka aplikasi dengan App Router sebagai acuan proyek baru. - Menetapkan React sebagai pustaka antarmuka dan TypeScript sebagai bahasa pemrograman. - Menetapkan Tailwind CSS sebagai sistem gaya yang terhubung dengan CSS Variables design token. - Menetapkan Motion for React sebagai satu-satunya mesin animasi antarmuka. - Menetapkan Lucide React sebagai pustaka ikon antarmuka. - Menambahkan Three.js, React Three Fiber, dan Drei untuk adegan tiga dimensi yang terbatas dan terisolasi. - Menambahkan React Hook Form dan Zod untuk formulir serta validasi sisi pengguna. - Menambahkan TanStack Table untuk tabel interaktif. - Menambahkan Recharts untuk grafik dua dimensi. - Menambahkan aturan kompatibilitas versi, pemuatan dinamis, pemisahan komponen server/klien, dan pengelolaan dependency. - Menambahkan aturan kinerja dan pengganti statis untuk adegan tiga dimensi. - Memperjelas batas implementasi frontend saja: data contoh lokal, simulasi akun dan formulir, tanpa backend, basis data, API bisnis, atau autentikasi produksi. - Menambahkan struktur direktori acuan, pemeriksaan teknologi, dan kriteria penerimaan frontend.
+
+## v1.1 — 18 November 2026
+
+Penyempurnaan arah visual Aurora Glass Editorial berdasarkan arahan terbaru pengguna.
+
+Perubahan: - Memastikan putih menjadi dasar seluruh layar. - Menambahkan warna latar bagian yang sangat lembut dan saling menyambung. - Mempertahankan Burgundy `#5A1722` dan Dark Wine `#3D0F16`. - Menambahkan kewajiban Bahasa Indonesia untuk seluruh tulisan yang terlihat oleh pengguna. - Memetakan aset untuk keenam menu utama dan seluruh submenu. - Memetakan ilustrasi halaman tidak ditemukan, akses tidak diizinkan, gangguan sistem, pemeliharaan, gangguan jaringan, dan keadaan kosong. - Menambahkan gerakan masuk dan keluar untuk tulisan, ikon, gambar, kartu, dan hiasan pada setiap bagian. - Memperluas daftar pemeriksaan dan kriteria penerimaan untuk bahasa, aset, latar, serta gerakan.
+
 ## v1.0 — 17 November 2026
 
 Arah visual Aurora Glass Editorial disusun berdasarkan moodboard yang disetujui pengguna.
 
-Perubahan utama:
+Perubahan awal: - Menggunakan Poppins + ARTHAKARSA Serif Display. - Mempertahankan Burgundy `#5A1722` dan Dark Wine `#3D0F16`. - Menetapkan garis kontur, pita mengalir, lengkungan, orbit, dan garis penghubung sebagai ciri latar. - Menetapkan bilah navigasi kapsul mengambang yang terinspirasi komposisi KPM. - Menetapkan dasbor editorial berkaca yang terstruktur. - Menetapkan penanda tab yang bergeser mendatar. - Menetapkan keluarga kartu dengan beberapa variasi sudut. - Menetapkan panel menu bergambar, pemuatan bermerek, serta ilustrasi halaman khusus.
 
-- Menggunakan Poppins + ARTHAKARSA Serif Display.
-- Mempertahankan Burgundy `#5A1722` dan Dark Wine `#3D0F16`.
-- Menetapkan Warm Ivory, Blush, Gold, Copper, Mauve, dan Cool Mist sebagai supporting palette.
-- Menjadikan fine-line contour, flowing ribbon, arch/orbit, dan connected lines sebagai signature background.
-- Menetapkan public navbar floating capsule terinspirasi KPM.
-- Menetapkan dashboard glass editorial yang terstruktur.
-- Menetapkan sliding horizontal tab indicator.
-- Menetapkan card family dengan beberapa corner treatment.
-- Menetapkan asset-supported mega dropdown.
-- Menetapkan centered ARTHAKARSA branded loader.
-- Menetapkan error/empty illustrations.
-- Memperjelas responsive, accessibility, performance, asset manifest, dan AI Agent implementation rules.
+**Catatan:** dokumen ini adalah spesifikasi visual dan teknologi frontend. Pemeriksaan repository, kompatibilitas dependency, implementasi, pengujian peramban, aksesibilitas, kinerja, dan kecocokan aset tetap wajib dilakukan sebelum menyatakan pekerjaan selesai.
 
-**Catatan:** dokumen ini adalah spesifikasi visual. Implementasi, audit browser, pengujian font, accessibility, performance, dan kecocokan aset harus dilakukan pada tahap frontend.
+# 35. KAMUS TULISAN ANTARMUKA DAN CONTOH PESAN
+
+Bagian ini menjadi contoh tulisan siap pakai. AI Agent boleh menyesuaikan kalimat berdasarkan konteks, tetapi seluruh pesan tetap harus berbahasa Indonesia.
+
+| Keadaan                 | Judul                            | Penjelasan                                                                    | Tombol             |
+|-------------------------|----------------------------------|-------------------------------------------------------------------------------|--------------------|
+| Halaman tidak ditemukan | Halaman Tidak Ditemukan          | Halaman yang Anda cari tidak tersedia atau alamatnya telah berubah.           | Kembali ke Beranda |
+| Akses tidak diizinkan   | Akses Tidak Diizinkan            | Akun Anda tidak memiliki izin untuk membuka halaman ini.                      | Kembali            |
+| Gangguan sistem         | Terjadi Gangguan pada Sistem     | Kami belum dapat memuat halaman ini. Silakan coba kembali beberapa saat lagi. | Coba Lagi          |
+| Pemeliharaan            | Layanan Sementara Tidak Tersedia | Layanan sedang diperiksa. Silakan kembali beberapa saat lagi.                 | Kembali ke Beranda |
+| Koneksi terputus        | Koneksi Terputus                 | Periksa sambungan internet Anda, lalu coba kembali.                           | Coba Lagi          |
+| Pencarian kosong        | Data Tidak Ditemukan             | Coba gunakan kata pencarian lain atau ubah penyaring yang dipilih.            | Hapus Penyaring    |
+| Agenda kosong           | Belum Ada Agenda                 | Belum ada agenda yang dapat ditampilkan saat ini.                             | Lihat Agenda       |
+| Dokumen kosong          | Belum Ada Dokumen                | Dokumen belum tersedia pada bagian ini.                                       | Kembali            |
+| Pemuatan                | Sedang Menyiapkan Halaman        | Mohon tunggu sebentar.                                                        | Tidak perlu tombol |
+| Berhasil                | Perubahan Berhasil Disimpan      | Informasi Anda telah diperbarui.                                              | Tutup              |
+| Gagal menyimpan         | Perubahan Belum Tersimpan        | Periksa kembali informasi Anda, lalu coba lagi.                               | Coba Lagi          |
+| Sesi berakhir           | Sesi Telah Berakhir              | Silakan masuk kembali untuk melanjutkan.                                      | Masuk              |
+
+## 35.1 Pemeriksaan akhir bahasa
+
+Sebelum halaman dinyatakan selesai, cari tulisan yang terlihat oleh pengguna pada: - berkas komponen; - berkas halaman; - data contoh; - berkas terjemahan; - pesan validasi; - pemberitahuan; - dialog konfirmasi; - keadaan pemuatan; - keadaan kosong; - halaman kesalahan; - teks alternatif dan nama aksesibel; - metadata halaman.
+
+Tulisan teknis dalam kode seperti nama pustaka, nama fungsi, nama properti, nama berkas, alamat halaman, dan nama kelas tidak perlu diterjemahkan jika tidak terlihat oleh pengguna. Namun, setiap nilai yang dirender ke layar harus mengikuti aturan Bahasa Indonesia pada Bagian 0.5.
+
+------------------------------------------------------------------------
+
+# 36. DAFTAR PEMERIKSAAN ASET MENU DAN HALAMAN KHUSUS
+
+Sebelum implementasi halaman, AI Agent wajib membuat daftar pemeriksaan aset dengan kolom:
+
+| Kolom                | Isi                                               |
+|----------------------|---------------------------------------------------|
+| Kunci fungsi         | Nama kebutuhan aset, bukan nama berkas tebakan    |
+| Menu/halaman         | Lokasi penggunaan                                 |
+| Nama berkas aktual   | Nama berkas setelah ditemukan                     |
+| Alamat berkas aktual | Lokasi yang benar di proyek                       |
+| Jenis aset           | Logo, foto, poster, ilustrasi, ikon, atau ornamen |
+| Sumber               | Aset resmi, kiriman pengguna, atau sumber berizin |
+| Izin penggunaan      | Status izin publikasi                             |
+| Rasio dan ukuran     | Dimensi dan rasio gambar                          |
+| Teks alternatif      | Penjelasan gambar dalam Bahasa Indonesia          |
+| Keadaan              | Tersedia, belum tersedia, atau perlu pengganti    |
+
+**Daftar minimum yang wajib diperiksa:** - Beranda, Tentang Kami, Organisasi, Aktivitas, Karya Kader, dan Kotak Suara. - Kabinet, Bidang, Kompartemen, dan Program Kerja. - Agenda & Tiket, Berita & Artikel, dan Mitra Media. - Bisnis Kader dan Prestasi Kader. - Halaman tidak ditemukan. - Halaman akses tidak diizinkan. - Gangguan sistem. - Pemeliharaan layanan. - Gangguan jaringan. - Keadaan kosong untuk agenda, surat, transaksi, Program Kerja, prestasi, bisnis, pemberitahuan, pencarian, anggota, dan dokumen.
+
+Tidak boleh ada menu atau halaman khusus yang luput dari daftar aset. Aset yang belum tersedia harus dicatat, bukan dianggap sudah selesai.

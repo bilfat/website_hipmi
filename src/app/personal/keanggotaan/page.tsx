@@ -101,7 +101,7 @@ export default function MembershipCardPage() {
                     {currentUser.name}
                   </h3>
                   <p className="text-xs text-blush-200 font-mono">
-                    NIM: {currentUser.nim || "1301213001"}
+                    Nomor Induk Mahasiswa: {currentUser.nim || "1301213001"}
                   </p>
                   <p className="text-[11px] text-blush-200">
                     {userFaculty?.name} • {userStudyProgram?.name}

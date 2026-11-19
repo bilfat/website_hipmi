@@ -82,17 +82,17 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     },
     {
       id: "mod-evt",
-      title: "Manajemen Event & Tiket",
+      title: "Manajemen Acara & Tiket",
       subtitle: "Hub operasional agenda, kuota tiket & verifikasi panitia",
       href: "/organization/events",
       icon: CalendarCheck,
       category: "modules",
-      badge: "Event"
+      badge: "Acara"
     },
     {
       id: "mod-att",
-      title: "Presensi & Scanner QR",
-      subtitle: "Meja check-in tiket, scanner QR kamera langsung & log real-time",
+      title: "Presensi & Pindai QR",
+      subtitle: "Meja presensi tiket, scanner QR kamera langsung & log real-time",
       href: "/organization/events/evt-business-expo/check-in",
       icon: QrCode,
       category: "modules",
@@ -118,8 +118,8 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     },
     {
       id: "mod-cms",
-      title: "CMS Portal & Media Partner",
-      subtitle: "Editor homepage, publikasi berita & verifikasi medpart",
+      title: "CMS Portal & Mitra Media",
+      subtitle: "Editor beranda, publikasi warta berita & verifikasi mitra media",
       href: "/organization/cms",
       icon: Globe,
       category: "modules",
@@ -127,12 +127,12 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     },
     {
       id: "mod-act",
-      title: "Action & Approval Center",
+      title: "Pusat Tindakan & Persetujuan",
       subtitle: "Pusat persetujuan lintas fungsi (surat, RAB, LPJ)",
       href: "/organization/action-center",
       icon: Sparkles,
       category: "modules",
-      badge: "Approval"
+      badge: "Persetujuan"
     }
   ];
 
@@ -204,7 +204,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Cari proker, nomor surat, modul, atau dokumen..."
+            placeholder="Cari program kerja, nomor surat, modul, atau dokumen..."
             className="w-full bg-transparent border-none outline-none text-sm text-wine-950 placeholder:text-neutral-dark/80 font-medium"
           />
           {query && (

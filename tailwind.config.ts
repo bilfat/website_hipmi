@@ -37,7 +37,13 @@ const config: Config = {
         surface: {
           card: "#FFFFFF",
           white: "#FFFFFF",
+          "screen-bg": "#FFFFFF",
           ivory: "#FDF7F2",
+          "warm-white": "#FCF8F6",
+          "blush-mist": "#F8EFF1",
+          "soft-rose": "#F2E5E8",
+          "warm-ivory": "#FDF7F2",
+          "soft-neutral": "#F5F3F2",
           neutral: "#FAF8F6",
           blush: "#F2E4DC",
           "blush-hover": "#F4E6E8",

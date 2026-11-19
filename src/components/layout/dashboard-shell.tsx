@@ -14,7 +14,7 @@ export function DashboardShell({ children, currentArea, hideDesktopSidebar = fal
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-surface-base text-wine-950 flex flex-col md:flex-row antialiased selection:bg-brand-burgundy selection:text-white">
+    <div className="min-h-screen bg-white text-wine-950 flex flex-col md:flex-row antialiased selection:bg-brand-burgundy selection:text-white">
       {/* Desktop Sidebar: Sticky 100vh height */}
       {!hideDesktopSidebar && (
         <div className="hidden md:flex shrink-0 sticky top-0 h-screen">

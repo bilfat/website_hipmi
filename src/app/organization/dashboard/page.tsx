@@ -82,7 +82,7 @@ export default function OrganizationDashboardPage() {
               </div>
 
               <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight">
-                Dashboard Operasional Organisasi
+                Dasbor Operasional Organisasi
               </h1>
 
               <p className="text-xs sm:text-sm text-gold-100/90 max-w-2xl leading-relaxed">
@@ -104,7 +104,7 @@ export default function OrganizationDashboardPage() {
                 className="min-h-[44px] px-4 py-2.5 rounded-full bg-gold-500 hover:bg-gold-600 active:bg-gold-700 text-wine-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md text-center active:scale-[0.98]"
               >
                 <Sparkles className="w-4 h-4 text-wine-950 shrink-0" />
-                <span>Action &amp; Approval Center</span>
+                <span>Pusat Tindakan &amp; Persetujuan</span>
               </Link>
             </div>
           </div>
@@ -239,7 +239,7 @@ export default function OrganizationDashboardPage() {
             <div>
               <h2 className="font-serif text-xl sm:text-2xl font-bold text-wine-950 flex items-center gap-2">
                 <Layers className="w-5 h-5 text-brand-burgundy" />
-                <span>Pusat Modul &amp; Dashboard Operasional</span>
+                <span>Pusat Modul &amp; Dasbor Operasional</span>
               </h2>
               <p className="text-xs text-neutral-dark mt-0.5">
                 Pilih modul kerja untuk mengelola administrasi, keuangan, kepanitiaan, dan arsip kabinet.
@@ -311,7 +311,7 @@ export default function OrganizationDashboardPage() {
                       href="/organization/correspondence"
                       className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
                     >
-                      Dashboard
+                      Dasbor
                     </Link>
                     {permissions.canCreateLetter ? (
                       <Link
@@ -395,15 +395,15 @@ export default function OrganizationDashboardPage() {
                       <CalendarCheck className="w-5 h-5" />
                     </div>
                     <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-wine-100/70 text-wine-900">
-                      Operasional Event
+                      Operasional Acara
                     </span>
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Manajemen Event
+                      Manajemen Acara
                     </h3>
                     <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Operational hub proker, manajemen kuota tiket, desk verifikasi pembayaran panitia, dan resend tiket.
+                      Pusat kendali program kerja, manajemen kuota tiket, meja verifikasi pembayaran panitia, dan kirim ulang tiket.
                     </p>
                   </div>
                 </div>
@@ -431,7 +431,7 @@ export default function OrganizationDashboardPage() {
                         href="/organization/events"
                         className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
                       >
-                        Lihat Event
+                        Lihat Agenda
                       </Link>
                     )}
                   </div>
@@ -448,15 +448,15 @@ export default function OrganizationDashboardPage() {
                       <QrCode className="w-5 h-5" />
                     </div>
                     <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-gold-100/70 text-gold-900">
-                      Desk Kehadiran
+                      Meja Kehadiran
                     </span>
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Presensi &amp; Scanner
+                      Presensi &amp; Pemindai QR
                     </h3>
                     <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Meja check-in tiket, scanner QR kamera langsung, fallback manual code input, dan log kehadiran real-time.
+                      Meja presensi tiket, pemindai QR kamera langsung, masukan kode manual, dan rekaman kehadiran seketika.
                     </p>
                   </div>
                 </div>
@@ -470,21 +470,21 @@ export default function OrganizationDashboardPage() {
                       href={`/organization/events/${primaryEventId}/check-in`}
                       className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
                     >
-                      Meja Check-in
+                      Meja Presensi
                     </Link>
                     {permissions.canManageEvents || permissions.canScanAttendance ? (
                       <Link
                         href={`/organization/events/${primaryEventId}/scanner`}
                         className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
                       >
-                        <QrCode className="w-3.5 h-3.5 shrink-0" /> Scan QR
+                        <QrCode className="w-3.5 h-3.5 shrink-0" /> Pindai QR
                       </Link>
                     ) : (
                       <Link
                         href={`/organization/events/${primaryEventId}/check-in`}
                         className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
                       >
-                        Log Presensi
+                        Rekam Presensi
                       </Link>
                     )}
                   </div>
@@ -574,7 +574,7 @@ export default function OrganizationDashboardPage() {
                         href="/organization/directory/cadres/verification"
                         className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
                       >
-                        <Award className="w-3.5 h-3.5 shrink-0" /> Verif PSDM
+                        <Award className="w-3.5 h-3.5 shrink-0" /> Verifikasi PSDM
                       </Link>
                     ) : (
                       <Link
@@ -603,10 +603,10 @@ export default function OrganizationDashboardPage() {
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      CMS &amp; Media Partner
+                      CMS &amp; Mitra Media
                     </h3>
                     <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Editor visual homepage, publikasi artikel berita, verifikasi paket medpart &amp; triage aspirasi kotak suara.
+                      Editor visual beranda, publikasi warta berita, verifikasi paket mitra media &amp; seleksi aspirasi kotak suara.
                     </p>
                   </div>
                 </div>
@@ -627,7 +627,7 @@ export default function OrganizationDashboardPage() {
                         href="/organization/cms/medpart"
                         className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
                       >
-                        Review Medpart
+                        Verifikasi Mitra Media
                       </Link>
                     ) : (
                       <Link
@@ -740,7 +740,7 @@ export default function OrganizationDashboardPage() {
                         href={`/workspace/${p.id}`}
                         className="min-h-[44px] sm:min-h-[36px] px-4 py-2 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 active:bg-wine-950/10 transition-all flex items-center justify-center shrink-0 w-full sm:w-auto active:scale-[0.98]"
                       >
-                        Buka Workspace
+                        Buka Ruang Kerja
                       </Link>
                     </div>
                   );
@@ -755,7 +755,7 @@ export default function OrganizationDashboardPage() {
               <div className="flex items-center justify-between pb-1 border-b border-wine-950/10">
                 <h2 className="font-serif text-base font-bold text-wine-950 flex items-center gap-2">
                   <Layers className="w-4 h-4 text-gold-600" />
-                  <span>Monitoring 4 Bidang Utama</span>
+                  <span>Pemantauan 4 Bidang Utama</span>
                 </h2>
                 <Link
                   href="/organization/structure"

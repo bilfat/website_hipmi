@@ -46,7 +46,7 @@ export default function OrganizationReportsPage() {
             className="inline-flex items-center gap-1.5 text-xs text-neutral-dark hover:text-brand-burgundy transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Kembali ke Dashboard Organisasi</span>
+            <span>Kembali ke Dasbor Organisasi</span>
           </Link>
 
           <button

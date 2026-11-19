@@ -151,13 +151,13 @@ export function PublicFooter() {
                 <Link href="/daftar" className="hover:text-gold-200 transition-colors">Daftar Akun Baru</Link>
               </li>
               <li>
-                <Link href="/personal/dashboard" className="hover:text-gold-200 transition-colors">Personal Dashboard</Link>
+                <Link href="/personal/dashboard" className="hover:text-gold-200 transition-colors">Dasbor Pribadi</Link>
               </li>
               <li>
-                <Link href="/organisasi/dashboard" className="hover:text-gold-200 transition-colors">Organization Area</Link>
+                <Link href="/organization/dashboard" className="hover:text-gold-200 transition-colors">Area Tata Kelola Organisasi</Link>
               </li>
               <li>
-                <Link href="/admin/kabinet" className="hover:text-gold-200 transition-colors">Admin Cabinet Center</Link>
+                <Link href="/admin/cabinets" className="hover:text-gold-200 transition-colors">Pusat Kabinet (Pengelola Sistem)</Link>
               </li>
               <li className="pt-2">
                 <Link
@@ -165,7 +165,7 @@ export function PublicFooter() {
                   className="px-3.5 py-1.5 rounded-xl bg-gold-400/20 text-gold-200 hover:bg-gold-400/30 border border-gold-400/50 inline-flex items-center gap-1.5 font-medium transition-colors text-[11px] shadow-sm"
                 >
                   <Sparkles className="w-3 h-3 text-gold-300" />
-                  <span>Demo Switcher (28 Akun)</span>
+                  <span>Pengalih Peran Demo (28 Akun)</span>
                 </Link>
               </li>
             </ul>

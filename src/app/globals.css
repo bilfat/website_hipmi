@@ -3,44 +3,55 @@
 @tailwind utilities;
 
 :root {
-  /* Official brand */
+  /* Warna utama (Official Brand) */
   --color-brand-burgundy: #5A1722;
   --color-brand-dark-wine: #3D0F16;
   --color-brand-antique-gold: #E8B577;
   --color-brand-muted-copper: #AF7D66;
-  --color-brand-warm-ivory: #FDF7F2;
 
-  /* Neutrals */
-  --color-white: #FFFFFF;
-  --color-black: #171313;
-  --color-muted: #6B6260;
-  --color-border: #E9E1DC;
-  --color-surface: #FAF8F6;
+  /* Dasar layar & Surface (design.md Section 3.7 & 3.8) */
+  --color-screen-background: #FFFFFF;
+  --color-surface-white: #FFFFFF;
+  --color-surface-warm-white: #FCF8F6;
+  --color-surface-blush-mist: #F8EFF1;
+  --color-surface-soft-rose: #F2E5E8;
+  --color-surface-warm-ivory: #FDF7F2;
+  --color-surface-soft-neutral: #F5F3F2;
 
-  /* Supporting extensions */
-  --color-blush: #F2E4DC;
-  --color-blush-hover: #F4E6E8;
-  --color-soft-gold: #D4A76A;
-  --color-deep-copper: #B8734E;
-  --color-dusty-mauve: #A07A8E;
+  /* Aksen pendukung (Extensions) */
+  --color-accent-soft-gold: #D4A76A;
+  --color-accent-deep-copper: #B8734E;
+  --color-accent-dusty-mauve: #A07A8E;
   --color-cool-mist: #E6E9EF;
+
+  /* Teks dan garis */
+  --color-text-primary: #171313;
+  --color-text-secondary: #6B6260;
+  --color-border-default: #E9E1DC;
   --color-stroke-soft: #E7DDD5;
 
-  /* Semantic */
-  --color-success: #2F7A59;
-  --color-warning: #A96C16;
-  --color-error: #B83A42;
-  --color-info: #356C9A;
+  /* Status semantik */
+  --color-status-success: #2F7A59;
+  --color-status-warning: #A96C16;
+  --color-status-error: #B83A42;
+  --color-status-info: #356C9A;
+  --color-status-neutral: #6B6260;
 
-  /* Glass tokens */
+  /* Alias */
+  --color-primary: var(--color-brand-burgundy);
+  --color-primary-strong: var(--color-brand-dark-wine);
+  --color-background: var(--color-screen-background);
+  --color-surface: var(--color-surface-white);
+
+  /* Glass tokens per design.md Section 6 */
   --glass-shadow-soft: 0 8px 28px rgba(61, 15, 22, 0.07);
   --glass-shadow-medium: 0 14px 40px rgba(61, 15, 22, 0.10);
   --glass-shadow-floating: 0 20px 54px rgba(61, 15, 22, 0.13);
 }
 
 body {
-  color: var(--color-black);
-  background-color: var(--color-brand-warm-ivory);
+  color: var(--color-text-primary);
+  background-color: var(--color-screen-background);
   font-family: var(--font-ui), Poppins, sans-serif;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;

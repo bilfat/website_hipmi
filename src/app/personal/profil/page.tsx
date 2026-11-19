@@ -16,6 +16,31 @@ import {
   CheckCircle2
 } from "lucide-react";
 
+const ROLE_LABELS: Record<string, string> = {
+  ketum: "Ketua Umum",
+  waketum: "Wakil Ketua Umum",
+  sekjen: "Sekretaris Jenderal",
+  sekum: "Sekretaris Umum",
+  bendum: "Bendahara Umum",
+  kabid: "Kepala Bidang",
+  kakom: "Kepala Kompartemen",
+  staff: "Staf Pelaksana",
+  system_admin: "Pengelola Sistem",
+  mahasiswa: "Mahasiswa Telkom"
+};
+
+const CADRE_LABELS: Record<string, string> = {
+  verified: "Kader Terverifikasi",
+  candidate: "Calon Kader",
+  unverified: "Anggota Umum"
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  active: "Aktif",
+  suspended: "Ditangguhkan",
+  inactive: "Tidak Aktif"
+};
+
 export default function PersonalProfilePage() {
   const { store, currentUser } = useMockStore();
 
@@ -43,7 +68,7 @@ export default function PersonalProfilePage() {
             className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md transition-all flex items-center gap-2"
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>Edit Profil</span>
+            <span>Ubah Profil</span>
           </Link>
 
           <Link
@@ -66,13 +91,13 @@ export default function PersonalProfilePage() {
           <div className="space-y-1.5 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-brand-burgundy/10 text-brand-burgundy">
-                {currentUser.base_role}
+                {ROLE_LABELS[currentUser.base_role] || currentUser.base_role}
               </span>
               <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-gold-400/20 text-wine-950">
-                {currentUser.cadre_status}
+                {CADRE_LABELS[currentUser.cadre_status] || currentUser.cadre_status}
               </span>
               <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                {currentUser.account_status}
+                {STATUS_LABELS[currentUser.account_status] || currentUser.account_status}
               </span>
             </div>
 
@@ -81,7 +106,7 @@ export default function PersonalProfilePage() {
             </h2>
 
             <p className="text-xs text-neutral-dark font-mono">
-              NIM: <strong className="text-wine-950">{currentUser.nim || "-"}</strong> • Akun Demo:{" "}
+              Nomor Induk Mahasiswa: <strong className="text-wine-950">{currentUser.nim || "-"}</strong> • Akun Demo:{" "}
               <strong className="text-brand-burgundy">{currentUser.demo_id}</strong>
             </p>
           </div>
@@ -90,10 +115,10 @@ export default function PersonalProfilePage() {
         {/* Detailed Fields Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
           {/* Email */}
-          <div className="p-4 rounded-2xl bg-surface-ivory border border-wine-950/10 space-y-1">
+          <div className="p-4 rounded-2xl bg-surface-warm-white border border-wine-950/10 space-y-1">
             <span className="text-neutral-light block flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-brand-burgundy" />
-              <span>Alamat Email</span>
+              <span>Alamat Surel</span>
             </span>
             <strong className="text-wine-950 block text-sm">{currentUser.email}</strong>
             <span className="text-[10px] text-emerald-700 font-medium">
@@ -102,19 +127,19 @@ export default function PersonalProfilePage() {
           </div>
 
           {/* Telepon */}
-          <div className="p-4 rounded-2xl bg-surface-ivory border border-wine-950/10 space-y-1">
+          <div className="p-4 rounded-2xl bg-surface-warm-white border border-wine-950/10 space-y-1">
             <span className="text-neutral-light block flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-brand-burgundy" />
-              <span>Nomor WhatsApp / HP</span>
+              <span>Nomor WhatsApp / Telepon</span>
             </span>
             <strong className="text-wine-950 block text-sm">
               {currentUser.phone || "+62 812-3456-7890"}
             </strong>
-            <span className="text-[10px] text-neutral-light">Kontak utama notifikasi</span>
+            <span className="text-[10px] text-neutral-light">Kontak utama pemberitahuan</span>
           </div>
 
           {/* Fakultas */}
-          <div className="p-4 rounded-2xl bg-surface-ivory border border-wine-950/10 space-y-1">
+          <div className="p-4 rounded-2xl bg-surface-warm-white border border-wine-950/10 space-y-1">
             <span className="text-neutral-light block flex items-center gap-1.5">
               <Building className="w-3.5 h-3.5 text-gold-600" />
               <span>Fakultas Telkom University</span>
@@ -128,7 +153,7 @@ export default function PersonalProfilePage() {
           </div>
 
           {/* Program Studi */}
-          <div className="p-4 rounded-2xl bg-surface-ivory border border-wine-950/10 space-y-1">
+          <div className="p-4 rounded-2xl bg-surface-warm-white border border-wine-950/10 space-y-1">
             <span className="text-neutral-light block flex items-center gap-1.5">
               <GraduationCap className="w-3.5 h-3.5 text-gold-600" />
               <span>Program Studi</span>

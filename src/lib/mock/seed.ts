@@ -802,7 +802,7 @@ export const seedProjects: Project[] = [
     hide_main_event_date_public: false,
     location: "Jakarta Tech Hub",
     operational_status: "planned",
-    publication_status: "draft",
+    publication_status: "published",
     managers: [],
     progress_notes: []
   },

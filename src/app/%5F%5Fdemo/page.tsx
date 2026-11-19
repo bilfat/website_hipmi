@@ -436,11 +436,11 @@ export default function DemoDeveloperDashboard() {
                 ]
               },
               {
-                title: "6. Admin Area & System UI",
-                desc: "Cabinet center (ADM-01), cabinet dashboard (ADM-02..12), error screens.",
+                title: "6. Area Pengelola Sistem (Admin)",
+                desc: "Pusat kabinet (ADM-01), dasbor kabinet (ADM-02..12), layar kesalahan.",
                 routes: [
-                  { label: "Cabinet Center (ADM-01)", href: "/admin/kabinet" },
-                  { label: "Cabinet Dashboard (ADM-02)", href: "/admin/dashboard" },
+                  { label: "Pusat Kabinet (ADM-01)", href: "/admin/cabinets" },
+                  { label: "Dasbor Kabinet (ADM-02)", href: "/admin/dashboard" },
                   { label: "Akses Ditolak (SYS-07)", href: "/403" },
                   { label: "Halaman Tidak Ditemukan (SYS-08)", href: "/404" },
                   { label: "Kesalahan Sistem (SYS-09)", href: "/500" }

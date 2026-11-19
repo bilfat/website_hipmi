@@ -37,7 +37,7 @@ export default function ForbiddenPage() {
             className="flex-1 py-2.5 px-4 rounded-xl bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow transition-colors flex items-center justify-center gap-1.5"
           >
             <Home className="w-3.5 h-3.5" />
-            <span>Ke Dashboard</span>
+            <span>Ke Dasbor</span>
           </Link>
 
           <Link
@@ -45,7 +45,7 @@ export default function ForbiddenPage() {
             className="flex-1 py-2.5 px-4 rounded-xl bg-gold-50 hover:bg-gold-100 text-brand-burgundy border border-gold-400/40 text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5 text-gold-700" />
-            <span>Ganti Role Demo</span>
+            <span>Ganti Peran Demo</span>
           </Link>
         </div>
       </div>

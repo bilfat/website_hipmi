@@ -54,14 +54,14 @@ export function DemoControlCenter() {
   }
 
   return (
-    <aside aria-label="Demo Controller" className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
+    <aside aria-label="Pengendali Demo" className="fixed bottom-4 right-4 z-50 flex flex-col items-end">
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
           className="flex items-center gap-2 px-4 py-2.5 rounded-full bg-brand-burgundy text-white border-2 border-gold-400 shadow-2xl hover:bg-brand-darkWine transition-all text-xs font-semibold tracking-wide"
         >
           <div className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>Demo Role Switcher</span>
+          <span>Pengalih Peran Demo</span>
           <span className="px-2 py-0.5 rounded-full bg-gold-400/20 text-gold-200 border border-gold-400/30 text-xs font-mono font-bold">
             {currentUser.demo_id}
           </span>
@@ -79,7 +79,7 @@ export function DemoControlCenter() {
               </div>
               <div>
                 <h3 className="font-serif text-sm font-bold text-gold-200">
-                  Demo Control Center
+                  Pusat Kendali Demo
                 </h3>
                 <p className="text-[11px] text-white/80">
                   Simulasi 28 Akun &amp; State LocalStorage
@@ -142,7 +142,7 @@ export function DemoControlCenter() {
             {[
               { id: "all", label: "Semua (28)" },
               { id: "leadership", label: "Pimpinan" },
-              { id: "staff", label: "Staff" },
+              { id: "staff", label: "Staf" },
               { id: "kader", label: "Kader" },
               { id: "special", label: "Lainnya" }
             ].map((tab) => (

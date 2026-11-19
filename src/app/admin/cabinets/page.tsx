@@ -24,7 +24,7 @@ export default function CabinetCenterPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <h1 className="font-serif text-3xl sm:text-4xl font-bold text-wine-950">
-            Cabinet Center
+            Pusat Kabinet
           </h1>
           <p className="text-xs sm:text-sm text-neutral-dark">
             Pusat administrasi periode kepengurusan HIPMI PT Universitas Telkom. Pilih kabinet kerja untuk mengelola struktur, peran, dan modul organisasi.
@@ -104,7 +104,7 @@ export default function CabinetCenterPage() {
                   </div>
                   <div className="p-2.5 rounded-xl bg-surface-ivory">
                     <span className="text-[10px] text-neutral-light uppercase font-mono block">
-                      Proker
+                      Program Kerja
                     </span>
                     <strong className="text-wine-950 font-serif text-base">{prokerCount}</strong>
                   </div>
@@ -118,14 +118,14 @@ export default function CabinetCenterPage() {
                   className="px-4 py-2 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 transition-colors flex items-center gap-1.5"
                 >
                   <Archive className="w-3.5 h-3.5" />
-                  <span>Arsip & Detail</span>
+                  <span>Arsip & Rincian</span>
                 </Link>
 
                 <Link
                   href={`/admin/cabinets/${cab.id}`}
                   className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5"
                 >
-                  <span>Buka Dashboard</span>
+                  <span>Buka Dasbor</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

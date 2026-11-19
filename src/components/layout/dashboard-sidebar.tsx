@@ -92,7 +92,7 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
   const getNavSections = () => {
     if (currentArea === "personal") {
       const items = [
-        { label: "Dashboard", href: "/personal/dashboard", icon: LayoutDashboard },
+        { label: "Dasbor Pribadi", href: "/personal/dashboard", icon: LayoutDashboard },
         { label: "Profil Saya", href: "/personal/profil", icon: User },
         { label: "Keamanan Akun", href: "/personal/keamanan", icon: Shield }
       ];
@@ -107,8 +107,8 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
 
       // General member & cadre menus
       items.push(
-        { label: "Aktivitas Proker Saya", href: "/personal/aktivitas", icon: FolderKanban },
-        { label: "Tiket & Registrasi", href: "/personal/tiket", icon: Ticket },
+        { label: "Aktivitas Program Kerja Saya", href: "/personal/aktivitas", icon: FolderKanban },
+        { label: "Tiket & Pendaftaran", href: "/personal/tiket", icon: Ticket },
         { label: "Presensi & Sertifikat", href: "/personal/presensi", icon: CalendarCheck }
       );
 
@@ -120,25 +120,25 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
       }
 
       items.push(
-        { label: "Notifikasi Saya", href: "/personal/notifikasi", icon: Bell }
+        { label: "Pemberitahuan Saya", href: "/personal/notifikasi", icon: Bell }
       );
 
-      return [{ title: "Area Personal", items }];
+      return [{ title: "Area Pribadi", items }];
     }
 
     if (currentArea === "organization" || currentArea === "workspace") {
       const generalItems = [
-        { label: "Overview Organisasi", href: "/organization/dashboard", icon: LayoutDashboard },
+        { label: "Ringkasan Organisasi", href: "/organization/dashboard", icon: LayoutDashboard },
         { label: "Struktur Kabinet", href: "/organization/structure", icon: Building },
-        { label: "Action & Approval Center", href: "/organization/action-center", icon: CheckCircle2 },
+        { label: "Pusat Tindakan & Persetujuan", href: "/organization/action-center", icon: CheckCircle2 },
         { label: "Kalender & Agenda", href: "/organization/calendar", icon: Calendar }
       ];
 
       const opItems = [
         { label: "Persuratan Sentral", href: "/organization/correspondence", icon: Mail },
         { label: "Keuangan & Kas", href: "/organization/finance", icon: Wallet },
-        { label: "Manajemen Event", href: "/organization/events", icon: CalendarCheck },
-        { label: "Presensi & Scanner", href: "/organization/events/evt-business-expo/check-in", icon: QrCode },
+        { label: "Manajemen Acara & Agenda", href: "/organization/events", icon: CalendarCheck },
+        { label: "Presensi & Pindai QR", href: "/organization/events/evt-business-expo/check-in", icon: QrCode },
         { label: "Dokumen & LPJ", href: "/organization/documents", icon: FileText },
         { label: "Direktori & Mitra", href: "/organization/directory/cadres", icon: Users },
         { label: "CMS Portal Web", href: "/organization/cms", icon: Globe },
@@ -146,7 +146,7 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
       ];
 
       return [
-        { title: "Dashboard Utama", items: generalItems },
+        { title: "Dasbor Utama", items: generalItems },
         { title: "Modul & Tata Kelola Operasional", items: opItems }
       ];
     }
@@ -156,8 +156,8 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
         {
           title: "Kabinet & Struktur",
           items: [
-            { label: "Cabinet Center", href: "/admin/cabinets", icon: Building },
-            { label: "Dashboard Kabinet", href: `/admin/cabinets/${cabId}`, icon: LayoutDashboard },
+            { label: "Pusat Kabinet", href: "/admin/cabinets", icon: Building },
+            { label: "Dasbor Kabinet", href: `/admin/cabinets/${cabId}`, icon: LayoutDashboard },
             { label: "Struktur Organisasi", href: `/admin/cabinets/${cabId}/structure`, icon: FolderKanban },
             { label: "Master Jabatan", href: `/admin/cabinets/${cabId}/positions`, icon: Briefcase }
           ]
@@ -166,7 +166,7 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
           title: "Akun & Keamanan",
           items: [
             { label: "Manajemen Pengguna", href: `/admin/cabinets/${cabId}/users`, icon: Users },
-            { label: "Role & Permission", href: `/admin/cabinets/${cabId}/permissions`, icon: Shield },
+            { label: "Peran & Hak Akses", href: `/admin/cabinets/${cabId}/permissions`, icon: Shield },
             { label: "Verifikasi Kader PSDM", href: "/organization/directory/cadres/verification", icon: Award }
           ]
         },
@@ -211,10 +211,10 @@ export function DashboardSidebar({ currentArea, onCloseMobile, isMobileDrawer }:
               </span>
               <span className="text-xs text-gold-300/80 uppercase tracking-widest font-mono">
                 {currentArea === "personal"
-                  ? "Personal Area"
+                  ? "Area Pribadi"
                   : currentArea === "admin"
-                  ? "Admin Panel"
-                  : "Organization"}
+                  ? "Pengelola Sistem"
+                  : "Tata Kelola Organisasi"}
               </span>
             </div>
           )}

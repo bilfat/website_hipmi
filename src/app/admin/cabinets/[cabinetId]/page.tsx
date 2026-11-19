@@ -40,7 +40,7 @@ export default function CabinetDashboardPage({
         className="inline-flex items-center gap-1.5 text-xs text-neutral-dark hover:text-brand-burgundy transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Kembali ke Cabinet Center (Pilih Kabinet Lain)</span>
+        <span>Kembali ke Pusat Kabinet (Pilih Kabinet Lain)</span>
       </Link>
 
       {/* Header Banner */}
@@ -48,7 +48,7 @@ export default function CabinetDashboardPage({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <h1 className="font-serif text-3xl sm:text-4xl font-bold text-wine-950">
-              Dashboard Kabinet {cab.name}
+              Dasbor Kabinet {cab.name}
             </h1>
             <p className="text-xs text-neutral-dark font-mono">
               Periode Bakti: {cab.period_start} — {cab.period_end} • Status:{" "}
@@ -61,7 +61,7 @@ export default function CabinetDashboardPage({
               href={`/admin/cabinets/form?mode=edit&recordId=${cab.id}`}
               className="px-4 py-2 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 transition-colors"
             >
-              Edit Visi & Filosofi
+              Ubah Visi & Filosofi
             </Link>
 
             <Link
@@ -189,10 +189,10 @@ export default function CabinetDashboardPage({
               <Shield className="w-6 h-6 text-brand-burgundy" />
             </div>
             <h3 className="font-serif text-lg font-bold text-wine-950">
-              Role & Permission
+              Peran & Hak Akses
             </h3>
             <p className="text-xs text-neutral-dark leading-relaxed">
-              Konfigurasi matriks Role × Permission × Scope sesuai ketetapan RBAC HIPMI CENTRAL.
+              Konfigurasi matriks Peran × Hak Akses × Cakupan sesuai ketetapan RBAC HIPMI CENTRAL.
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs font-semibold text-brand-burgundy group-hover:translate-x-1 transition-transform">
               <span>Konfigurasi Hak Akses</span>
@@ -212,7 +212,7 @@ export default function CabinetDashboardPage({
               Konfigurasi Modul
             </h3>
             <p className="text-xs text-neutral-dark leading-relaxed">
-              Pengaturan modul aktif (Persuratan, Keuangan, Ticketing, Presensi, Medpart, Aspirasi).
+              Pengaturan modul aktif (Persuratan, Keuangan, Tiket, Presensi, Mitra Media, Aspirasi).
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs font-semibold text-brand-burgundy group-hover:translate-x-1 transition-transform">
               <span>Kelola Status Modul</span>
@@ -229,10 +229,10 @@ export default function CabinetDashboardPage({
               <ShieldAlert className="w-6 h-6 text-brand-burgundy" />
             </div>
             <h3 className="font-serif text-lg font-bold text-wine-950">
-              Audit Log Administratif
+              Log Audit Administratif
             </h3>
             <p className="text-xs text-neutral-dark leading-relaxed">
-              Rekam jejak mutasi data, approval pembayaran, penerbitan surat, dan perubahan hak akses.
+              Rekam jejak mutasi data, persetujuan pembayaran, penerbitan surat, dan perubahan hak akses.
             </p>
             <div className="pt-2 flex items-center gap-1.5 text-xs font-semibold text-brand-burgundy group-hover:translate-x-1 transition-transform">
               <span>Buka Rekam Jejak Audit</span>

@@ -64,14 +64,14 @@ export default function MyNotificationsPage() {
               Screen ID: PER-12
             </span>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-wine-950/5 text-neutral-light">
-              Pusat Notifikasi
+              Pusat Pemberitahuan
             </span>
           </div>
           <h1 className="font-serif text-3xl font-bold text-wine-950">
-            Kotak Masuk Notifikasi
+            Kotak Masuk Pemberitahuan
           </h1>
           <p className="text-xs text-neutral-dark">
-            Pemberitahuan resmi sistem mengenai agenda, verifikasi pembayaran, surat, dan pembaruan proker.
+            Pemberitahuan resmi sistem mengenai agenda, verifikasi pembayaran, surat, dan pembaruan program kerja.
           </p>
         </div>
 

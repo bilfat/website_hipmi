@@ -55,7 +55,7 @@ export default function RolePermissionMatrixPage({
         className="inline-flex items-center gap-1.5 text-xs text-neutral-dark hover:text-brand-burgundy transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Kembali ke Dashboard Kabinet</span>
+        <span>Kembali ke Dasbor Kabinet</span>
       </Link>
 
       {/* Header Section */}

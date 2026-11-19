@@ -42,14 +42,14 @@ export default function MyTicketsPage() {
               Screen ID: PER-08 / TKT
             </span>
             <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-wine-950/5 text-neutral-light">
-              Registrasi & Tiket
+              Pendaftaran & Tiket
             </span>
           </div>
           <h1 className="font-serif text-3xl font-bold text-wine-950">
             Daftar Tiket & Pendaftaran Saya
           </h1>
           <p className="text-xs text-neutral-dark">
-            Akses e-tiket resmi Anda dan pantau status verifikasi pembayaran agenda.
+            Akses tiket digital resmi Anda dan pantau status verifikasi pembayaran agenda.
           </p>
         </div>
 

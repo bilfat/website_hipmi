@@ -70,7 +70,7 @@ export default function PersonalDashboardPage() {
               </h1>
 
               <p className="text-xs text-blush-200">
-                NIM: <span className="font-mono">{currentUser.nim || "-"}</span> • Akun Demo:{" "}
+                Nomor Induk Mahasiswa: <span className="font-mono">{currentUser.nim || "-"}</span> • Akun Demo:{" "}
                 <strong className="text-gold-300">{currentUser.demo_id}</strong>
               </p>
             </div>
@@ -127,7 +127,7 @@ export default function PersonalDashboardPage() {
         >
           <div className="flex items-center justify-between pb-3">
             <span className="text-neutral-light text-[11px] font-semibold uppercase tracking-wider">
-              Kepanitiaan Proker
+              Kepanitiaan Program Kerja
             </span>
             <div className="w-8 h-8 rounded-xl bg-gold-500/10 text-gold-700 flex items-center justify-center group-hover:scale-110 transition-transform">
               <FolderKanban className="w-4 h-4" />
@@ -169,7 +169,7 @@ export default function PersonalDashboardPage() {
         >
           <div className="flex items-center justify-between pb-3">
             <span className="text-neutral-light text-[11px] font-semibold uppercase tracking-wider">
-              Notifikasi Baru
+              Pemberitahuan Baru
             </span>
             <div className="w-8 h-8 rounded-xl bg-brand-burgundy/10 text-brand-burgundy flex items-center justify-center group-hover:scale-110 transition-transform">
               <Bell className="w-4 h-4" />
@@ -204,15 +204,15 @@ export default function PersonalDashboardPage() {
 
             <div className="p-4 rounded-2xl bg-surface-ivory border border-wine-950/10 space-y-2">
               <strong className="text-sm text-wine-950 block font-serif">
-                Rapat Pleno & Pemantapan Proker Semester Ganjil 2026/2027
+                Rapat Pleno & Pemantapan Program Kerja Semester Ganjil 2026/2027
               </strong>
               <p className="text-xs text-neutral-dark leading-relaxed">
-                Seluruh pengurus harian, ketua kompartemen, dan manajer proker dimohon hadir pada Rapat Pleno Koordinasi di Aula Gedung B Telkom University. Pastikan laporan progres telah diunggah ke workspace masing-masing.
+                Seluruh pengurus harian, ketua kompartemen, dan pengelola program kerja dimohon hadir pada Rapat Pleno Koordinasi di Aula Gedung B Telkom University. Pastikan laporan kemajuan telah diunggah ke ruang kerja masing-masing.
               </p>
               <div className="flex items-center gap-4 text-[11px] text-neutral-light pt-2 font-mono">
                 <span>Waktu: 19:30 WIB</span>
                 <span>•</span>
-                <span>Dresscode: PDH HIPMI Telkom</span>
+                <span>Pakaian: PDH HIPMI Telkom</span>
               </div>
             </div>
           </div>

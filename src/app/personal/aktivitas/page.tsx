@@ -38,7 +38,7 @@ export default function MyActivitiesPage() {
           </span>
         </div>
         <h1 className="font-serif text-3xl font-bold text-wine-950">
-          Kepanitiaan & Keterlibatan Proker
+          Kepanitiaan & Keterlibatan Program Kerja
         </h1>
         <p className="text-xs text-neutral-dark">
           Rekor partisipasi dan amanah program kerja milik Anda. Hanya menampilkan data yang diizinkan untuk akun Anda.

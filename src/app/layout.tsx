@@ -22,11 +22,12 @@ export const metadata: Metadata = {
   description: "Platform Pengelolaan Organisasi Terpadu HIPMI PT Universitas Telkom",
   icons: {
     icon: [
-      { url: "/assets/assets_logo/logo_ARTHAKARSA.PNG" },
-      { url: "/favicon.ico" },
+      { url: "/favicon.ico?v=arthakarsa2", sizes: "any" },
+      { url: "/favicon-32x32.png?v=arthakarsa2", sizes: "32x32", type: "image/png" },
+      { url: "/assets/assets_logo/logo_ARTHAKARSA.PNG?v=arthakarsa2", type: "image/png" },
     ],
-    shortcut: "/assets/assets_logo/logo_ARTHAKARSA.PNG",
-    apple: "/assets/assets_logo/logo_ARTHAKARSA.PNG",
+    shortcut: "/favicon.ico?v=arthakarsa2",
+    apple: "/apple-icon.png?v=arthakarsa2",
   },
 };
 
@@ -37,10 +38,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${poppins.variable} ${playfair.variable}`}>
-      <body className="font-ui bg-surface-ivory min-h-screen text-neutral-black antialiased selection:bg-brand-burgundy selection:text-white">
+      <body className="font-ui bg-white min-h-screen text-neutral-black antialiased selection:bg-brand-burgundy selection:text-white">
         {children}
         <DemoControlCenter />
-              </body>
+      </body>
     </html>
   );
 }

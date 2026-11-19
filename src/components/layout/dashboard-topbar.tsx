@@ -81,7 +81,7 @@ export function DashboardTopbar({ currentArea, onToggleMobileSidebar }: Dashboar
             }`}
           >
             <User className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Personal</span>
+            <span className="hidden sm:inline">Pribadi</span>
           </Link>
 
           {permissions.canAccessOrganization && (
@@ -108,7 +108,7 @@ export function DashboardTopbar({ currentArea, onToggleMobileSidebar }: Dashboar
               }`}
             >
               <Shield className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Admin</span>
+              <span className="hidden sm:inline">Pengelola</span>
             </Link>
           )}
         </div>
@@ -121,14 +121,14 @@ export function DashboardTopbar({ currentArea, onToggleMobileSidebar }: Dashboar
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gold-50/80 hover:bg-gold-100 border border-gold-400/40 text-xs font-semibold text-brand-burgundy transition-all"
             >
               <FolderKanban className="w-3.5 h-3.5 text-gold-700" />
-              <span>Pilih Workspace ({permissions.assignedWorkspaces.length})</span>
+              <span>Pilih Ruang Kerja ({permissions.assignedWorkspaces.length})</span>
               <ChevronDown className="w-3 h-3" />
             </button>
 
             {workspaceMenuOpen && (
               <div className="absolute left-0 top-full mt-2 w-72 p-2 rounded-2xl glass-dropdown shadow-2xl border border-white/70 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
                 <p className="px-3 py-1 text-[10px] uppercase font-mono font-bold tracking-wider text-neutral-dark">
-                  Workspace Yang Ditugaskan
+                  Ruang Kerja yang Ditugaskan
                 </p>
                 <div className="space-y-1 mt-1">
                   {permissions.assignedWorkspaces.map((ws) => (
@@ -164,7 +164,7 @@ export function DashboardTopbar({ currentArea, onToggleMobileSidebar }: Dashboar
         <div className="flex items-center gap-2">
           <Search className="w-3.5 h-3.5 text-neutral-dark/70 group-hover:text-brand-burgundy transition-colors shrink-0" />
           <span className="text-xs text-neutral-dark/80 group-hover:text-wine-950 transition-colors">
-            Cari proker, surat, modul...
+            Cari program kerja, surat, modul...
           </span>
         </div>
         <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-wine-950/5 border border-wine-950/10 text-neutral-dark font-semibold">
@@ -189,7 +189,7 @@ export function DashboardTopbar({ currentArea, onToggleMobileSidebar }: Dashboar
         <Link
           href="/personal/notifikasi"
           className="relative min-h-[44px] min-w-[44px] flex items-center justify-center rounded-full hover:bg-surface-ivory text-neutral-dark hover:text-brand-burgundy transition-colors active:scale-95"
-          title="Notifikasi"
+          title="Pemberitahuan"
         >
           <Bell className="w-4 h-4" />
           {unreadNotificationsCount > 0 && (

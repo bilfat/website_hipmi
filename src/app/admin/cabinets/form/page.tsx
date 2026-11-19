@@ -122,7 +122,7 @@ function CabinetFormContent() {
         className="inline-flex items-center gap-1.5 text-xs text-neutral-dark hover:text-brand-burgundy transition-colors"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
-        <span>Kembali ke Cabinet Center</span>
+        <span>Kembali ke Pusat Kabinet</span>
       </Link>
 
       {/* Header Section */}
@@ -132,7 +132,7 @@ function CabinetFormContent() {
             Screen ID: ADM-03
           </span>
           <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-wine-950/5 text-neutral-light">
-            {mode === "edit" ? "Edit Kabinet" : "Kabinet Baru"}
+            {mode === "edit" ? "Ubah Kabinet" : "Kabinet Baru"}
           </span>
         </div>
         <h1 className="font-serif text-3xl font-bold text-wine-950">
