@@ -20,8 +20,8 @@ export const HeroIdentityCards: React.FC<HeroIdentityCardsProps> = ({
 
   return (
     <motion.div
-      className="relative z-40 w-full max-w-[560px] mx-auto px-2 -mt-8 xs:-mt-10 sm:-mt-12 md:-mt-14 lg:-mt-14 xl:-mt-16 pointer-events-auto"
-      initial={isReducedMotion ? undefined : { opacity: 0, y: 18 }}
+      className="relative z-40 w-full max-w-[420px] mx-auto px-2 -mt-8 sm:-mt-10 lg:-mt-12 pointer-events-auto"
+      initial={isReducedMotion ? undefined : { opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{
         duration: 0.9,
@@ -29,47 +29,47 @@ export const HeroIdentityCards: React.FC<HeroIdentityCardsProps> = ({
         ease: editorialEase,
       }}
     >
-      <div className="grid grid-cols-2 gap-2 sm:gap-4 justify-items-center">
-        {/* Card 1 - Ketua Umum (Figur Kiri) */}
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 justify-items-center">
+        {/* Card 1 - Ketua Umum (Minimalist & Compact) */}
         <div
-          className="w-full max-w-[155px] xs:max-w-[180px] sm:max-w-[245px] lg:max-w-[255px] rounded-2xl p-2 sm:p-2.5 lg:p-3 bg-white/95 sm:bg-[#FCF8F6]/90 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_6px_20px_rgba(61,15,22,0.08)] hover:shadow-[0_10px_28px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
+          className="w-full max-w-[130px] xs:max-w-[145px] sm:max-w-[175px] lg:max-w-[190px] rounded-xl sm:rounded-2xl py-1.5 px-2 sm:py-2 sm:px-2.5 bg-white/95 sm:bg-[#FCF8F6]/95 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_4px_14px_rgba(61,15,22,0.08)] hover:shadow-[0_8px_20px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
         >
-          {/* Champagne Gold Accent Line at Top */}
-          <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 h-[2px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
+          {/* Subtle Champagne Gold Top Line */}
+          <div className="absolute top-0 left-2 right-2 sm:left-3 sm:right-3 h-[1.5px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
 
           <div className="flex flex-col items-center text-center">
-            <span className="font-ui text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E8B577] inline-block shrink-0" />
+            <span className="font-mono text-[8px] sm:text-[9px] font-bold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 truncate">
+              <span className="w-1 h-1 rounded-full bg-[#E8B577] inline-block shrink-0" />
               <span className="truncate">{ketum.role}</span>
             </span>
-            <h3 className="font-display text-xs sm:text-base font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
+            <h3 className="font-display text-[11px] sm:text-xs md:text-[13px] font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
               {ketum.name}
             </h3>
             {ketum.bio && (
-              <p className="font-ui text-[10px] sm:text-xs text-neutral-dark mt-0.5 line-clamp-1 font-medium">
+              <p className="font-ui text-[8px] sm:text-[9px] text-neutral-dark mt-0.5 truncate w-full font-medium">
                 {ketum.bio}
               </p>
             )}
           </div>
         </div>
 
-        {/* Card 2 - Wakil Ketua Umum (Figur Kanan) */}
+        {/* Card 2 - Wakil Ketua Umum (Minimalist & Compact) */}
         <div
-          className="w-full max-w-[155px] xs:max-w-[180px] sm:max-w-[245px] lg:max-w-[255px] rounded-2xl p-2 sm:p-2.5 lg:p-3 bg-white/95 sm:bg-[#FCF8F6]/90 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_6px_20px_rgba(61,15,22,0.08)] hover:shadow-[0_10px_28px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
+          className="w-full max-w-[130px] xs:max-w-[145px] sm:max-w-[175px] lg:max-w-[190px] rounded-xl sm:rounded-2xl py-1.5 px-2 sm:py-2 sm:px-2.5 bg-white/95 sm:bg-[#FCF8F6]/95 backdrop-blur-md border border-[#E8B4B8]/40 shadow-[0_4px_14px_rgba(61,15,22,0.08)] hover:shadow-[0_8px_20px_rgba(61,15,22,0.12)] transition-all duration-300 relative group overflow-hidden"
         >
-          {/* Champagne Gold Accent Line at Top */}
-          <div className="absolute top-0 left-2 right-2 sm:left-4 sm:right-4 h-[2px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
+          {/* Subtle Champagne Gold Top Line */}
+          <div className="absolute top-0 left-2 right-2 sm:left-3 sm:right-3 h-[1.5px] bg-gradient-to-r from-transparent via-[#E8B577] to-transparent opacity-90" />
 
           <div className="flex flex-col items-center text-center">
-            <span className="font-ui text-[10px] sm:text-[11px] font-semibold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 sm:gap-1.5 truncate">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#E8B577] inline-block shrink-0" />
+            <span className="font-mono text-[8px] sm:text-[9px] font-bold tracking-wider text-brand-burgundy uppercase mb-0.5 flex items-center gap-1 truncate">
+              <span className="w-1 h-1 rounded-full bg-[#E8B577] inline-block shrink-0" />
               <span className="truncate">{waketum.role}</span>
             </span>
-            <h3 className="font-display text-xs sm:text-base font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
+            <h3 className="font-display text-[11px] sm:text-xs md:text-[13px] font-bold text-neutral-black tracking-tight group-hover:text-brand-burgundy transition-colors duration-200 truncate w-full">
               {waketum.name}
             </h3>
             {waketum.bio && (
-              <p className="font-ui text-[10px] sm:text-xs text-neutral-dark mt-0.5 line-clamp-1 font-medium">
+              <p className="font-ui text-[8px] sm:text-[9px] text-neutral-dark mt-0.5 truncate w-full font-medium">
                 {waketum.bio}
               </p>
             )}

@@ -184,31 +184,51 @@ export function PublicNavbar({ isSeamlessAtTop = true }: PublicNavbarProps) {
                       href: "/organisasi/program-kerja",
                       img: "/assets/assest_navbar_dropdown/02-program-kerja.png"
                     }
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="p-2 rounded-xl bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40 transition-all flex items-center gap-3 group"
-                    >
-                      <div className="w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden bg-surface-ivory/60 flex items-center justify-center">
-                        <Image
-                          src={item.img}
-                          alt={item.title}
-                          width={32}
-                          height={32}
-                          className="object-contain group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-semibold text-wine-950 group-hover:text-brand-burgundy transition-colors truncate">
-                          {item.title}
-                        </h4>
-                        <p className="text-[10px] text-neutral-dark truncate mt-0.5">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                  ].map((item) => {
+                    const isItemActive = pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`p-2 rounded-xl transition-all flex items-center gap-3 group ${
+                          isItemActive
+                            ? "bg-brand-burgundy/10 border border-brand-burgundy/30 shadow-xs"
+                            : "bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center transition-colors ${
+                          isItemActive
+                            ? "bg-brand-burgundy/15 border border-brand-burgundy/25"
+                            : "bg-surface-ivory/60"
+                        }`}>
+                          <Image
+                            src={item.img}
+                            alt={item.title}
+                            width={32}
+                            height={32}
+                            className="object-contain group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className={`text-xs truncate transition-colors ${
+                              isItemActive
+                                ? "font-bold text-brand-burgundy"
+                                : "font-semibold text-wine-950 group-hover:text-brand-burgundy"
+                            }`}>
+                              {item.title}
+                            </h4>
+                            {isItemActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-burgundy shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-neutral-dark truncate mt-0.5">
+                            {item.desc}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -251,31 +271,51 @@ export function PublicNavbar({ isSeamlessAtTop = true }: PublicNavbarProps) {
                       href: "/aktivitas/media-partner",
                       img: "/assets/assest_navbar_dropdown/07-media-partner.png"
                     }
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="p-2 rounded-xl bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40 transition-all flex items-center gap-3 group"
-                    >
-                      <div className="w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden bg-surface-ivory/60 flex items-center justify-center">
-                        <Image
-                          src={item.img}
-                          alt={item.title}
-                          width={32}
-                          height={32}
-                          className="object-contain group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-semibold text-wine-950 group-hover:text-brand-burgundy transition-colors truncate">
-                          {item.title}
-                        </h4>
-                        <p className="text-[10px] text-neutral-dark truncate mt-0.5">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                  ].map((item) => {
+                    const isItemActive = pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`p-2 rounded-xl transition-all flex items-center gap-3 group ${
+                          isItemActive
+                            ? "bg-brand-burgundy/10 border border-brand-burgundy/30 shadow-xs"
+                            : "bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center transition-colors ${
+                          isItemActive
+                            ? "bg-brand-burgundy/15 border border-brand-burgundy/25"
+                            : "bg-surface-ivory/60"
+                        }`}>
+                          <Image
+                            src={item.img}
+                            alt={item.title}
+                            width={32}
+                            height={32}
+                            className="object-contain group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className={`text-xs truncate transition-colors ${
+                              isItemActive
+                                ? "font-bold text-brand-burgundy"
+                                : "font-semibold text-wine-950 group-hover:text-brand-burgundy"
+                            }`}>
+                              {item.title}
+                            </h4>
+                            {isItemActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-burgundy shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-neutral-dark truncate mt-0.5">
+                            {item.desc}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -312,31 +352,51 @@ export function PublicNavbar({ isSeamlessAtTop = true }: PublicNavbarProps) {
                       href: "/karya-kader/prestasi",
                       img: "/assets/assest_navbar_dropdown/04-prestasi-kader.png"
                     }
-                  ].map((item) => (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className="p-2 rounded-xl bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40 transition-all flex items-center gap-3 group"
-                    >
-                      <div className="w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden bg-surface-ivory/60 flex items-center justify-center">
-                        <Image
-                          src={item.img}
-                          alt={item.title}
-                          width={32}
-                          height={32}
-                          className="object-contain group-hover:scale-105 transition-transform"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <h4 className="text-xs font-semibold text-wine-950 group-hover:text-brand-burgundy transition-colors truncate">
-                          {item.title}
-                        </h4>
-                        <p className="text-[10px] text-neutral-dark truncate mt-0.5">
-                          {item.desc}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                  ].map((item) => {
+                    const isItemActive = pathname.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`p-2 rounded-xl transition-all flex items-center gap-3 group ${
+                          isItemActive
+                            ? "bg-brand-burgundy/10 border border-brand-burgundy/30 shadow-xs"
+                            : "bg-white/50 hover:bg-gold-50/80 border border-gold-500/15 hover:border-gold-400/40"
+                        }`}
+                      >
+                        <div className={`w-10 h-10 relative flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center transition-colors ${
+                          isItemActive
+                            ? "bg-brand-burgundy/15 border border-brand-burgundy/25"
+                            : "bg-surface-ivory/60"
+                        }`}>
+                          <Image
+                            src={item.img}
+                            alt={item.title}
+                            width={32}
+                            height={32}
+                            className="object-contain group-hover:scale-105 transition-transform"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <h4 className={`text-xs truncate transition-colors ${
+                              isItemActive
+                                ? "font-bold text-brand-burgundy"
+                                : "font-semibold text-wine-950 group-hover:text-brand-burgundy"
+                            }`}>
+                              {item.title}
+                            </h4>
+                            {isItemActive && (
+                              <span className="w-1.5 h-1.5 rounded-full bg-brand-burgundy shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-[10px] text-neutral-dark truncate mt-0.5">
+                            {item.desc}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -498,19 +558,138 @@ export function PublicNavbar({ isSeamlessAtTop = true }: PublicNavbarProps) {
               </Link>
             </div>
 
-            {/* Links list */}
-            <div className="space-y-1 text-xs font-medium text-neutral-black">
-              <Link href="/" className="block p-2.5 rounded-xl hover:bg-gold-50">Beranda</Link>
-              <Link href="/tentang-kami" className="block p-2.5 rounded-xl hover:bg-gold-50">Tentang Kami</Link>
-              <Link href="/organisasi/kabinet" className="block p-2.5 rounded-xl hover:bg-gold-50">Struktur Kabinet</Link>
-              <Link href="/organisasi/bidang" className="block p-2.5 rounded-xl hover:bg-gold-50">Bidang &amp; Kompartemen</Link>
-              <Link href="/organisasi/program-kerja" className="block p-2.5 rounded-xl hover:bg-gold-50">Program Kerja</Link>
-              <Link href="/aktivitas/agenda" className="block p-2.5 rounded-xl hover:bg-gold-50">Agenda &amp; Tiket</Link>
-              <Link href="/aktivitas/berita" className="block p-2.5 rounded-xl hover:bg-gold-50">Berita &amp; Artikel</Link>
-              <Link href="/aktivitas/media-partner" className="block p-2.5 rounded-xl hover:bg-gold-50">Pengajuan Mitra Media</Link>
-              <Link href="/karya-kader/bisnis" className="block p-2.5 rounded-xl hover:bg-gold-50">Etalase Bisnis Kader</Link>
-              <Link href="/karya-kader/prestasi" className="block p-2.5 rounded-xl hover:bg-gold-50">Prestasi Kader</Link>
-              <Link href="/kotak-suara" className="block p-2.5 rounded-xl hover:bg-gold-50">Kotak Suara Aspirasi</Link>
+            {/* Links list with active indicators matching desktop */}
+            <div className="space-y-2.5 text-xs">
+              {/* Menu Utama */}
+              <div className="space-y-1">
+                {[
+                  { title: "Beranda Utama", href: "/", isExact: true },
+                  { title: "Tentang Kami & Sejarah", href: "/tentang-kami" },
+                ].map((item) => {
+                  const isActive = item.isExact ? pathname === item.href : pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-brand-burgundy text-white font-semibold shadow-sm"
+                          : "text-neutral-black hover:bg-gold-50/80 hover:text-brand-burgundy font-medium"
+                      }`}
+                    >
+                      <span>{item.title}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-gold-300 shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Struktur Organisasi */}
+              <div className="space-y-1 pt-1 border-t border-wine-950/10">
+                <div className="px-3 pt-1 pb-0.5 text-[10px] font-mono font-bold tracking-wider uppercase text-gold-700">
+                  STRUKTUR ORGANISASI
+                </div>
+                {[
+                  { title: "Kabinet ARTHAKARSA", href: "/organisasi/kabinet" },
+                  { title: "4 Bidang Kepengurusan", href: "/organisasi/bidang" },
+                  { title: "8 Kompartemen Kerja", href: "/organisasi/kompartemen" },
+                  { title: "Direktori Program Kerja", href: "/organisasi/program-kerja" },
+                ].map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-brand-burgundy text-white font-semibold shadow-sm"
+                          : "text-neutral-black hover:bg-gold-50/80 hover:text-brand-burgundy font-medium"
+                      }`}
+                    >
+                      <span>{item.title}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-gold-300 shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Aktivitas & Publikasi */}
+              <div className="space-y-1 pt-1 border-t border-wine-950/10">
+                <div className="px-3 pt-1 pb-0.5 text-[10px] font-mono font-bold tracking-wider uppercase text-gold-700">
+                  AKTIVITAS &amp; PUBLIKASI
+                </div>
+                {[
+                  { title: "Agenda & Tiket Acara", href: "/aktivitas/agenda" },
+                  { title: "Berita & Artikel", href: "/aktivitas/berita" },
+                  { title: "Layanan Media Partner", href: "/aktivitas/media-partner" },
+                ].map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-brand-burgundy text-white font-semibold shadow-sm"
+                          : "text-neutral-black hover:bg-gold-50/80 hover:text-brand-burgundy font-medium"
+                      }`}
+                    >
+                      <span>{item.title}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-gold-300 shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Karya Kader */}
+              <div className="space-y-1 pt-1 border-t border-wine-950/10">
+                <div className="px-3 pt-1 pb-0.5 text-[10px] font-mono font-bold tracking-wider uppercase text-gold-700">
+                  KARYA KADER
+                </div>
+                {[
+                  { title: "Etalase Bisnis Kader", href: "/karya-kader/bisnis" },
+                  { title: "Galeri Prestasi Kader", href: "/karya-kader/prestasi" },
+                ].map((item) => {
+                  const isActive = pathname.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-brand-burgundy text-white font-semibold shadow-sm"
+                          : "text-neutral-black hover:bg-gold-50/80 hover:text-brand-burgundy font-medium"
+                      }`}
+                    >
+                      <span>{item.title}</span>
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-gold-300 shrink-0" />}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              {/* Layanan & Aspirasi */}
+              <div className="space-y-1 pt-1 border-t border-wine-950/10">
+                <div className="px-3 pt-1 pb-0.5 text-[10px] font-mono font-bold tracking-wider uppercase text-gold-700">
+                  LAYANAN &amp; ASPIRASI
+                </div>
+                <Link
+                  href="/kotak-suara"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center justify-between px-3 py-2 rounded-xl transition-all ${
+                    pathname === "/kotak-suara"
+                      ? "bg-brand-burgundy text-white font-semibold shadow-sm"
+                      : "text-neutral-black hover:bg-gold-50/80 hover:text-brand-burgundy font-medium"
+                  }`}
+                >
+                  <span>Kotak Suara Aspirasi</span>
+                  {pathname === "/kotak-suara" && <span className="w-1.5 h-1.5 rounded-full bg-gold-300 shrink-0" />}
+                </Link>
+              </div>
             </div>
 
             <div className="pt-2 border-t border-wine-950/10 flex items-center justify-between text-xs">
