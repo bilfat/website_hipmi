@@ -2,200 +2,474 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
-import { useMockStore } from "@/lib/mock/store";
+import {
+  useMockStore,
+  mutateStore,
+  addActivityHistory,
+} from "@/lib/mock/store";
+import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
+import { EditorialModal } from "@/components/ui/editorial-modal";
+import { AppEvent, TicketCategory } from "@/types/domain";
 import {
   Calendar,
   Search,
-  Filter,
   Plus,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
   MapPin,
   Ticket,
   Users,
-  Eye,
-  Settings
+  QrCode,
+  Settings,
+  CheckCircle2,
+  ExternalLink,
+  CalendarCheck,
+  Info,
 } from "lucide-react";
 
-export default function EventsListPage() {
-  const { store } = useMockStore();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [visibilityFilter, setVisibilityFilter] = useState("all");
-  const [categoryFilter, setCategoryFilter] = useState("all");
+export default function OrganizationEventsPage() {
+  const { store, currentUser } = useMockStore();
+  const permissions = resolveUserPermissions(currentUser, store);
 
-  const events = (store.events || []).filter((e) => {
-    if (visibilityFilter !== "all" && e.visibility !== visibilityFilter) return false;
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Create Event modal form states
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState<TicketCategory>("gratis");
+  const [dateStr, setDateStr] = useState(new Date().toISOString().split("T")[0]);
+  const [timeStr, setTimeStr] = useState("09:00");
+  const [location, setLocation] = useState("Auditorium Gedung Damar Telkom University");
+  const [projectId, setProjectId] = useState("");
+  const [price, setPrice] = useState("25000");
+  const [quota, setQuota] = useState("150");
+
+  const allEvents = store.events || [];
+  const filteredEvents = allEvents.filter((e) => {
     if (categoryFilter !== "all" && e.category !== categoryFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      const matchTitle = e.title.toLowerCase().includes(q);
-      const matchUnit = e.organizer_unit.toLowerCase().includes(q);
-      const matchLoc = e.location.toLowerCase().includes(q);
-      if (!matchTitle && !matchUnit && !matchLoc) return false;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      if (
+        !e.title.toLowerCase().includes(q) &&
+        !e.organizer_unit.toLowerCase().includes(q) &&
+        !e.location.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
     }
     return true;
   });
 
-  return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Breadcrumb & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href="/organization/events/dashboard"
-                className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Event Operations
-              </Link>
-              <span className="text-xs text-wine-300">/</span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                EVT-02
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Daftar Agenda & Acara Organisasi
-            </h1>
-            <p className="text-xs text-wine-600 mt-1">
-              Sentralisasi seluruh agenda kepanitiaan, pleno, seminar publik, dan expo HIPMI PT Telkom.
-            </p>
-          </div>
+  const totalIssuedTickets = store.tickets.length;
+  const totalCheckedIn = store.tickets.filter((t) => t.is_checked_in).length;
+  const pendingPayments = store.reservations.filter(
+    (r) => r.registration_status === "pending_verification"
+  ).length;
 
-          <Link
-            href="/calendar/events/form?mode=create&source=events"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 text-white font-medium text-xs shadow-sm transition-all"
+  const handleCreateEvent = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !dateStr) return;
+
+    const newEventId = `evt-${Date.now()}`;
+    const startIso = `${dateStr}T${timeStr}:00+07:00`;
+    const activeCab = store.cabinets.find((c) => c.status === "active") || store.cabinets[0];
+    const proj = store.projects.find((p) => p.id === projectId);
+
+    const newEvent: AppEvent = {
+      id: newEventId,
+      project_id: projectId || undefined,
+      title: title.trim(),
+      description: description.trim() || "Agenda resmi HIPMI Perguruan Tinggi Universitas Telkom.",
+      organizer_unit: proj ? proj.name : permissions.roleScopeSubtitle,
+      lead_organizer_user_id: currentUser.id,
+      poster_url: "/assets/assets_logo/logo_hipmi.png",
+      category,
+      schedule_start: startIso,
+      schedule_end: startIso,
+      location: location.trim() || "Universitas Telkom",
+      public_terms: "Terbuka untuk mahasiswa Telkom University & umum.",
+      visibility: "public",
+      status: "published",
+    };
+
+    mutateStore((draft) => {
+      draft.events.unshift(newEvent);
+
+      // Auto-create default ticket type
+      draft.ticket_types.push({
+        id: `tt-${Date.now()}`,
+        event_id: newEventId,
+        name: category === "gratis" ? "Tiket Gratis Mahasiswa" : "Tiket Reguler",
+        description: "Akses penuh seluruh sesi acara & e-sertifikat.",
+        price: category === "gratis" ? 0 : Number(price) || 25000,
+        quota_total: Number(quota) || 100,
+        quota_reserved: 0,
+        quota_sold: 0,
+        sales_start: new Date().toISOString(),
+        sales_end: startIso,
+        status: "open",
+      });
+
+      // Auto-sync date milestone into Kalender Organisasi (zero duplicate manual input!)
+      if (!draft.calendar_events) draft.calendar_events = [];
+      draft.calendar_events.push({
+        id: `cal-evt-${Date.now()}`,
+        cabinet_id: activeCab?.id || "cab-arthakarsa-2627",
+        title: `Event Publik: ${title.trim()}`,
+        category: "Main Event Proker",
+        start_time: startIso,
+        end_time: startIso,
+        location: location.trim() || "Universitas Telkom",
+        description: `Disinkronkan otomatis dari Agenda & Event (${category}).`,
+        visibility: "public",
+        linked_event_id: newEventId,
+        linked_project_id: projectId || undefined,
+        owner_user_id: currentUser.id,
+        created_at: new Date().toISOString(),
+      });
+
+      addActivityHistory(
+        currentUser.name,
+        "membuat agenda event publik baru",
+        title.trim(),
+        "Agenda & Event"
+      );
+    });
+
+    setTitle("");
+    setDescription("");
+    setProjectId("");
+    setCreateOpen(false);
+    setFeedback(
+      `Event "${newEvent.title}" berhasil dibuat, tayang di halaman publik, dan otomatis disinkronkan ke Kalender Organisasi.`
+    );
+  };
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Editorial Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+            Publikasi Event, Ticketing &amp; Presensi QR
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Agenda &amp; Event Publik
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Kelola acara resmi gratis maupun berbayar yang tayang di portal publik, atur jenis tiket, verifikasi pembayaran, kirim ulang e-tiket, dan jalankan check-in QR / manual.
+          </p>
+        </div>
+
+        {(permissions.canManageEvents || permissions.managedProjectIds.length > 0 || permissions.isKakom) && (
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0 transition-colors"
           >
             <Plus className="w-4 h-4" />
-            <span>Tambah Agenda (EVT-03)</span>
-          </Link>
-        </div>
-
-        {/* Filter bar */}
-        <div className="p-4 rounded-xl bg-white border border-wine-100 shadow-xs flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-wine-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Cari judul acara, unit penyelenggara, atau lokasi..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-wine-200 text-xs text-wine-900 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <select
-              value={visibilityFilter}
-              onChange={(e) => setVisibilityFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Visibilitas</option>
-              <option value="public">Publik</option>
-              <option value="internal">Internal</option>
-            </select>
-
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Kategori</option>
-              <option value="gratis">Gratis</option>
-              <option value="berbayar">Berbayar</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Events Table */}
-        <div className="bg-white rounded-2xl border border-wine-100 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-wine-50/50 text-wine-700 font-semibold border-b border-wine-100">
-                <tr>
-                  <th className="py-3.5 px-4">Nama Agenda / Acara</th>
-                  <th className="py-3.5 px-4">Penyelenggara / Unit</th>
-                  <th className="py-3.5 px-4">Waktu & Tempat</th>
-                  <th className="py-3.5 px-4">Kategori & Akses</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-wine-50 text-wine-800">
-                {events.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-wine-500">
-                      Tidak ada agenda yang cocok dengan kriteria pencarian.
-                    </td>
-                  </tr>
-                ) : (
-                  events.map((evt) => (
-                    <tr key={evt.id} className="hover:bg-surface-base">
-                      <td className="py-3.5 px-4 max-w-xs">
-                        <Link
-                          href={`/organization/events/${evt.id}`}
-                          className="font-bold text-wine-950 font-display text-sm hover:text-brand-burgundy hover:underline line-clamp-1"
-                        >
-                          {evt.title}
-                        </Link>
-                        <p className="text-[11px] text-wine-500 line-clamp-1 mt-0.5">
-                          {evt.description}
-                        </p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-medium text-wine-900">{evt.organizer_unit}</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-mono text-[11px] text-wine-700">
-                          {new Date(evt.schedule_start).toLocaleDateString("id-ID")}
-                        </div>
-                        <p className="text-[11px] text-wine-500 line-clamp-1">{evt.location}</p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                            evt.visibility === "public"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-slate-100 text-slate-800"
-                          }`}
-                        >
-                          {evt.visibility}
-                        </span>
-                        <span className="ml-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-wine-50 text-brand-burgundy border border-wine-100">
-                          {evt.category}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            evt.status === "published"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : evt.status === "cancelled"
-                              ? "bg-rose-100 text-rose-800"
-                              : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {evt.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          href={`/organization/events/${evt.id}`}
-                          className="px-3 py-1.5 rounded-lg border border-wine-200 hover:bg-wine-50 text-wine-800 text-xs font-semibold inline-flex items-center gap-1"
-                        >
-                          Kelola <Settings className="w-3 h-3" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+            <span>Buat Event Baru</span>
+          </button>
+        )}
       </div>
-    </OrganizationShell>
+
+      {/* Feedback */}
+      {feedback && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{feedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* 4 KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[
+          { label: "Total Event", val: allEvents.length, sub: "Tayang di portal publik", icon: CalendarCheck, tone: "bg-brand-burgundy/10 text-brand-burgundy" },
+          { label: "Tiket Terbit", val: totalIssuedTickets, sub: "E-Tiket resmi peserta", icon: Ticket, tone: "bg-[#E8B577]/25 text-[#8A5A2B]" },
+          { label: "Verifikasi Bayar", val: pendingPayments, sub: "Bukti bayar menunggu", icon: Users, tone: "bg-amber-500/12 text-amber-700" },
+          { label: "Presensi Hadir", val: totalCheckedIn, sub: "Check-in QR & manual", icon: QrCode, tone: "bg-emerald-500/12 text-emerald-700" },
+        ].map((k) => {
+          const Icon = k.icon;
+          return (
+            <div
+              key={k.label}
+              className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col justify-between"
+            >
+              <div className="flex items-start justify-between gap-2 pb-2">
+                <span className="text-[11px] font-semibold text-neutral-dark">{k.label}</span>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${k.tone}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+              </div>
+              <div>
+                <strong className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 leading-none block">
+                  {k.val}
+                </strong>
+                <span className="text-[11px] text-neutral-light mt-1 block">{k.sub}</span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Filter Bar */}
+      <div className="p-4 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-neutral-light absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Cari judul event, unit penyelenggara, atau lokasi..."
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-burgundy/20"
+          />
+        </div>
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+        >
+          <option value="all">Semua Kategori Tiket</option>
+          <option value="gratis">Gratis</option>
+          <option value="berbayar">Berbayar</option>
+        </select>
+      </div>
+
+      {/* Events Auto-Layout Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {filteredEvents.map((evt) => {
+          const evtTickets = store.tickets.filter((t) => t.event_id === evt.id);
+          const checkedIn = evtTickets.filter((t) => t.is_checked_in).length;
+
+          return (
+            <div
+              key={evt.id}
+              className="p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 transition-all flex flex-col justify-between gap-4"
+            >
+              <div className="space-y-2.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${
+                        evt.category === "gratis"
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-brand-burgundy/10 text-brand-burgundy border-brand-burgundy/25"
+                      }`}
+                    >
+                      {evt.category === "gratis" ? "Gratis" : "Berbayar"}
+                    </span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[#FCF8F6] border border-[#E9E1DC] text-neutral-dark">
+                      {evt.organizer_unit}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-neutral-dark">
+                    Hadir: {checkedIn}/{evtTickets.length}
+                  </span>
+                </div>
+
+                <h3 className="font-serif text-lg font-bold text-wine-950 leading-snug">
+                  {evt.title}
+                </h3>
+
+                <div className="space-y-1 text-xs text-neutral-dark">
+                  <span className="flex items-center gap-1.5 font-mono text-[11px]">
+                    <Calendar className="w-3.5 h-3.5 text-brand-burgundy shrink-0" />
+                    {new Date(evt.schedule_start).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[11px]">
+                    <MapPin className="w-3.5 h-3.5 text-[#AF7D66] shrink-0" />
+                    <span className="truncate">{evt.location}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-[#E9E1DC] flex flex-wrap items-center gap-2">
+                <Link
+                  href={`/organization/events/${evt.id}`}
+                  className="px-4 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm transition-colors"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  <span>Kelola 6-Tab Event</span>
+                </Link>
+                <Link
+                  href={`/organization/events/${evt.id}/check-in`}
+                  className="px-3.5 py-2 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
+                >
+                  <QrCode className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Presensi QR</span>
+                </Link>
+                <Link
+                  href={`/aktivitas/agenda/${evt.id}`}
+                  target="_blank"
+                  className="px-3 py-2 rounded-full text-xs font-semibold text-neutral-dark hover:text-brand-burgundy inline-flex items-center gap-1 ml-auto"
+                >
+                  <span>Publik</span>
+                  <ExternalLink className="w-3 h-3" />
+                </Link>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* MODAL: Buat Event Baru (Auto-syncs to Kalender Organisasi!) */}
+      <EditorialModal
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+        badge="Agenda & Event Publik"
+        title="Buat Event Publik Baru"
+        subtitle="Event yang dibuat langsung tayang di portal Agenda & Tiket publik dan otomatis disinkronkan ke Kalender Organisasi."
+        maxWidth="lg"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setCreateOpen(false)}
+              className="px-4 py-2 rounded-full border border-[#E9E1DC] bg-white text-xs font-semibold text-wine-950"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              form="create-event-modal-form"
+              className="px-6 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm"
+            >
+              Simpan &amp; Tayangkan Event
+            </button>
+          </>
+        }
+      >
+        <form id="create-event-modal-form" onSubmit={handleCreateEvent} className="space-y-3.5 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-semibold text-wine-950">Nama Event *</label>
+              <input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Contoh: Seminar Nasional Kewirausahaan Muda 2026"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Kategori Tiket</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as TicketCategory)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              >
+                <option value="gratis">Gratis</option>
+                <option value="berbayar">Berbayar</option>
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Program Kerja Terkait</label>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              >
+                <option value="">Event Umum / Kompartemen</option>
+                {store.projects.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Tanggal Pelaksanaan *</label>
+              <input
+                type="date"
+                required
+                value={dateStr}
+                onChange={(e) => setDateStr(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Jam Mulai</label>
+              <input
+                type="time"
+                value={timeStr}
+                onChange={(e) => setTimeStr(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950"
+              />
+            </div>
+
+            {category === "berbayar" && (
+              <div className="space-y-1">
+                <label className="font-semibold text-wine-950">Harga Tiket Awal (Rp)</label>
+                <input
+                  type="number"
+                  min={0}
+                  value={price}
+                  onChange={(e) => setPrice(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950 font-mono"
+                />
+              </div>
+            )}
+
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Kuota Tiket Awal</label>
+              <input
+                type="number"
+                min={1}
+                value={quota}
+                onChange={(e) => setQuota(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950 font-mono"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-semibold text-wine-950">Lokasi Event</label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              />
+            </div>
+
+            <div className="sm:col-span-2 space-y-1">
+              <label className="font-semibold text-wine-950">Deskripsi Singkat</label>
+              <textarea
+                rows={2}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Ringkasan acara, pembicara, dan manfaat untuk peserta..."
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950 resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] flex items-start gap-2 text-[11px] text-neutral-dark">
+            <Info className="w-4 h-4 text-brand-burgundy shrink-0 mt-0.5" />
+            <span>
+              Jenis tiket tambahan (Early Bird, VIP, dll.) dapat diatur lebih lanjut melalui tab <strong>Jenis Tiket</strong> di halaman 6-Tab Event.
+            </span>
+          </div>
+        </form>
+      </EditorialModal>
+    </div>
   );
 }

@@ -2,20 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMockStore, mutateStore, addActivityHistory } from "@/lib/mock/store";
-import {
-  Bell,
-  CheckCircle2,
-  Clock,
-  MailCheck,
-  Trash2,
-  ExternalLink,
-  Filter,
-  Sparkles,
-  Inbox
-} from "lucide-react";
+import { Bell, MailCheck, ExternalLink, Inbox, ArrowLeft } from "lucide-react";
 
 export default function MyNotificationsPage() {
+  const router = useRouter();
   const { store, currentUser } = useMockStore();
 
   const userNotifications = store.notifications.filter(
@@ -29,6 +21,8 @@ export default function MyNotificationsPage() {
     return true;
   });
 
+  const unreadCount = userNotifications.filter((n) => !n.read).length;
+
   const handleMarkAllAsRead = () => {
     mutateStore((draft) => {
       draft.notifications.forEach((n) => {
@@ -39,8 +33,8 @@ export default function MyNotificationsPage() {
       addActivityHistory(
         currentUser.name,
         "menandai semua notifikasi telah dibaca",
-        "Inbox Notifikasi",
-        "Pusat Notifikasi"
+        "Kotak Masuk Pemberitahuan",
+        "Notifikasi"
       );
     });
   };
@@ -54,60 +48,78 @@ export default function MyNotificationsPage() {
     });
   };
 
+  const handleGoBack = () => {
+    if (typeof window !== "undefined" && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push("/personal/dashboard");
+    }
+  };
+
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-12">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="space-y-6 sm:space-y-7 pb-10">
+      {/* Back Button */}
+      <div>
+        <button
+          type="button"
+          onClick={handleGoBack}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white border border-[#E9E1DC] text-xs font-semibold text-wine-950 hover:border-brand-burgundy/40 hover:text-brand-burgundy transition-colors shadow-sm"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali</span>
+        </button>
+      </div>
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-brand-burgundy/10 text-brand-burgundy">
-              Screen ID: PER-12
-            </span>
-            <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-wine-950/5 text-neutral-light">
-              Pusat Pemberitahuan
-            </span>
-          </div>
-          <h1 className="font-serif text-3xl font-bold text-wine-950">
-            Kotak Masuk Pemberitahuan
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+            Pusat Pemberitahuan
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Notifikasi Saya
           </h1>
           <p className="text-xs text-neutral-dark">
-            Pemberitahuan resmi sistem mengenai agenda, verifikasi pembayaran, surat, dan pembaruan program kerja.
+            Pembaruan terkait tiket, agenda kegiatan, status keanggotaan, dan aktivitas akun Anda.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        {unreadCount > 0 && (
           <button
+            type="button"
             onClick={handleMarkAllAsRead}
-            className="px-4 py-2 rounded-full bg-surface-card border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 transition-colors flex items-center gap-1.5 shadow-sm"
+            className="px-4 py-2 rounded-full bg-white border border-[#E9E1DC] text-xs font-semibold text-wine-950 hover:border-brand-burgundy/40 hover:bg-[#FCF8F6] transition-colors inline-flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
           >
-            <MailCheck className="w-3.5 h-3.5" />
+            <MailCheck className="w-3.5 h-3.5 text-brand-burgundy" />
             <span>Tandai Semua Dibaca</span>
           </button>
-        </div>
+        )}
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-2 border-b border-wine-950/10 pb-3 text-xs">
+      {/* Filter Pills */}
+      <div className="flex items-center gap-2 text-xs">
         <button
+          type="button"
           onClick={() => setActiveFilter("all")}
-          className={`px-3 py-1.5 rounded-xl font-medium transition-colors ${
+          className={`px-4 py-1.5 rounded-full font-semibold border transition-colors ${
             activeFilter === "all"
-              ? "bg-brand-burgundy text-white font-semibold"
-              : "text-neutral-dark hover:text-wine-950 bg-surface-card"
+              ? "bg-brand-burgundy text-white border-brand-burgundy shadow-sm"
+              : "bg-white text-neutral-dark border-[#E9E1DC] hover:border-brand-burgundy/40"
           }`}
         >
           Semua ({userNotifications.length})
         </button>
 
         <button
+          type="button"
           onClick={() => setActiveFilter("unread")}
-          className={`px-3 py-1.5 rounded-xl font-medium transition-colors ${
+          className={`px-4 py-1.5 rounded-full font-semibold border transition-colors ${
             activeFilter === "unread"
-              ? "bg-brand-burgundy text-white font-semibold"
-              : "text-neutral-dark hover:text-wine-950 bg-surface-card"
+              ? "bg-brand-burgundy text-white border-brand-burgundy shadow-sm"
+              : "bg-white text-neutral-dark border-[#E9E1DC] hover:border-brand-burgundy/40"
           }`}
         >
-          Belum Dibaca ({userNotifications.filter((n) => !n.read).length})
+          Belum Dibaca ({unreadCount})
         </button>
       </div>
 
@@ -118,40 +130,41 @@ export default function MyNotificationsPage() {
             <div
               key={item.id}
               onClick={() => handleMarkSingleAsRead(item.id)}
-              className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
+              className={`p-5 rounded-3xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                 !item.read
-                  ? "bg-surface-card border-brand-burgundy/40 shadow-md ring-1 ring-brand-burgundy/10"
-                  : "bg-surface-card/60 border-wine-950/10 hover:border-wine-950/30 opacity-90"
+                  ? "bg-white border-brand-burgundy/35 shadow-[0_6px_22px_rgba(90,23,34,0.08)]"
+                  : "bg-white/75 border-[#E9E1DC] hover:border-[#D4C7C2]"
               }`}
             >
-              <div className="flex items-start gap-3.5 flex-1">
+              <div className="flex items-start gap-3.5 flex-1 min-w-0">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 mt-0.5 ${
                     !item.read
                       ? "bg-brand-burgundy text-white shadow-sm"
-                      : "bg-neutral-200 text-neutral-600"
+                      : "bg-[#FCF8F6] text-neutral-light border border-[#E9E1DC]"
                   }`}
                 >
                   <Bell className="w-4 h-4" />
                 </div>
 
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-brand-burgundy/10 text-brand-burgundy">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-brand-burgundy/10 text-brand-burgundy">
                       {item.category}
                     </span>
                     {!item.read && (
-                      <span className="w-2 h-2 rounded-full bg-brand-burgundy" />
+                      <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-brand-burgundy">
+                        <span className="w-1.5 h-1.5 rounded-full bg-brand-burgundy" />
+                        Baru
+                      </span>
                     )}
                   </div>
 
-                  <strong className="font-serif text-base text-wine-950 block">
+                  <strong className="font-serif text-base text-wine-950 block leading-snug">
                     {item.title}
                   </strong>
 
-                  <p className="text-xs text-neutral-dark leading-relaxed">
-                    {item.message}
-                  </p>
+                  <p className="text-xs text-neutral-dark leading-relaxed">{item.message}</p>
 
                   <span className="text-[10px] font-mono text-neutral-light block pt-1">
                     {new Date(item.created_at).toLocaleString("id-ID", {
@@ -159,19 +172,20 @@ export default function MyNotificationsPage() {
                       month: "short",
                       year: "numeric",
                       hour: "2-digit",
-                      minute: "2-digit"
+                      minute: "2-digit",
                     })}
                   </span>
                 </div>
               </div>
 
               {item.source_route && (
-                <div className="shrink-0 self-end sm:self-center">
+                <div className="shrink-0 self-start sm:self-center">
                   <Link
                     href={item.source_route}
-                    className="px-4 py-1.5 rounded-full border border-wine-950/20 text-wine-950 hover:bg-wine-950/5 text-xs font-semibold flex items-center gap-1.5"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-4 py-2 rounded-full border border-[#E9E1DC] bg-[#FCF8F6] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
                   >
-                    <span>Buka Tautan</span>
+                    <span>Buka</span>
                     <ExternalLink className="w-3 h-3" />
                   </Link>
                 </div>
@@ -179,10 +193,12 @@ export default function MyNotificationsPage() {
             </div>
           ))
         ) : (
-          <div className="p-12 rounded-3xl bg-surface-card border border-wine-950/10 text-center space-y-3">
+          <div className="p-12 rounded-3xl bg-white/95 border border-dashed border-[#E9E1DC] text-center space-y-3">
             <Inbox className="w-10 h-10 text-neutral-300 mx-auto" />
             <p className="text-xs text-neutral-dark">
-              Tidak ada notifikasi dalam kotak masuk saat ini.
+              {activeFilter === "unread"
+                ? "Semua pemberitahuan sudah terbaca."
+                : "Belum ada pemberitahuan di kotak masuk Anda."}
             </p>
           </div>
         )}

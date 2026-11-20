@@ -1,26 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
 import { useMockStore } from "@/lib/mock/store";
-import {
-  FileText,
-  ChevronLeft,
-  Printer,
-  Download,
-  Calendar,
-  Building,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  Scale
-} from "lucide-react";
+import { ChevronLeft, Printer, Download } from "lucide-react";
 
 export default function CentralFinanceReportPage() {
   const { store } = useMockStore();
   const activeCab = store.cabinets.find((c) => c.status === "active") || store.cabinets[0];
-
   const transactions = store.finance_transactions || [];
 
   const totalIncome = transactions
@@ -33,167 +19,153 @@ export default function CentralFinanceReportPage() {
 
   const surplusDeficit = totalIncome - totalExpense;
 
-  const handlePrint = () => {
-    window.print();
+  const handleExportCsv = () => {
+    const headers = ["Tanggal", "Tipe", "Kategori", "Uraian", "Akun Kas", "Bukti", "Nominal (Rp)"];
+    const rows = transactions.map((t) =>
+      [
+        `"${t.date}"`,
+        `"${t.type}"`,
+        `"${t.category}"`,
+        `"${t.description.replace(/"/g, '""')}"`,
+        `"${t.source_account}"`,
+        `"${t.proof_file_name || "-"}"`,
+        t.type === "expense" ? -t.amount : t.amount,
+      ].join(",")
+    );
+    const csv = "\uFEFF" + [headers.join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `laporan-keuangan-${activeCab.name.toLowerCase().replace(/\s+/g, "-")}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Breadcrumb & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href="/organization/finance"
-                className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Keuangan
-              </Link>
-              <span className="text-xs text-wine-300">/</span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                FIN-10
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Laporan Keuangan & Arus Kas Fiskal
-            </h1>
-            <p className="text-xs text-wine-600 mt-1">
-              Laporan pertanggungjawaban fiskal resmi Bendahara Umum Kabinet {activeCab.name}.
-            </p>
-          </div>
-
+    <div className="space-y-6 pb-12 print:p-0">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 print:hidden">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handlePrint}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-wine-200 hover:bg-wine-50 text-wine-900 font-medium text-xs shadow-2xs transition-all"
+            <Link
+              href="/organization/finance"
+              className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
             >
-              <Printer className="w-4 h-4 text-brand-burgundy" />
-              <span>Cetak Laporan Fiskal</span>
-            </button>
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Keuangan Sentral</span>
+            </Link>
+            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+              • Laporan Fiskal
+            </span>
           </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Laporan Keuangan &amp; Arus Kas
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Laporan pertanggungjawaban arus kas resmi Bendahara Umum Kabinet {activeCab.name} ({activeCab.period}).
+          </p>
         </div>
 
-        {/* Printable Report Paper */}
-        <div className="p-8 sm:p-12 rounded-3xl bg-white border border-wine-100 shadow-sm space-y-8 max-w-4xl mx-auto">
-          {/* Header Organization */}
-          <div className="border-b-2 border-wine-950 pb-6 text-center space-y-1">
-            <h2 className="text-lg font-bold uppercase tracking-wider text-wine-950">
-              HIPMI PERGURUAN TINGGI UNIVERSITAS TELKOM
-            </h2>
-            <h3 className="text-base font-semibold text-brand-burgundy font-display">
-              BENDAHARA UMUM — KABINET {activeCab.name.toUpperCase()} ({activeCab.period})
-            </h3>
-            <p className="text-xs text-wine-600 font-mono">
-              Jl. Telekomunikasi No. 1, Terusan Buahbatu, Bandung • HIPMI CENTRAL
-            </p>
-          </div>
-
-          {/* Report Meta */}
-          <div className="flex flex-col sm:flex-row justify-between gap-4 text-xs">
-            <div>
-              <p className="text-wine-500">Jenis Dokumen:</p>
-              <p className="font-bold text-wine-900 text-sm">Laporan Realisasi Anggaran & Kas Sentral</p>
-            </div>
-            <div className="sm:text-right">
-              <p className="text-wine-500">Tanggal Rekonsiliasi:</p>
-              <p className="font-mono font-semibold text-wine-900">
-                {new Date().toLocaleDateString("id-ID", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric"
-                })}
-              </p>
-            </div>
-          </div>
-
-          {/* Statement of Financial Position */}
-          <div className="space-y-4">
-            <h4 className="font-bold text-sm uppercase tracking-wider text-wine-950 border-b border-wine-200 pb-2 flex items-center justify-between">
-              <span>I. Rekapitulasi Arus Kas (Cash Flow Summary)</span>
-              <Scale className="w-4 h-4 text-brand-burgundy" />
-            </h4>
-
-            <div className="space-y-3 text-xs sm:text-sm">
-              <div className="flex justify-between py-2 border-b border-wine-50">
-                <span className="text-wine-700">A. Penerimaan Kas Masuk (Total Income)</span>
-                <span className="font-mono font-bold text-emerald-700">
-                  Rp {totalIncome.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <div className="flex justify-between py-2 border-b border-wine-50">
-                <span className="text-wine-700">B. Realisasi Belanja & Pengeluaran (Total Expense)</span>
-                <span className="font-mono font-bold text-rose-700">
-                  Rp {totalExpense.toLocaleString("id-ID")}
-                </span>
-              </div>
-              <div className="flex justify-between py-3 border-t-2 border-wine-200 bg-surface-base px-4 rounded-xl font-bold">
-                <span className="text-wine-950">Surplus / (Defisit) Kas Bersih:</span>
-                <span
-                  className={`font-mono text-base ${
-                    surplusDeficit >= 0 ? "text-emerald-700" : "text-rose-700"
-                  }`}
-                >
-                  {surplusDeficit >= 0 ? "+" : ""} Rp {surplusDeficit.toLocaleString("id-ID")}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Transactions Ledger Snapshot */}
-          <div className="space-y-4">
-            <h4 className="font-bold text-sm uppercase tracking-wider text-wine-950 border-b border-wine-200 pb-2">
-              II. Jurnal Rekonsiliasi Transaksi Buku Kas Terakhir
-            </h4>
-
-            <table className="w-full text-left text-xs">
-              <thead className="bg-wine-50 text-wine-800 font-semibold border-b border-wine-100">
-                <tr>
-                  <th className="py-2 px-3">Tanggal</th>
-                  <th className="py-2 px-3">Kategori</th>
-                  <th className="py-2 px-3">Uraian Transaksi</th>
-                  <th className="py-2 px-3 text-right">Nominal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-wine-50 text-wine-800">
-                {transactions.slice(0, 8).map((tx) => (
-                  <tr key={tx.id}>
-                    <td className="py-2 px-3 font-mono text-wine-500">{tx.date}</td>
-                    <td className="py-2 px-3 font-medium">{tx.category}</td>
-                    <td className="py-2 px-3 text-wine-900">{tx.description}</td>
-                    <td
-                      className={`py-2 px-3 text-right font-mono font-bold ${
-                        tx.type === "income" ? "text-emerald-700" : "text-rose-700"
-                      }`}
-                    >
-                      {tx.type === "income" ? "+" : "-"} Rp {tx.amount.toLocaleString("id-ID")}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Formal Signature Footnotes */}
-          <div className="pt-8 border-t border-wine-200 grid grid-cols-2 text-center text-xs">
-            <div>
-              <p className="text-wine-500">Mengetahui,</p>
-              <p className="font-semibold text-wine-900 mt-0.5">Ketua Umum HIPMI PT Telkom</p>
-              <div className="h-16"></div>
-              <p className="font-bold underline text-wine-950">Ahmad Fauzan Pratama</p>
-              <p className="text-[11px] text-wine-500 font-mono">NIM 1201220001</p>
-            </div>
-            <div>
-              <p className="text-wine-500">Dibuat oleh,</p>
-              <p className="font-semibold text-wine-900 mt-0.5">Bendahara Umum</p>
-              <div className="h-16"></div>
-              <p className="font-bold underline text-wine-950">Rania Az-Zahra</p>
-              <p className="text-[11px] text-wine-500 font-mono">NIM 1401220045</p>
-            </div>
-          </div>
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className="px-4 py-2.5 rounded-full bg-white border border-[#E9E1DC] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Download className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Export Excel (CSV)</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold inline-flex items-center gap-1.5 shadow-sm"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Cetak / PDF</span>
+          </button>
         </div>
       </div>
-    </OrganizationShell>
+
+      {/* Printable Report Sheet */}
+      <div className="p-6 sm:p-10 rounded-3xl bg-white border border-[#E9E1DC] shadow-sm space-y-6 max-w-4xl mx-auto">
+        <div className="border-b-2 border-wine-950 pb-5 text-center space-y-1">
+          <h2 className="text-base font-bold uppercase tracking-wider text-wine-950">
+            HIPMI PERGURUAN TINGGI UNIVERSITAS TELKOM
+          </h2>
+          <h3 className="font-serif text-lg font-bold text-brand-burgundy">
+            BENDAHARA UMUM — {activeCab.name.toUpperCase()} ({activeCab.period})
+          </h3>
+          <p className="text-[11px] font-mono text-neutral-dark">
+            Laporan Realisasi Arus Kas &amp; Transaksi Tercatat
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 text-xs">
+          <div className="p-4 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-mono uppercase text-neutral-light block">
+              Total Pemasukan
+            </span>
+            <strong className="font-mono text-lg text-emerald-700 block mt-1">
+              + Rp {totalIncome.toLocaleString("id-ID")}
+            </strong>
+          </div>
+          <div className="p-4 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-mono uppercase text-neutral-light block">
+              Total Pengeluaran
+            </span>
+            <strong className="font-mono text-lg text-rose-700 block mt-1">
+              - Rp {totalExpense.toLocaleString("id-ID")}
+            </strong>
+          </div>
+          <div className="p-4 rounded-2xl bg-brand-burgundy/5 border border-brand-burgundy/20">
+            <span className="text-[10px] font-mono uppercase text-brand-burgundy block">
+              Saldo Bersih (Surplus/Defisit)
+            </span>
+            <strong className="font-mono text-lg text-wine-950 block mt-1">
+              Rp {surplusDeficit.toLocaleString("id-ID")}
+            </strong>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#FCF8F6] text-neutral-dark border-y border-[#E9E1DC]">
+              <tr>
+                <th className="py-3 px-3 font-semibold">Tanggal</th>
+                <th className="py-3 px-3 font-semibold">Uraian &amp; Kategori</th>
+                <th className="py-3 px-3 font-semibold">Bukti</th>
+                <th className="py-3 px-3 font-semibold text-right">Nominal</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#E9E1DC]/60">
+              {transactions.map((t) => (
+                <tr key={t.id}>
+                  <td className="py-2.5 px-3 font-mono text-neutral-dark whitespace-nowrap">
+                    {t.date}
+                  </td>
+                  <td className="py-2.5 px-3">
+                    <strong className="text-wine-950 block">{t.description}</strong>
+                    <span className="text-[10px] text-neutral-light">{t.category}</span>
+                  </td>
+                  <td className="py-2.5 px-3 font-mono text-[10px] text-emerald-700">
+                    {t.proof_file_name || "Terverifikasi"}
+                  </td>
+                  <td
+                    className={`py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap ${
+                      t.type === "income" ? "text-emerald-700" : "text-rose-700"
+                    }`}
+                  >
+                    {t.type === "income" ? "+" : "-"} Rp {t.amount.toLocaleString("id-ID")}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   );
 }

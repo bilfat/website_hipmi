@@ -2,181 +2,343 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
-import { useMockStore } from "@/lib/mock/store";
 import {
-  Briefcase,
+  useMockStore,
+  mutateStore,
+  addActivityHistory,
+  addAuditEvent,
+} from "@/lib/mock/store";
+import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
+import { BUSINESS_REVIEW_LABELS } from "@/lib/personal/labels";
+import { EditorialModal } from "@/components/ui/editorial-modal";
+import { CadreBusiness } from "@/types/domain";
+import {
+  Store,
   Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
   ExternalLink,
   CheckCircle2,
-  Clock,
   AlertCircle,
-  Eye
+  Globe,
+  Phone,
+  ShieldCheck,
+  EyeOff,
 } from "lucide-react";
 
-export default function CadreBusinessesDirectoryPage() {
-  const { store } = useMockStore();
+export default function CadreBusinessesManagementPage() {
+  const { store, currentUser } = useMockStore();
+  const permissions = resolveUserPermissions(currentUser, store);
+  const canCurate = permissions.canManagePartnerships || permissions.isSystemAdmin;
+
   const [searchTerm, setSearchTerm] = useState("");
   const [reviewFilter, setReviewFilter] = useState("all");
-  const [pubFilter, setPubFilter] = useState("all");
+  const [selectedBiz, setSelectedBiz] = useState<CadreBusiness | null>(null);
+  const [reviewerNote, setReviewerNote] = useState("");
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const businesses = (store.businesses || []).filter((b) => {
     if (reviewFilter !== "all" && b.review_status !== reviewFilter) return false;
-    if (pubFilter !== "all" && b.publication_status !== pubFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      const matchName = b.name.toLowerCase().includes(q);
-      const matchOwner = b.owner_name.toLowerCase().includes(q);
-      const matchCat = b.category.toLowerCase().includes(q);
-      if (!matchName && !matchOwner && !matchCat) return false;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      if (
+        !b.name.toLowerCase().includes(q) &&
+        !b.owner_name.toLowerCase().includes(q) &&
+        !b.category.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
     }
     return true;
   });
 
+  // Separate Approval vs Publication actions per front_end.md DIR-05!
+  const handleReviewAction = (status: "approved" | "revision_needed" | "rejected") => {
+    if (!selectedBiz) return;
+    mutateStore((draft) => {
+      const target = draft.businesses.find((b) => b.id === selectedBiz.id);
+      if (target) {
+        target.review_status = status;
+        target.reviewer_notes = reviewerNote.trim() || undefined;
+        if (status !== "approved") {
+          target.publication_status = "unpublished";
+        }
+      }
+      addAuditEvent(
+        currentUser.id,
+        currentUser.name,
+        `BUSINESS_REVIEW_${status.toUpperCase()}`,
+        "CadreBusiness",
+        selectedBiz.id
+      );
+    });
+    setSelectedBiz((prev) =>
+      prev
+        ? {
+            ...prev,
+            review_status: status,
+            reviewer_notes: reviewerNote.trim() || undefined,
+            publication_status: status !== "approved" ? "unpublished" : prev.publication_status,
+          }
+        : null
+    );
+    setFeedback(
+      status === "approved"
+        ? "Usaha kader dinyatakan LOLOS KURASI. Anda dapat memublikasikannya ke portal publik secara terpisah."
+        : status === "revision_needed"
+        ? "Permintaan revisi dikirimkan kepada kader pemilik usaha."
+        : "Pengajuan usaha kader ditolak."
+    );
+  };
+
+  const handleTogglePublish = () => {
+    if (!selectedBiz || selectedBiz.review_status !== "approved") return;
+    const nextPub = selectedBiz.publication_status === "published" ? "unpublished" : "published";
+
+    mutateStore((draft) => {
+      const target = draft.businesses.find((b) => b.id === selectedBiz.id);
+      if (target) {
+        target.publication_status = nextPub;
+      }
+      addActivityHistory(
+        currentUser.name,
+        nextPub === "published" ? "memublikasikan bisnis kader" : "menarik publikasi bisnis kader",
+        selectedBiz.name,
+        "Pengelolaan Bisnis Kader"
+      );
+    });
+
+    setSelectedBiz((prev) => (prev ? { ...prev, publication_status: nextPub } : null));
+    setFeedback(
+      nextPub === "published"
+        ? `Usaha "${selectedBiz.name}" kini TAYANG di Direktori Bisnis Publik.`
+        : `Usaha "${selectedBiz.name}" ditarik dari tampilan publik.`
+    );
+  };
+
   return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Breadcrumb & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                DIR-04
-              </span>
-              <span className="text-xs font-medium text-wine-500">Direktori Bisnis</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Database Usaha & Bisnis Kader
-            </h1>
-            <p className="text-xs text-wine-600 mt-1">
-              Etalase dan direktori unit usaha yang dimiliki oleh anggota HIPMI Telkom, verifikasi legalitas, dan status kurasi katalog publik.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Link
-              href="/karya-kader/bisnis"
-              target="_blank"
-              className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-            >
-              Lihat Katalog Publik (PUB-18) <ExternalLink className="w-3.5 h-3.5" />
-            </Link>
-          </div>
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+            Layanan Khusus • Database &amp; Kurasi
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Pengelolaan Bisnis Kader
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Pusat data usaha mahasiswa kader beserta kurasi kelayakan dan publikasi ke Direktori Bisnis Publik. Persetujuan kurasi dan publikasi dijalankan sebagai dua langkah terpisah.
+          </p>
         </div>
 
-        {/* Filter bar */}
-        <div className="p-4 rounded-xl bg-white border border-wine-100 shadow-xs flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-wine-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Cari nama usaha, pemilik kader, atau kategori bidang..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-wine-200 text-xs text-wine-900 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <select
-              value={reviewFilter}
-              onChange={(e) => setReviewFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Status Review</option>
-              <option value="approved">Approved</option>
-              <option value="in_review">In Review</option>
-              <option value="draft">Draft</option>
-            </select>
-
-            <select
-              value={pubFilter}
-              onChange={(e) => setPubFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Status Publikasi</option>
-              <option value="published">Published (Tayang Publik)</option>
-              <option value="draft">Draft (Belum Tayang)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Businesses Table */}
-        <div className="bg-white rounded-2xl border border-wine-100 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-wine-50/50 text-wine-700 font-semibold border-b border-wine-100">
-                <tr>
-                  <th className="py-3.5 px-4">Nama Usaha / Brand</th>
-                  <th className="py-3.5 px-4">Kader Pemilik</th>
-                  <th className="py-3.5 px-4">Kategori Industri</th>
-                  <th className="py-3.5 px-4">Status Kurasi</th>
-                  <th className="py-3.5 px-4">Katalog Publik</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-wine-50 text-wine-800">
-                {businesses.map((b) => (
-                  <tr key={b.id} className="hover:bg-surface-base">
-                    <td className="py-3.5 px-4 max-w-xs">
-                      <Link
-                        href={`/organization/directory/businesses/${b.id}`}
-                        className="font-bold text-wine-950 font-display text-sm hover:text-brand-burgundy hover:underline line-clamp-1"
-                      >
-                        {b.name}
-                      </Link>
-                      <p className="text-[11px] text-wine-500 line-clamp-1 mt-0.5">{b.description}</p>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="font-medium text-wine-900">{b.owner_name}</span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-wine-50 text-wine-800 border border-wine-100">
-                        {b.category}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                          b.review_status === "approved"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : b.review_status === "rejected"
-                            ? "bg-rose-100 text-rose-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {b.review_status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          b.publication_status === "published"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : "bg-slate-100 text-slate-700 border border-slate-200"
-                        }`}
-                      >
-                        {b.publication_status === "published" ? "🌐 Tayang Publik" : "🔒 Tertutup"}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Link
-                        href={`/organization/directory/businesses/${b.id}`}
-                        className="px-3 py-1.5 rounded-lg border border-wine-200 hover:bg-wine-50 text-wine-800 text-xs font-semibold inline-flex items-center gap-1"
-                      >
-                        Verifikasi (DIR-05) <ChevronRight className="w-3 h-3" />
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Link
+          href="/karya-kader/bisnis"
+          target="_blank"
+          className="px-4 py-2 rounded-full bg-white border border-[#E9E1DC] hover:border-brand-burgundy/40 text-xs font-semibold text-wine-950 hover:text-brand-burgundy inline-flex items-center gap-1.5 self-start sm:self-auto"
+        >
+          <span>Lihat Katalog Publik</span>
+          <ExternalLink className="w-3.5 h-3.5" />
+        </Link>
       </div>
-    </OrganizationShell>
+
+      {feedback && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{feedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Filter Bar */}
+      <div className="p-4 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-neutral-light absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Cari nama usaha, pemilik kader, atau kategori..."
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+          />
+        </div>
+        <select
+          value={reviewFilter}
+          onChange={(e) => setReviewFilter(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+        >
+          <option value="all">Semua Status Kurasi</option>
+          <option value="review">Menunggu Kurasi</option>
+          <option value="approved">Lolos Kurasi</option>
+          <option value="revision_needed">Perlu Revisi</option>
+          <option value="draft">Draf</option>
+        </select>
+      </div>
+
+      {/* Businesses Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {businesses.map((biz) => {
+          const rev = BUSINESS_REVIEW_LABELS[biz.review_status] || BUSINESS_REVIEW_LABELS.draft;
+          const isPub = biz.publication_status === "published";
+          return (
+            <div
+              key={biz.id}
+              onClick={() => {
+                setSelectedBiz(biz);
+                setReviewerNote(biz.reviewer_notes || "");
+              }}
+              className="p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all cursor-pointer flex flex-col justify-between gap-4"
+            >
+              <div className="space-y-2.5">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-brand-burgundy/10 text-brand-burgundy">
+                    {biz.category}
+                  </span>
+                  <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${rev.tone}`}>
+                    {rev.label}
+                  </span>
+                  <span
+                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                      isPub ? "bg-emerald-600 text-white" : "bg-neutral-100 text-neutral-600"
+                    }`}
+                  >
+                    {isPub ? "Tayang Publik" : "Belum Tayang"}
+                  </span>
+                </div>
+
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-wine-950 leading-snug">
+                    {biz.name}
+                  </h3>
+                  <span className="text-xs text-neutral-dark">Pemilik: {biz.owner_name}</span>
+                </div>
+
+                <p className="text-[11px] text-neutral-dark line-clamp-2 leading-relaxed">
+                  {biz.description}
+                </p>
+              </div>
+
+              <div className="pt-3 border-t border-[#E9E1DC] flex items-center justify-between text-xs font-semibold text-brand-burgundy">
+                <span>{canCurate ? "Kurasi & Publikasi" : "Lihat Detail"}</span>
+                <Store className="w-3.5 h-3.5" />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* MODAL: Kurasi & Publikasi Terpisah (DIR-05) */}
+      <EditorialModal
+        isOpen={!!selectedBiz}
+        onClose={() => setSelectedBiz(null)}
+        badge={selectedBiz?.category || "Kurasi Bisnis"}
+        title={selectedBiz?.name || "Detail Usaha Kader"}
+        subtitle={`Pemilik Kader: ${selectedBiz?.owner_name || "-"}`}
+        maxWidth="lg"
+        footer={
+          canCurate && selectedBiz ? (
+            <div className="flex flex-wrap items-center justify-between w-full gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleReviewAction("revision_needed")}
+                  className="px-3.5 py-2 rounded-full border border-amber-200 bg-amber-50 text-amber-800 text-xs font-semibold inline-flex items-center gap-1"
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Minta Revisi</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleReviewAction("approved")}
+                  className="px-4 py-2 rounded-full bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold inline-flex items-center gap-1"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Setujui Kurasi</span>
+                </button>
+              </div>
+
+              <button
+                type="button"
+                disabled={selectedBiz.review_status !== "approved"}
+                onClick={handleTogglePublish}
+                className="px-5 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold inline-flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
+              >
+                {selectedBiz.publication_status === "published" ? (
+                  <>
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Tarik dari Publik</span>
+                  </>
+                ) : (
+                  <>
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>Publish ke Web Publik</span>
+                  </>
+                )}
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setSelectedBiz(null)}
+              className="px-5 py-2 rounded-full bg-brand-burgundy text-white text-xs font-semibold"
+            >
+              Tutup
+            </button>
+          )
+        }
+      >
+        {selectedBiz && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+                <span className="text-[10px] font-mono uppercase text-neutral-light block">
+                  Langkah 1 — Status Kurasi
+                </span>
+                <strong className="text-wine-950">
+                  {BUSINESS_REVIEW_LABELS[selectedBiz.review_status]?.label || selectedBiz.review_status}
+                </strong>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+                <span className="text-[10px] font-mono uppercase text-neutral-light block">
+                  Langkah 2 — Status Publikasi
+                </span>
+                <strong className="text-wine-950">
+                  {selectedBiz.publication_status === "published" ? "Tayang di Portal Publik" : "Belum Tayang"}
+                </strong>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] space-y-2">
+              <p className="text-wine-950 leading-relaxed">{selectedBiz.description}</p>
+              <span className="inline-flex items-center gap-1.5 text-neutral-dark font-mono">
+                <Phone className="w-3.5 h-3.5 text-brand-burgundy" />
+                {selectedBiz.contact_public}
+              </span>
+            </div>
+
+            {canCurate && (
+              <div className="space-y-1">
+                <label className="font-semibold text-wine-950 block">
+                  Catatan Internal Reviewer (Tidak Ditampilkan ke Publik)
+                </label>
+                <textarea
+                  rows={2}
+                  value={reviewerNote}
+                  onChange={(e) => setReviewerNote(e.target.value)}
+                  placeholder="Catatan kurasi legalitas atau arahan perbaikan deskripsi..."
+                  className="w-full px-3.5 py-2 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950 resize-none"
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </EditorialModal>
+    </div>
   );
 }

@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
-import { useMockStore } from "@/lib/mock/store";
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  useMockStore,
+  mutateStore,
+  addActivityHistory,
+} from "@/lib/mock/store";
 import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
+import { EditorialModal } from "@/components/ui/editorial-modal";
+import { CalendarEvent } from "@/types/domain";
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -12,318 +17,625 @@ import {
   Plus,
   Clock,
   MapPin,
-  Users,
   AlertTriangle,
-  Eye,
-  Lock,
-  Layers,
-  Sparkles,
-  ExternalLink,
-  Filter
+  List,
+  Grid,
+  CheckCircle2,
+  Trash2,
+  Building,
+  Info,
 } from "lucide-react";
+
+const CATEGORY_STYLES: Record<string, { label: string; tone: string; dot: string }> = {
+  Pleno: {
+    label: "Rapat Pleno",
+    tone: "bg-brand-burgundy/10 text-brand-burgundy border-brand-burgundy/25",
+    dot: "bg-brand-burgundy",
+  },
+  Rapat: {
+    label: "Rapat Internal",
+    tone: "bg-sky-50 text-sky-800 border-sky-200",
+    dot: "bg-sky-600",
+  },
+  "Main Event Proker": {
+    label: "Main Event Proker",
+    tone: "bg-emerald-50 text-emerald-800 border-emerald-200",
+    dot: "bg-emerald-600",
+  },
+  "Event Formal": {
+    label: "Oprec / WWC / Formal",
+    tone: "bg-[#E8B577]/25 text-[#6F4518] border-[#E8B577]/50",
+    dot: "bg-[#AF7D66]",
+  },
+  Lainnya: {
+    label: "Milestone Lainnya",
+    tone: "bg-neutral-100 text-neutral-700 border-neutral-200",
+    dot: "bg-neutral-500",
+  },
+};
 
 export default function OrganizationCalendarPage() {
   const { store, currentUser } = useMockStore();
   const permissions = resolveUserPermissions(currentUser, store);
 
-  const [viewMode, setViewMode] = useState<"month" | "week" | "list">("month");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [selectedVisibility, setSelectedVisibility] = useState<string>("all");
-
-  const events = store.events.filter((evt) => {
-    if (selectedCategory !== "all" && evt.category !== selectedCategory) return false;
-    if (selectedVisibility !== "all" && evt.visibility !== selectedVisibility) return false;
-    return true;
+  // Default List View on mobile, Month View on desktop (front_end.md CAL-01)
+  const [viewMode, setViewMode] = useState<"month" | "list">("month");
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const firstEv = store.calendar_events?.[0];
+    if (firstEv) {
+      const d = new Date(firstEv.start_time);
+      return new Date(d.getFullYear(), d.getMonth(), 1);
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
   });
 
-  // Simple conflict detection: events sharing identical day
-  const dayOccurrences: { [dateStr: string]: string[] } = {};
-  store.events.forEach((e) => {
-    const day = e.schedule_start.split("T")[0];
-    if (!dayOccurrences[day]) dayOccurrences[day] = [];
-    dayOccurrences[day].push(e.title);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 768) {
+      setViewMode("list");
+    }
+  }, []);
+
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Form states for + Tambah Jadwal
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<CalendarEvent["category"]>("Pleno");
+  const [dateStr, setDateStr] = useState(new Date().toISOString().split("T")[0]);
+  const [startTime, setStartTime] = useState("19:00");
+  const [endTime, setEndTime] = useState("21:00");
+  const [location, setLocation] = useState("Aula Gedung B Telkom University");
+  const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<"internal" | "public">("internal");
+
+  const activeCab = store.cabinets.find((c) => c.status === "active") || store.cabinets[0];
+  const calendarEvents = store.calendar_events || [];
+
+  const filteredEvents = calendarEvents
+    .filter((ev) => categoryFilter === "all" || ev.category === categoryFilter)
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime());
+
+  // Soft Conflict Detection (Warning only, never blocks creation per front_end.md CAL-01)
+  const dayCounts: Record<string, CalendarEvent[]> = {};
+  calendarEvents.forEach((ev) => {
+    const d = ev.start_time.split("T")[0];
+    if (!dayCounts[d]) dayCounts[d] = [];
+    dayCounts[d].push(ev);
   });
-  const conflictingDays = Object.entries(dayOccurrences).filter(([_, titles]) => titles.length > 1);
+  const conflictingDays = Object.entries(dayCounts).filter(([, list]) => list.length > 1);
+  const formDayConflicts = dayCounts[dateStr] || [];
+
+  // Month grid computation
+  const year = currentMonth.getFullYear();
+  const month = currentMonth.getMonth();
+  const firstDayOfWeek = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const calendarCells: (number | null)[] = [
+    ...Array(firstDayOfWeek).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  ];
+
+  const handleCreateSchedule = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim() || !dateStr) return;
+
+    const newItem: CalendarEvent = {
+      id: `cal-${Date.now()}`,
+      cabinet_id: activeCab?.id || "cab-arthakarsa-2627",
+      title: title.trim(),
+      category,
+      start_time: `${dateStr}T${startTime}:00+07:00`,
+      end_time: `${dateStr}T${endTime}:00+07:00`,
+      location: location.trim() || "Telkom University",
+      description: description.trim() || "Jadwal kegiatan internal organisasi.",
+      visibility,
+      owner_user_id: currentUser.id,
+      created_at: new Date().toISOString(),
+    };
+
+    mutateStore((draft) => {
+      if (!draft.calendar_events) draft.calendar_events = [];
+      draft.calendar_events.push(newItem);
+      addActivityHistory(
+        currentUser.name,
+        "menambahkan jadwal ke Kalender Organisasi",
+        title.trim(),
+        "Kalender Organisasi"
+      );
+    });
+
+    setTitle("");
+    setDescription("");
+    setAddModalOpen(false);
+    setFeedback(`Jadwal "${newItem.title}" berhasil ditambahkan ke Kalender Organisasi.`);
+  };
+
+  const handleDeleteSchedule = (id: string) => {
+    mutateStore((draft) => {
+      draft.calendar_events = (draft.calendar_events || []).filter((ev) => ev.id !== id);
+    });
+    setSelectedEvent(null);
+    setFeedback("Jadwal berhasil dibatalkan dan dihapus dari kalender.");
+  };
 
   return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
+    <div className="space-y-6 pb-12">
+      {/* Editorial Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+            Penjadwalan Internal &amp; Milestone Bertingkat
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Kalender Organisasi
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Pusat jadwal rapat pleno, oprec, wawancara, dan penanda tanggal Main Event. Jadwal tanggal hari ini otomatis tampil sebagai Pengumuman Dashboard mulai pukul <strong>00.01 WIB</strong>.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setAddModalOpen(true)}
+          className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 self-start sm:self-auto shrink-0 transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Tambah Jadwal</span>
+        </button>
+      </div>
+
+      {/* Feedback Banner */}
+      {feedback && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{feedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Soft Conflict Warning */}
+      {conflictingDays.length > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-50/85 border border-amber-200/90 text-xs text-amber-950 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                CAL-01
-              </span>
-              <span className="text-xs font-medium text-wine-500">Operasional Organisasi</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Kalender Organisasi
-            </h1>
-            <p className="text-sm text-wine-600 mt-1">
-              Jadwal sentral agenda kabinet, rapat pleno, kegiatan bidang, dan acara eksternal HIPMI Telkom.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/calendar/events/form?mode=create"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 text-white font-medium text-sm shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Tambah Jadwal (CAL-04)</span>
-            </Link>
+            <strong className="block">
+              Catatan Kepadatan Jadwal ({conflictingDays.length} tanggal memiliki &gt;1 kegiatan)
+            </strong>
+            <span className="text-amber-900">
+              Sistem tidak memblokir jadwal paralel, namun pastikan koordinasi ruangan dan kehadiran pengurus tetap terjaga.
+            </span>
           </div>
         </div>
+      )}
 
-        {/* Schedule Conflict Alert */}
-        {conflictingDays.length > 0 && (
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200/80 text-amber-900 flex items-start gap-3 shadow-xs">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-            <div className="text-xs sm:text-sm">
-              <p className="font-semibold text-amber-950">
-                Peringatan Benturan Jadwal Terdeteksi ({conflictingDays.length} tanggal padat)
-              </p>
-              <p className="text-amber-800 mt-0.5">
-                Terdapat lebih dari satu agenda pada tanggal yang sama:{" "}
-                {conflictingDays.map(([date, titles]) => (
-                  <span key={date} className="inline-block mr-2 font-mono font-medium underline">
-                    {date} ({titles.join(", ")})
-                  </span>
-                ))}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Controls Bar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-white border border-wine-100 shadow-xs">
-          {/* View Toggles */}
-          <div className="inline-flex p-1 rounded-lg bg-surface-base border border-wine-100">
+      {/* Controls Row: View Switcher + Category Filter */}
+      <div className="p-4 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {[
+            { key: "all", label: `Semua (${calendarEvents.length})` },
+            { key: "Pleno", label: "Pleno" },
+            { key: "Rapat", label: "Rapat" },
+            { key: "Event Formal", label: "Oprec / WWC" },
+            { key: "Main Event Proker", label: "Main Event" },
+          ].map((cat) => (
             <button
-              onClick={() => setViewMode("month")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                viewMode === "month"
-                  ? "bg-brand-burgundy text-white shadow-xs"
-                  : "text-wine-700 hover:text-wine-900"
+              key={cat.key}
+              type="button"
+              onClick={() => setCategoryFilter(cat.key)}
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold border transition-colors ${
+                categoryFilter === cat.key
+                  ? "bg-brand-burgundy text-white border-brand-burgundy"
+                  : "bg-[#FCF8F6] text-neutral-dark border-[#E9E1DC] hover:border-brand-burgundy/40"
               }`}
             >
-              Bulan (Month)
+              {cat.label}
             </button>
-            <button
-              onClick={() => setViewMode("week")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                viewMode === "week"
-                  ? "bg-brand-burgundy text-white shadow-xs"
-                  : "text-wine-700 hover:text-wine-900"
-              }`}
-            >
-              Minggu (Week)
-            </button>
-            <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
-                viewMode === "list"
-                  ? "bg-brand-burgundy text-white shadow-xs"
-                  : "text-wine-700 hover:text-wine-900"
-              }`}
-            >
-              Daftar / List
-            </button>
-          </div>
-
-          {/* Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-xs text-wine-600">
-              <Filter className="w-3.5 h-3.5" />
-              <span>Filter:</span>
-            </div>
-
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Kategori</option>
-              <option value="gratis">Gratis / Open</option>
-              <option value="berbayar">Berbayar / Tiket</option>
-            </select>
-
-            <select
-              value={selectedVisibility}
-              onChange={(e) => setSelectedVisibility(e.target.value)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Visibilitas</option>
-              <option value="public">Publik</option>
-              <option value="internal">Internal Pengurus</option>
-            </select>
-          </div>
+          ))}
         </div>
 
-        {/* View Content */}
-        {viewMode === "list" ? (
-          <div className="space-y-3">
-            {events.map((evt) => {
-              const startDate = new Date(evt.schedule_start);
-              const endDate = new Date(evt.schedule_end);
+        {/* View Toggle */}
+        <div className="inline-flex p-1 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] self-start md:self-auto">
+          {[
+            { id: "month", label: "Bulanan", icon: Grid },
+            { id: "list", label: "Daftar", icon: List },
+          ].map((m) => {
+            const Icon = m.icon;
+            const active = viewMode === m.id;
+            return (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setViewMode(m.id as "month" | "list")}
+                className={`relative px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+                  active ? "text-white" : "text-neutral-dark hover:text-wine-950"
+                }`}
+              >
+                {active && (
+                  <motion.div
+                    layoutId="calendar-view-toggle"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                    className="absolute inset-0 rounded-lg bg-brand-burgundy"
+                  />
+                )}
+                <span className="relative z-10 flex items-center gap-1.5">
+                  <Icon className="w-3.5 h-3.5" />
+                  <span>{m.label}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MONTH VIEW */}
+      {viewMode === "month" && (
+        <section className="p-5 sm:p-6 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-wine-950 capitalize">
+              {currentMonth.toLocaleDateString("id-ID", { month: "long", year: "numeric" })}
+            </h2>
+            <div className="flex items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+                className="w-8 h-8 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 flex items-center justify-center text-wine-950"
+                aria-label="Bulan sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+                className="w-8 h-8 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 flex items-center justify-center text-wine-950"
+                aria-label="Bulan berikutnya"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1.5 text-center text-[10px] font-mono font-bold uppercase text-neutral-dark">
+            {["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
+              <div key={day} className="py-1.5">
+                {day}
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-7 gap-1.5">
+            {calendarCells.map((dayNum, idx) => {
+              if (!dayNum) {
+                return <div key={`empty-${idx}`} className="min-h-[78px] rounded-xl bg-[#FCF8F6]/40" />;
+              }
+              const cellIso = `${year}-${String(month + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+              const dayItems = filteredEvents.filter((ev) => ev.start_time.startsWith(cellIso));
+
               return (
                 <div
-                  key={evt.id}
-                  className="p-5 rounded-2xl bg-white border border-wine-100 hover:border-wine-300 shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4"
+                  key={cellIso}
+                  className="min-h-[84px] p-1.5 sm:p-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] flex flex-col gap-1"
                 >
-                  <div className="flex items-start gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-wine-50 border border-wine-100 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-xs font-bold text-wine-600 uppercase">
-                        {startDate.toLocaleDateString("id-ID", { month: "short" })}
-                      </span>
-                      <span className="text-lg font-bold font-display text-brand-burgundy leading-none">
-                        {startDate.getDate()}
-                      </span>
-                    </div>
-
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
-                            evt.visibility === "public"
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-slate-100 text-slate-700 border border-slate-200"
-                          }`}
+                  <span className="text-[11px] font-mono font-semibold text-wine-950">
+                    {dayNum}
+                  </span>
+                  <div className="space-y-1 overflow-hidden">
+                    {dayItems.slice(0, 2).map((ev) => {
+                      const st = CATEGORY_STYLES[ev.category] || CATEGORY_STYLES.Lainnya;
+                      return (
+                        <button
+                          key={ev.id}
+                          type="button"
+                          onClick={() => setSelectedEvent(ev)}
+                          className={`w-full text-left px-1.5 py-1 rounded-md text-[10px] font-semibold truncate border ${st.tone} hover:opacity-90 transition-opacity`}
                         >
-                          {evt.visibility === "public" ? "🌐 Publik" : "🔒 Internal"}
-                        </span>
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-wine-50 text-brand-burgundy border border-wine-100">
-                          {evt.organizer_unit}
-                        </span>
-                        <span className="text-xs text-wine-400">•</span>
-                        <span className="text-xs text-wine-500 capitalize">{evt.status}</span>
-                      </div>
-
-                      <h3 className="text-base font-bold text-wine-950 font-display">
-                        <Link href={`/calendar/events/${evt.id}`} className="hover:text-brand-burgundy">
-                          {evt.title}
-                        </Link>
-                      </h3>
-
-                      <p className="text-xs text-wine-600 line-clamp-1 mt-0.5">{evt.description}</p>
-
-                      <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-wine-500">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-wine-400" />
-                          {startDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} -{" "}
-                          {endDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })} WIB
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-wine-400" />
-                          {evt.location}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                    <Link
-                      href={`/calendar/events/${evt.id}`}
-                      className="px-3 py-1.5 rounded-lg border border-wine-200 hover:bg-wine-50 text-wine-800 text-xs font-medium transition-all inline-flex items-center gap-1.5"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Detail (CAL-03)</span>
-                    </Link>
-                    <Link
-                      href={`/calendar/events/form?mode=edit&recordId=${evt.id}`}
-                      className="px-3 py-1.5 rounded-lg bg-wine-100 hover:bg-wine-200 text-wine-900 text-xs font-medium transition-all"
-                    >
-                      Edit
-                    </Link>
+                          {ev.title}
+                        </button>
+                      );
+                    })}
+                    {dayItems.length > 2 && (
+                      <span className="text-[9px] font-mono text-neutral-light block px-1">
+                        +{dayItems.length - 2} lainnya
+                      </span>
+                    )}
                   </div>
                 </div>
               );
             })}
           </div>
-        ) : (
-          /* Grid Month/Week View representation */
-          <div className="bg-white rounded-2xl border border-wine-100 overflow-hidden shadow-xs">
-            <div className="p-4 bg-wine-50/50 border-b border-wine-100 flex items-center justify-between">
-              <span className="font-display font-bold text-wine-900 text-sm">
-                November 2026 (Periode Aktif Arthakarsa)
+        </section>
+      )}
+
+      {/* LIST / AGENDA VIEW (Always accessible & mobile default) */}
+      {viewMode === "list" && (
+        <section className="space-y-3">
+          {filteredEvents.length > 0 ? (
+            filteredEvents.map((ev) => {
+              const st = CATEGORY_STYLES[ev.category] || CATEGORY_STYLES.Lainnya;
+              return (
+                <button
+                  key={ev.id}
+                  type="button"
+                  onClick={() => setSelectedEvent(ev)}
+                  className="w-full text-left p-4 sm:p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="flex items-start gap-3.5 min-w-0">
+                    <div className="w-12 h-12 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] flex flex-col items-center justify-center shrink-0">
+                      <span className="text-[9px] font-mono uppercase text-brand-burgundy font-bold">
+                        {new Date(ev.start_time).toLocaleDateString("id-ID", { month: "short" })}
+                      </span>
+                      <strong className="font-serif text-lg font-bold text-wine-950 leading-none">
+                        {new Date(ev.start_time).getDate()}
+                      </strong>
+                    </div>
+
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${st.tone}`}>
+                          {st.label}
+                        </span>
+                        <span className="text-[10px] font-mono text-neutral-light uppercase">
+                          {ev.visibility === "internal" ? "Internal" : "Publik"}
+                        </span>
+                      </div>
+                      <strong className="font-serif text-base text-wine-950 block">
+                        {ev.title}
+                      </strong>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-neutral-dark">
+                        <span className="inline-flex items-center gap-1 font-mono">
+                          <Clock className="w-3 h-3 text-brand-burgundy" />
+                          {new Date(ev.start_time).toLocaleTimeString("id-ID", {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}{" "}
+                          WIB
+                        </span>
+                        <span className="inline-flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-[#AF7D66]" />
+                          {ev.location}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })
+          ) : (
+            <div className="p-10 rounded-3xl bg-white/95 border border-dashed border-[#E9E1DC] text-center text-xs text-neutral-dark">
+              Belum ada jadwal yang sesuai dengan filter kategori ini.
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* MODAL 1: Tambah Jadwal Kalender */}
+      <EditorialModal
+        isOpen={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        badge="Kalender Organisasi"
+        title="Tambah Jadwal Baru"
+        subtitle="Tambahkan rapat pleno, jadwal oprec/wawancara, atau penanda tanggal penting ke Kalender Organisasi."
+        maxWidth="md"
+        footer={
+          <>
+            <button
+              type="button"
+              onClick={() => setAddModalOpen(false)}
+              className="px-4 py-2 rounded-full border border-[#E9E1DC] bg-white text-xs font-semibold text-wine-950"
+            >
+              Batal
+            </button>
+            <button
+              type="submit"
+              form="add-calendar-schedule-form"
+              className="px-6 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm"
+            >
+              Simpan Jadwal
+            </button>
+          </>
+        }
+      >
+        <form id="add-calendar-schedule-form" onSubmit={handleCreateSchedule} className="space-y-3.5 text-xs">
+          {formDayConflicts.length > 0 && (
+            <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-2 text-[11px]">
+              <AlertTriangle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+              <span>
+                <strong>Peringatan Benturan:</strong> Sudah ada {formDayConflicts.length} kegiatan pada tanggal ini ({formDayConflicts[0].title}). Anda tetap dapat menyimpan jadwal ini.
               </span>
-              <div className="text-xs text-wine-500 flex items-center gap-3">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Publik
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <label className="font-semibold text-wine-950">
+              Judul Kegiatan <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Contoh: Rapat Pleno Evaluasi Triwulan I / Wawancara Oprec"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Kategori</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as CalendarEvent["category"])}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              >
+                <option value="Pleno">Rapat Pleno</option>
+                <option value="Rapat">Rapat Internal / Bidang</option>
+                <option value="Event Formal">Oprec / Wawancara / Formal</option>
+                <option value="Main Event Proker">Main Event Proker</option>
+                <option value="Lainnya">Milestone Lainnya</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Visibilitas</label>
+              <select
+                value={visibility}
+                onChange={(e) => setVisibility(e.target.value as "internal" | "public")}
+                className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+              >
+                <option value="internal">Internal Pengurus</option>
+                <option value="public">Terbuka (Publik)</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Tanggal</label>
+              <input
+                type="date"
+                required
+                value={dateStr}
+                onChange={(e) => setDateStr(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Jam Mulai</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950"
+              />
+            </div>
+            <div className="space-y-1">
+              <label className="font-semibold text-wine-950">Jam Selesai</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-xs text-wine-950"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-semibold text-wine-950">Lokasi / Tautan Rapat</label>
+            <input
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="Gedung / Zoom / Google Meet"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-semibold text-wine-950">Catatan / Agenda Rapat</label>
+            <textarea
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Ringkasan poin bahasan atau perlengkapan yang dibawa..."
+              className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-[#E9E1DC] text-sm text-wine-950 resize-none"
+            />
+          </div>
+        </form>
+      </EditorialModal>
+
+      {/* MODAL 2: Detail Jadwal */}
+      <EditorialModal
+        isOpen={!!selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        badge={selectedEvent?.category || "Jadwal"}
+        title={selectedEvent?.title || "Detail Jadwal"}
+        maxWidth="sm"
+        footer={
+          <div className="flex items-center justify-between w-full gap-2">
+            {(permissions.isTopManagement ||
+              permissions.isSekum ||
+              selectedEvent?.owner_user_id === currentUser.id) &&
+            selectedEvent ? (
+              <button
+                type="button"
+                onClick={() => handleDeleteSchedule(selectedEvent.id)}
+                className="px-3.5 py-2 rounded-full border border-red-200 text-red-700 hover:bg-red-50 text-xs font-semibold inline-flex items-center gap-1"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Batalkan Jadwal</span>
+              </button>
+            ) : (
+              <span />
+            )}
+            <button
+              type="button"
+              onClick={() => setSelectedEvent(null)}
+              className="px-5 py-2 rounded-full bg-brand-burgundy text-white text-xs font-semibold"
+            >
+              Tutup
+            </button>
+          </div>
+        }
+      >
+        {selectedEvent && (
+          <div className="space-y-3 text-xs">
+            <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] space-y-2">
+              <div className="flex items-center gap-2 text-wine-950">
+                <CalendarIcon className="w-3.5 h-3.5 text-brand-burgundy shrink-0" />
+                <span>
+                  {new Date(selectedEvent.start_time).toLocaleDateString("id-ID", {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })}
                 </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-brand-burgundy"></span> Internal
+              </div>
+              <div className="flex items-center gap-2 text-wine-950 font-mono">
+                <Clock className="w-3.5 h-3.5 text-[#AF7D66] shrink-0" />
+                <span>
+                  {new Date(selectedEvent.start_time).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  –{" "}
+                  {new Date(selectedEvent.end_time).toLocaleTimeString("id-ID", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}{" "}
+                  WIB
+                </span>
+              </div>
+              <div className="flex items-center gap-2 text-wine-950">
+                <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>{selectedEvent.location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-neutral-dark">
+                <Building className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  Visibilitas: {selectedEvent.visibility === "internal" ? "Internal Pengurus" : "Publik"}
                 </span>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-              {events.map((evt) => {
-                const startDate = new Date(evt.schedule_start);
-                return (
-                  <div
-                    key={evt.id}
-                    className="p-4 rounded-xl border border-wine-100 bg-surface-base hover:border-wine-300 hover:bg-white transition-all space-y-3"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono font-semibold text-brand-burgundy">
-                        {startDate.toLocaleDateString("id-ID", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric"
-                        })}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          evt.visibility === "public"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-wine-100 text-wine-800"
-                        }`}
-                      >
-                        {evt.visibility}
-                      </span>
-                    </div>
-
-                    <div>
-                      <h4 className="font-bold text-sm text-wine-950 font-display line-clamp-1">
-                        {evt.title}
-                      </h4>
-                      <p className="text-xs text-wine-600 line-clamp-2 mt-1">{evt.description}</p>
-                    </div>
-
-                    <div className="text-xs text-wine-500 space-y-1 pt-2 border-t border-wine-100">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-wine-400" />
-                        <span>
-                          {startDate.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })}{" "}
-                          WIB
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5 text-wine-400" />
-                        <span className="line-clamp-1">{evt.location}</span>
-                      </div>
-                    </div>
-
-                    <div className="pt-2 flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-wine-600">
-                        {evt.organizer_unit}
-                      </span>
-                      <Link
-                        href={`/calendar/events/${evt.id}`}
-                        className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-                      >
-                        Buka Detail <ChevronRight className="w-3 h-3" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
+            <p className="text-neutral-dark leading-relaxed">{selectedEvent.description}</p>
+            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/70 flex items-start gap-2 text-[11px] text-amber-950">
+              <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-amber-700" />
+              <span>
+                Jadwal ini tampil otomatis di Pengumuman Hari Ini Dashboard mulai pukul 00.01 WIB pada tanggal pelaksanaan.
+              </span>
             </div>
           </div>
         )}
-      </div>
-    </OrganizationShell>
+      </EditorialModal>
+    </div>
   );
 }

@@ -169,6 +169,8 @@ export interface User {
   faculty_id: string;
   study_program_id: string;
   study_program?: string;
+  batch_year?: string;
+  cadre_level?: string;
   member_id?: string;
   avatar_url?: string;
   account_status: AccountStatus;
@@ -423,6 +425,7 @@ export interface FundRequest {
     tranche_number: number;
     amount: number;
     disbursement_status: DisbursementStatus;
+    proof_file_name?: string;
     transferred_at?: string;
     confirmed_at?: string;
   }[];
@@ -442,6 +445,7 @@ export interface FinanceTransaction {
   id: string;
   cabinet_id: string;
   unit_id?: string;
+  project_id?: string;
   date: string;
   type: "income" | "expense" | "transfer";
   category: string;
@@ -451,6 +455,8 @@ export interface FinanceTransaction {
   destination_account?: string;
   status: "draft" | "posted";
   reference_id?: string;
+  proof_file_name?: string;
+  proof_preview_url?: string;
 }
 
 export interface DocumentItem {
@@ -611,6 +617,31 @@ export interface AuditEvent {
   timestamp: string;
 }
 
+export interface PlenoNote {
+  id: string;
+  workspace_id: string;
+  title: string;
+  date: string;
+  leader: string;
+  summary: string;
+  decisions: string[];
+  follow_ups?: string[];
+  deadline?: string;
+  calendar_event_id?: string;
+  created_at: string;
+}
+
+export interface MedpartPackageConfig {
+  id: string;
+  name: string;
+  type: "Gratis" | "Berbayar";
+  price: number;
+  benefits: string[];
+  requirements: string;
+  qris_note?: string;
+  active: boolean;
+}
+
 // Full Store Structure
 export interface MockStoreData {
   schema_version: string;
@@ -623,6 +654,7 @@ export interface MockStoreData {
   projects: Project[];
   tasks: ProjectTask[];
   roster: RosterMember[];
+  pleno_notes?: PlenoNote[];
   calendar_events?: CalendarEvent[];
   events: AppEvent[];
   ticket_types: EventTicketType[];
@@ -638,6 +670,7 @@ export interface MockStoreData {
   articles: ArticleItem[];
   achievements: AchievementItem[];
   medpart_submissions: MedpartSubmission[];
+  medpart_packages?: MedpartPackageConfig[];
   feedback: FeedbackItem[];
   notifications: AppNotification[];
   activity_history: ActivityHistory[];

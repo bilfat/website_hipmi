@@ -1,23 +1,25 @@
 "use client";
 
-import { use } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMockStore } from "@/lib/mock/store";
 import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
+import { ProjectCardGrid } from "@/components/organization/project-card-grid";
+import { CreateProjectModal } from "@/components/organization/create-project-modal";
 import {
-  FolderKanban,
-  Building,
   Layers,
-  ArrowRight,
-  Plus,
-  Users,
+  FolderKanban,
   Calendar,
-  FileText,
-  DollarSign,
-  ChevronRight,
-  Sparkles,
-  Info
+  Mail,
+  Wallet,
+  Plus,
+  CheckCircle2,
+  ClipboardList,
+  ArrowRight,
+  Building,
+  Eye,
+  Handshake,
 } from "lucide-react";
 
 export default function WorkspaceOverviewPage({
@@ -30,207 +32,282 @@ export default function WorkspaceOverviewPage({
   const { store, currentUser } = useMockStore();
   const permissions = resolveUserPermissions(currentUser, store);
 
-  // Determine context: Field, Compartment, or Project
+  const [createProjOpen, setCreateProjOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
   const field = store.fields.find((f) => f.id === workspaceId);
   const compartment = store.compartments.find((c) => c.id === workspaceId);
   const project = store.projects.find((p) => p.id === workspaceId);
 
-  const contextType: "field" | "compartment" | "project" = field
-    ? "field"
-    : compartment
-    ? "compartment"
-    : "project";
+  // If URL is a Project ID, redirect cleanly to Project 360
+  useEffect(() => {
+    if (project) {
+      router.replace(`/workspace/projects/${project.id}`);
+    }
+  }, [project, router]);
 
-  const currentUnit = field || compartment || project || store.compartments[0];
+  if (project) {
+    return null;
+  }
 
-  // If this is a project workspace, provide full project metrics or link to WRK-05
-  const compProjects = compartment
-    ? store.projects.filter((p) => p.compartment_id === compartment.id)
-    : [];
+  const contextType: "field" | "compartment" = field ? "field" : "compartment";
+  const currentUnit = field || compartment || store.compartments[0];
+
+  const unitProjects =
+    contextType === "field" && field
+      ? store.projects.filter((p) => p.field_id === field.id)
+      : compartment
+      ? store.projects.filter((p) => p.compartment_id === compartment.id)
+      : [];
+
   const fieldComps = field
     ? store.compartments.filter((c) => c.field_id === field.id)
     : [];
 
+  const parentField = compartment
+    ? store.fields.find((f) => f.id === compartment.field_id)
+    : null;
+
+  const canCreateHere =
+    contextType === "compartment" &&
+    permissions.isKakom &&
+    (!permissions.managedCompartmentId || permissions.managedCompartmentId === compartment?.id);
+
+  const unitProjectIds = unitProjects.map((p) => p.id);
+  const unitLettersCount = store.correspondence.filter(
+    (c) => c.project_id && unitProjectIds.includes(c.project_id)
+  ).length;
+  const unitFundsCount = store.fund_requests.filter(
+    (f) => f.project_id && unitProjectIds.includes(f.project_id)
+  ).length;
+
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-16">
-      {/* Header Section */}
-      <div className="p-6 sm:p-8 rounded-3xl bg-surface-card border border-wine-950/10 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-brand-burgundy/10 text-brand-burgundy">
-                Screen ID: WRK-01
+    <div className="space-y-6 sm:space-y-8 pb-12">
+      {/* Feedback Toast */}
+      {toastMsg && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toastMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMsg(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Workspace Editorial Header */}
+      <section className="p-5 sm:p-7 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-[0_10px_32px_rgba(61,15,22,0.05)] space-y-5">
+        <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-mono font-bold uppercase px-2.5 py-0.5 rounded-full bg-brand-burgundy/10 text-brand-burgundy">
+                {contextType === "field" ? "Workspace Bidang" : "Workspace Kompartemen"}
               </span>
-              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase bg-gold-400/20 text-wine-950">
-                Workspace {contextType.toUpperCase()}
-              </span>
+              {parentField && (
+                <span className="text-[10px] font-medium px-2.5 py-0.5 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] text-neutral-dark">
+                  {parentField.name}
+                </span>
+              )}
+              {contextType === "field" && (
+                <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-900 border border-amber-200 inline-flex items-center gap-1">
+                  <Eye className="w-3 h-3" />
+                  Mode Pemantauan Kepala Bidang
+                </span>
+              )}
             </div>
-            <h1 className="font-serif text-3xl sm:text-4xl font-bold text-wine-950">
+
+            <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
               {currentUnit.name}
             </h1>
-            <p className="text-xs text-neutral-dark">
-              Ruang kerja operasional aktif • Sesuai batas kewenangan dan penugasan Anda
+
+            <p className="text-xs text-neutral-dark max-w-2xl leading-relaxed">
+              {currentUnit.description ||
+                "Ruang kerja terpadu untuk memantau kompartemen, program kerja, jadwal pleno, dan pengajuan operasional unit."}
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/workspace/${workspaceId}/information`}
-              className="px-4 py-2 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 transition-colors flex items-center gap-1.5"
-            >
-              <Info className="w-3.5 h-3.5" />
-              <span>Informasi Ruang Kerja (WRK-02)</span>
-            </Link>
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+            {canCreateHere && (
+              <button
+                type="button"
+                onClick={() => setCreateProjOpen(true)}
+                className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Buat Proker Baru</span>
+              </button>
+            )}
 
             {contextType === "compartment" && (
               <Link
-                href={`/workspace/${workspaceId}/projects/form?mode=create`}
-                className="px-4 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5"
+                href={`/workspace/${workspaceId}/pleno`}
+                className="px-4 py-2.5 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Buat Proker Baru (WRK-04)</span>
+                <ClipboardList className="w-3.5 h-3.5 text-brand-burgundy" />
+                <span>Pleno &amp; Aktivitas Unit</span>
               </Link>
             )}
 
-            {contextType === "project" && (
-              <Link
-                href={`/workspace/projects/${workspaceId}`}
-                className="px-4 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-md transition-all flex items-center gap-1.5"
-              >
-                <span>Buka Detail Proker (WRK-05)</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Quick Tabs Bar */}
-        <div className="flex flex-wrap items-center gap-2 pt-4 border-t border-wine-950/10 text-xs font-semibold">
-          <Link
-            href={`/workspace/${workspaceId}`}
-            className="px-3.5 py-1.5 rounded-xl bg-brand-burgundy text-white shadow-sm"
-          >
-            Overview
-          </Link>
-          <Link
-            href={`/workspace/${workspaceId}/projects`}
-            className="px-3.5 py-1.5 rounded-xl text-neutral-dark hover:text-wine-950 bg-surface-ivory"
-          >
-            Program Kerja (WRK-03)
-          </Link>
-          <Link
-            href={`/workspace/${workspaceId}/pleno`}
-            className="px-3.5 py-1.5 rounded-xl text-neutral-dark hover:text-wine-950 bg-surface-ivory"
-          >
-            Catatan Rapat Pleno (WRK-09)
-          </Link>
-        </div>
-      </div>
-
-      {/* Dynamic Content based on Context */}
-      {contextType === "field" && (
-        <div className="space-y-6">
-          <div className="p-6 sm:p-8 rounded-3xl bg-surface-card border border-wine-950/10 shadow-lg space-y-4">
-            <h2 className="font-serif text-lg font-bold text-wine-950">
-              Kompartemen di Bawah Koordinasi {field?.name}
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {fieldComps.map((comp) => {
-                const compProkers = store.projects.filter((p) => p.compartment_id === comp.id);
-                return (
-                  <div
-                    key={comp.id}
-                    className="p-5 rounded-2xl bg-surface-ivory border border-wine-950/10 flex items-center justify-between text-xs"
-                  >
-                    <div className="space-y-1">
-                      <strong className="text-wine-950 font-serif text-base block">
-                        {comp.name}
-                      </strong>
-                      <span className="text-[11px] text-neutral-dark">
-                        {compProkers.length} Program Kerja Terdaftar
-                      </span>
-                    </div>
-
-                    <Link
-                      href={`/workspace/${comp.id}`}
-                      className="px-3.5 py-1.5 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 transition-colors"
-                    >
-                      Buka Workspace
-                    </Link>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {contextType === "compartment" && (
-        <div className="space-y-6">
-          <div className="p-6 sm:p-8 rounded-3xl bg-surface-card border border-wine-950/10 shadow-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="font-serif text-lg font-bold text-wine-950 flex items-center gap-2">
-                <FolderKanban className="w-5 h-5 text-brand-burgundy" />
-                <span>Program Kerja Kompartemen ({compProjects.length})</span>
-              </h2>
-              <Link
-                href={`/workspace/${workspaceId}/projects`}
-                className="text-xs font-semibold text-brand-burgundy hover:underline flex items-center gap-1"
-              >
-                <span>Lihat Semua Proker (WRK-03)</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 gap-4">
-              {compProjects.map((p) => (
-                <div
-                  key={p.id}
-                  className="p-5 rounded-2xl bg-surface-ivory border border-wine-950/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs"
-                >
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-gold-400/20 text-wine-950">
-                        {p.operational_status}
-                      </span>
-                      <strong className="text-wine-950 font-serif text-base">
-                        {p.name}
-                      </strong>
-                    </div>
-                    <p className="text-neutral-dark line-clamp-1">{p.description}</p>
-                    <span className="text-[11px] font-mono text-neutral-light block">
-                      Target: {p.target_date || "2026"} • Venue: {p.location}
-                    </span>
-                  </div>
-
-                  <Link
-                    href={`/workspace/projects/${p.id}`}
-                    className="px-5 py-2 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white font-semibold text-xs transition-all shrink-0 self-start sm:self-center"
-                  >
-                    Buka Workspace Proker (WRK-05)
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {contextType === "project" && project && (
-        <div className="p-6 sm:p-8 rounded-3xl bg-surface-card border border-wine-950/10 shadow-lg space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="font-serif text-xl font-bold text-wine-950">
-              Workspace Program Kerja: {project.name}
-            </h2>
             <Link
-              href={`/workspace/projects/${project.id}`}
-              className="px-5 py-2.5 rounded-full bg-brand-burgundy text-white text-xs font-semibold"
+              href={`/workspace/${workspaceId}/calendar`}
+              className="px-4 py-2.5 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors"
             >
-              Masuk Dashboard Proker Lengkap (WRK-05)
+              <Calendar className="w-3.5 h-3.5 text-[#AF7D66]" />
+              <span>Kalender Unit</span>
             </Link>
           </div>
         </div>
+
+        {/* 4 Compact Unit Stats (2-col mobile / 4-col desktop) */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-4 border-t border-[#E9E1DC]">
+          <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-semibold text-neutral-dark flex items-center gap-1.5">
+              {contextType === "field" ? (
+                <Layers className="w-3.5 h-3.5 text-brand-burgundy" />
+              ) : (
+                <Building className="w-3.5 h-3.5 text-brand-burgundy" />
+              )}
+              <span>{contextType === "field" ? "Kompartemen" : "Pemimpin Unit"}</span>
+            </span>
+            <strong className="font-serif text-lg sm:text-xl font-bold text-wine-950 block mt-1 truncate">
+              {contextType === "field" ? fieldComps.length : currentUnit.leader_name || "-"}
+            </strong>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-semibold text-neutral-dark flex items-center gap-1.5">
+              <FolderKanban className="w-3.5 h-3.5 text-[#AF7D66]" />
+              <span>Program Kerja</span>
+            </span>
+            <strong className="font-serif text-lg sm:text-xl font-bold text-wine-950 block mt-1">
+              {unitProjects.length}
+            </strong>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-semibold text-neutral-dark flex items-center gap-1.5">
+              <Mail className="w-3.5 h-3.5 text-sky-700" />
+              <span>Persuratan Terkait</span>
+            </span>
+            <strong className="font-serif text-lg sm:text-xl font-bold text-wine-950 block mt-1">
+              {unitLettersCount}
+            </strong>
+          </div>
+
+          <div className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC]">
+            <span className="text-[10px] font-semibold text-neutral-dark flex items-center gap-1.5">
+              <Wallet className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Pengajuan RAB</span>
+            </span>
+            <strong className="font-serif text-lg sm:text-xl font-bold text-wine-950 block mt-1">
+              {unitFundsCount}
+            </strong>
+          </div>
+        </div>
+      </section>
+
+      {/* For Workspace Bidang: Quick Compartment Cards */}
+      {contextType === "field" && fieldComps.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="font-serif text-lg font-bold text-wine-950 flex items-center gap-2">
+            <Layers className="w-4 h-4 text-brand-burgundy" />
+            <span>Kompartemen di Bawah {field?.name}</span>
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {fieldComps.map((c) => {
+              const compProjs = store.projects.filter((p) => p.compartment_id === c.id);
+              return (
+                <Link
+                  key={c.id}
+                  href={`/workspace/${c.id}`}
+                  className="p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all group space-y-2.5"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-md bg-brand-burgundy/10 text-brand-burgundy">
+                      {c.code}
+                    </span>
+                    <span className="text-[11px] font-mono text-neutral-dark">
+                      {compProjs.length} Proker
+                    </span>
+                  </div>
+                  <strong className="font-serif text-base text-wine-950 block group-hover:text-brand-burgundy transition-colors">
+                    {c.name}
+                  </strong>
+                  <p className="text-[11px] text-neutral-dark line-clamp-2">{c.description}</p>
+                  <div className="pt-2 border-t border-[#E9E1DC] flex items-center justify-between text-[11px]">
+                    <span className="text-neutral-light truncate">Kakom: {c.leader_name}</span>
+                    <span className="font-semibold text-brand-burgundy inline-flex items-center gap-1 shrink-0">
+                      Pantau <ArrowRight className="w-3 h-3" />
+                    </span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* LMS-Style Project Cards Grid */}
+      <ProjectCardGrid
+        store={store}
+        projects={unitProjects}
+        showFieldFilter={false}
+        showCompartmentFilter={contextType === "field"}
+        canCreateProject={canCreateHere}
+        onCreateProject={() => setCreateProjOpen(true)}
+        title={
+          contextType === "field"
+            ? `Seluruh Program Kerja di ${field?.name || "Bidang"}`
+            : `Program Kerja ${compartment?.name || "Kompartemen"}`
+        }
+        subtitle={
+          contextType === "field"
+            ? "Gunakan filter kompartemen di atas untuk menyaring proker. Klik kartu proker untuk inspeksi Project 360."
+            : "Klik kartu program kerja untuk mengelola roster panitia, progres naratif, surat, keuangan, dan LPJ."
+        }
+      />
+
+      {/* Sponsor & Mitra Quick Banner */}
+      <section className="p-4 sm:p-5 rounded-3xl bg-white/90 border border-[#E9E1DC] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+            <Handshake className="w-5 h-5" />
+          </div>
+          <div>
+            <strong className="font-serif text-sm text-wine-950 block">
+              Butuh Referensi Sponsor atau Mitra Perusahaan?
+            </strong>
+            <p className="text-xs text-neutral-dark">
+              Akses Direktori Sponsor &amp; Mitra untuk melihat daftar perusahaan dan riwayat kerja sama HIPMI.
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/organization/directory/companies"
+          className="px-4 py-2 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 text-xs font-semibold text-wine-950 hover:text-brand-burgundy inline-flex items-center gap-1.5 shrink-0 self-start sm:self-center transition-colors"
+        >
+          <span>Buka Direktori Mitra</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </section>
+
+      {/* Modal Buat Proker Baru (Kakom Only) */}
+      {canCreateHere && (
+        <CreateProjectModal
+          isOpen={createProjOpen}
+          onClose={() => setCreateProjOpen(false)}
+          store={store}
+          currentUser={currentUser}
+          defaultCompartmentId={compartment?.id}
+          onCreated={(projName) =>
+            setToastMsg(`Draf program kerja "${projName}" berhasil dibuat di ${compartment?.name}!`)
+          }
+        />
       )}
     </div>
   );

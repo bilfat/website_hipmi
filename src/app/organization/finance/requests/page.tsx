@@ -1,180 +1,211 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
 import { useMockStore } from "@/lib/mock/store";
+import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
 import {
-  DollarSign,
-  Search,
-  Filter,
-  Plus,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  FileText
-} from "lucide-react";
+  CreateFundRequestModal,
+  RecordTransactionModal,
+  FundRequestDetailModal,
+} from "@/components/organization/finance-modals";
+import { FundRequest } from "@/types/domain";
+import { Search, Plus, CheckCircle2, Banknote } from "lucide-react";
+
+const FUND_STATUS_MAP: Record<string, { label: string; tone: string }> = {
+  draft: { label: "Draf", tone: "bg-neutral-100 text-neutral-700 border-neutral-200" },
+  submitted: { label: "Menunggu Review", tone: "bg-amber-50 text-amber-800 border-amber-200" },
+  in_review: { label: "Diperiksa Bendum", tone: "bg-amber-50 text-amber-800 border-amber-200" },
+  revision: { label: "Perlu Revisi", tone: "bg-rose-50 text-rose-700 border-rose-200" },
+  approved: { label: "Disetujui (Siap Cair)", tone: "bg-sky-50 text-sky-800 border-sky-200" },
+  partially_disbursed: { label: "Cair Sebagian", tone: "bg-sky-50 text-sky-800 border-sky-200" },
+  fully_disbursed: { label: "Sudah Ditransfer", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  settled: { label: "Settled (Diterima)", tone: "bg-emerald-100 text-emerald-900 border-emerald-300" },
+  rejected: { label: "Ditolak", tone: "bg-red-50 text-red-700 border-red-200" },
+};
 
 export default function FundRequestsListPage() {
-  const { store } = useMockStore();
+  const { store, currentUser } = useMockStore();
+  const permissions = resolveUserPermissions(currentUser, store);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [reqModalOpen, setReqModalOpen] = useState(false);
+  const [txModalOpen, setTxModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<FundRequest | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const requests = (store.fund_requests || []).filter((r) => {
     if (statusFilter !== "all" && r.status !== statusFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      const matchPurpose = r.purpose.toLowerCase().includes(q);
-      const matchSubmitter = r.submitter_name.toLowerCase().includes(q);
-      const matchUnit = r.unit_name.toLowerCase().includes(q);
-      if (!matchPurpose && !matchSubmitter && !matchUnit) return false;
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
+      if (
+        !r.purpose.toLowerCase().includes(q) &&
+        !r.submitter_name.toLowerCase().includes(q) &&
+        !r.unit_name.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
     }
     return true;
   });
 
+  const canRecordTransaction =
+    permissions.isBendum ||
+    permissions.managedProjectIds.length > 0 ||
+    permissions.canCreateFundRequest;
+
   return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Breadcrumb & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href="/organization/finance"
-                className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" /> Keuangan
-              </Link>
-              <span className="text-xs text-wine-300">/</span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                FIN-04
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Daftar Pengajuan Dana
-            </h1>
-            <p className="text-xs text-wine-600 mt-1">
-              Proposal anggaran kegiatan dan permohonan dana proker dari bidang, kompartemen, atau panitia pelaksana.
-            </p>
-          </div>
-
-          <Link
-            href="/organization/finance/requests/form?mode=create"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 text-white font-medium text-xs shadow-sm transition-all"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Ajukan Dana (FIN-05)</span>
-          </Link>
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+            Kebendaharaan &amp; Pencairan Dana
+          </span>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Pengajuan Dana (RAB) &amp; Pencairan
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Kelola permohonan RAB dari bidang, kompartemen, dan proker. Pencairan oleh Bendum dilengkapi bukti transfer dan dikonfirmasi kembali oleh unit penerima.
+          </p>
         </div>
 
-        {/* Filter bar */}
-        <div className="p-4 rounded-xl bg-white border border-wine-100 shadow-xs flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-wine-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Cari perihal pengajuan, unit, atau nama pengaju..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-wine-200 text-xs text-wine-900 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            />
-          </div>
-
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-          >
-            <option value="all">Semua Status</option>
-            <option value="submitted">Submitted (Menunggu Review)</option>
-            <option value="in_review">In Review</option>
-            <option value="approved">Approved (Disetujui)</option>
-            <option value="partially_disbursed">Partially Disbursed</option>
-            <option value="fully_disbursed">Fully Disbursed (Tuntas)</option>
-            <option value="rejected">Rejected (Ditolak)</option>
-          </select>
-        </div>
-
-        {/* Requests Table */}
-        <div className="bg-white rounded-2xl border border-wine-100 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-wine-50/50 text-wine-700 font-semibold border-b border-wine-100">
-                <tr>
-                  <th className="py-3.5 px-4">Tujuan / Keperluan</th>
-                  <th className="py-3.5 px-4">Unit / Pengaju</th>
-                  <th className="py-3.5 px-4">Status Anggaran</th>
-                  <th className="py-3.5 px-4 text-right">Nominal Diajukan</th>
-                  <th className="py-3.5 px-4 text-right">Disetujui</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-wine-50 text-wine-800">
-                {requests.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-wine-500">
-                      Tidak ada pengajuan dana yang cocok dengan filter.
-                    </td>
-                  </tr>
-                ) : (
-                  requests.map((r) => (
-                    <tr key={r.id} className="hover:bg-surface-base">
-                      <td className="py-3.5 px-4 max-w-xs">
-                        <Link
-                          href={`/organization/finance/requests/${r.id}`}
-                          className="font-bold text-wine-950 font-display text-sm hover:text-brand-burgundy hover:underline line-clamp-1"
-                        >
-                          {r.purpose}
-                        </Link>
-                        <p className="text-[11px] text-wine-500 font-mono mt-0.5">
-                          {r.items.length} item rincian anggaran RAB
-                        </p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-medium text-wine-900">{r.unit_name}</span>
-                        <p className="text-[11px] text-wine-500">{r.submitter_name}</p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            r.status === "fully_disbursed" || r.status === "approved"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : r.status === "partially_disbursed"
-                              ? "bg-blue-100 text-blue-800"
-                              : r.status === "rejected"
-                              ? "bg-rose-100 text-rose-800"
-                              : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {r.status.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-wine-900">
-                        Rp {r.requested_amount.toLocaleString("id-ID")}
-                      </td>
-                      <td className="py-3.5 px-4 text-right font-mono font-bold text-emerald-700">
-                        {r.approved_amount
-                          ? `Rp ${r.approved_amount.toLocaleString("id-ID")}`
-                          : "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          href={`/organization/finance/requests/${r.id}`}
-                          className="px-3 py-1.5 rounded-lg border border-wine-200 hover:bg-wine-50 text-wine-800 text-xs font-semibold inline-flex items-center gap-1"
-                        >
-                          Review <ChevronRight className="w-3 h-3" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {permissions.canCreateFundRequest && (
+            <button
+              type="button"
+              onClick={() => setReqModalOpen(true)}
+              className="px-4 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm inline-flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Ajukan Dana (RAB)</span>
+            </button>
+          )}
+          {canRecordTransaction && (
+            <button
+              type="button"
+              onClick={() => setTxModalOpen(true)}
+              className="px-4 py-2.5 rounded-full bg-white border border-[#E9E1DC] hover:border-brand-burgundy/40 text-wine-950 text-xs font-semibold inline-flex items-center gap-1.5"
+            >
+              <Banknote className="w-3.5 h-3.5 text-emerald-700" />
+              <span>Catat Transaksi</span>
+            </button>
+          )}
         </div>
       </div>
-    </OrganizationShell>
+
+      {feedback && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{feedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Filter bar */}
+      <div className="p-4 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-neutral-light absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Cari keperluan pengajuan, unit, atau nama pengaju..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+          />
+        </div>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+        >
+          <option value="all">Semua Status</option>
+          <option value="submitted">Menunggu Review</option>
+          <option value="approved">Disetujui (Siap Cair)</option>
+          <option value="fully_disbursed">Sudah Ditransfer</option>
+          <option value="settled">Settled</option>
+        </select>
+      </div>
+
+      {/* Requests List */}
+      <div className="space-y-3">
+        {requests.length > 0 ? (
+          requests.map((req) => {
+            const st = FUND_STATUS_MAP[req.status] || FUND_STATUS_MAP.submitted;
+            return (
+              <div
+                key={req.id}
+                onClick={() => setSelectedRequest(req)}
+                className="p-4 sm:p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div className="space-y-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${st.tone}`}>
+                      {st.label}
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-brand-burgundy">
+                      Rp {req.requested_amount.toLocaleString("id-ID")}
+                    </span>
+                  </div>
+                  <strong className="font-serif text-base text-wine-950 block">
+                    {req.purpose}
+                  </strong>
+                  <span className="text-xs text-neutral-dark">
+                    {req.unit_name} • Pengaju: {req.submitter_name}
+                  </span>
+                </div>
+
+                <span className="px-4 py-2 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] text-xs font-semibold text-wine-950 shrink-0 self-start sm:self-center">
+                  {permissions.isBendum ? "Review / Cairkan" : "Rincian"}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-10 rounded-3xl bg-white/95 border border-dashed border-[#E9E1DC] text-center text-xs text-neutral-dark">
+            Belum ada pengajuan dana yang cocok dengan filter ini.
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      <CreateFundRequestModal
+        isOpen={reqModalOpen}
+        onClose={() => setReqModalOpen(false)}
+        store={store}
+        currentUser={currentUser}
+        defaultUnitName={permissions.roleScopeSubtitle}
+        onSuccess={(msg) => setFeedback(msg)}
+      />
+
+      <RecordTransactionModal
+        isOpen={txModalOpen}
+        onClose={() => setTxModalOpen(false)}
+        store={store}
+        currentUser={currentUser}
+        onSuccess={(msg) => setFeedback(msg)}
+      />
+
+      <FundRequestDetailModal
+        request={selectedRequest}
+        onClose={() => setSelectedRequest(null)}
+        store={store}
+        currentUser={currentUser}
+        isBendum={permissions.isBendum}
+        canConfirmReceipt={
+          !!selectedRequest &&
+          (selectedRequest.submitter_user_id === currentUser.id || permissions.isKakom)
+        }
+        onUpdated={(msg) => setFeedback(msg)}
+      />
+    </div>
   );
 }

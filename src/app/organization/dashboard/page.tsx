@@ -1,796 +1,837 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
+import { useRouter } from "next/navigation";
 import { useMockStore } from "@/lib/mock/store";
 import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
+import { ProjectCardGrid } from "@/components/organization/project-card-grid";
+import { CreateProjectModal } from "@/components/organization/create-project-modal";
 import {
-  Layers,
+  Building,
   FolderKanban,
-  FileText,
-  Calendar,
-  ArrowRight,
-  Sparkles,
-  ChevronRight,
   Mail,
   Wallet,
+  Calendar,
   CalendarCheck,
-  QrCode,
-  Users,
-  Globe,
-  Award,
+  FileText,
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  Handshake,
   Plus,
+  Bell,
+  Users,
+  Store,
+  Megaphone,
+  Newspaper,
+  MessageSquareHeart,
+  Award,
+  Layers,
   AlertCircle,
-  CheckCircle2
+  BarChart3,
 } from "lucide-react";
 
 export default function OrganizationDashboardPage() {
+  const router = useRouter();
   const { store, currentUser } = useMockStore();
   const permissions = resolveUserPermissions(currentUser, store);
+  const profile = permissions.orgRoleProfile;
 
-  const [categoryFilter, setCategoryFilter] = useState<"all" | "admin" | "event" | "governance">("all");
+  const [createProjOpen, setCreateProjOpen] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Pure Project Manager goes straight to their Project Workspace (never sees Organization Dashboard)
+  useEffect(() => {
+    if (permissions.isPureProjectManager && permissions.primaryWorkspaceHref) {
+      router.replace(permissions.primaryWorkspaceHref);
+    }
+  }, [permissions.isPureProjectManager, permissions.primaryWorkspaceHref, router]);
 
   const activeCab = store.cabinets.find((c) => c.status === "active") || store.cabinets[0];
-  const activeProjects = store.projects.filter(
-    (p) => p.cabinet_id === activeCab.id && p.operational_status === "ongoing"
-  );
-  const pendingLetters = store.correspondence.filter((c) => c.status === "submitted" || c.status === "in_review");
-  const pendingFunds = store.fund_requests.filter((f) => f.status === "submitted" || f.status === "in_review");
-  const upcomingEvents = store.events.filter((e) => new Date(e.schedule_start) >= new Date());
-  const checkedInTickets = store.tickets.filter((t) => t.is_checked_in);
-  const verifiedCadres = store.users.filter((u) => u.cadre_status === "verified");
 
-  // Calculate current general balance
+  // Scope-filtered datasets
+  const allCabProjects = store.projects.filter((p) => p.cabinet_id === activeCab?.id);
+  const scopedProjects =
+    profile === "kabid" && permissions.managedFieldId
+      ? allCabProjects.filter((p) => p.field_id === permissions.managedFieldId)
+      : profile === "kakom" && permissions.managedCompartmentId
+      ? allCabProjects.filter((p) => p.compartment_id === permissions.managedCompartmentId)
+      : profile === "staff" && permissions.managedCompartmentId
+      ? allCabProjects.filter((p) => p.compartment_id === permissions.managedCompartmentId)
+      : allCabProjects;
+
+  const activeProjects = scopedProjects.filter((p) => p.operational_status === "ongoing");
+
+  const pendingLetters = store.correspondence.filter(
+    (c) => c.status === "submitted" || c.status === "in_review"
+  );
+  const ditmawaLetters = store.correspondence.filter(
+    (c) => c.routing === "Untuk Ditmawa" && c.ditmawa_status && c.ditmawa_status !== "completed"
+  );
+  const pendingFunds = store.fund_requests.filter(
+    (f) => f.status === "submitted" || f.status === "in_review"
+  );
+  const approvedUndisbursedFunds = store.fund_requests.filter((f) => f.status === "approved");
+
   const cashBalance = store.finance_transactions.reduce((acc, t) => {
     if (t.type === "income") return acc + t.amount;
     if (t.type === "expense") return acc - t.amount;
     return acc;
   }, 0);
 
-  const totalPendingAction = pendingLetters.length + pendingFunds.length;
+  const ticketRevenue = store.reservations
+    .filter((r) => r.payment_status === "approved" || r.payment_status === "paid")
+    .reduce((acc, r) => acc + (r.amount || 0), 0);
 
-  // Dynamic references (resolving P1 & P2 critique observations)
-  const primaryProkerHref = activeProjects.length > 0 
-    ? `/workspace/${activeProjects[0].id}` 
-    : "/organization/reports";
+  const publicEvents = store.events.filter((e) => e.visibility === "public");
 
-  const primaryEventId = upcomingEvents[0]?.id || "evt-business-expo";
+  // Today's Announcement Feed (starting 00.01 WIB per front_end.md CAL-01/ORG-01)
+  const calendarEvents = store.calendar_events || [];
+  const todayStr = new Date().toISOString().split("T")[0];
+  const todayCalendarEvents = calendarEvents.filter((ev) =>
+    ev.start_time.startsWith(todayStr)
+  );
+  const upcomingCalendarEvents = [...calendarEvents]
+    .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
+    .slice(0, 3);
+  const announcementItems =
+    todayCalendarEvents.length > 0 ? todayCalendarEvents : upcomingCalendarEvents.slice(0, 2);
 
-  // Category Tabs Definition for Mobile & Responsive Quick Triage
-  const filterTabs = [
-    { id: "all", label: "Semua", count: 8 },
-    { id: "admin", label: "Administrasi & Kas", count: 2 },
-    { id: "event", label: "Event & Presensi", count: 2 },
-    { id: "governance", label: "Tata Kelola & Eksternal", count: 4 },
-  ] as const;
+  // Scoped compartments for Kabid
+  const managedField = store.fields.find((f) => f.id === permissions.managedFieldId);
+  const fieldCompartments = managedField
+    ? store.compartments.filter((c) => c.field_id === managedField.id)
+    : [];
+
+  const managedComp = store.compartments.find((c) => c.id === permissions.managedCompartmentId);
+
+  // Role-specific KPI definitions (Always 4 crisp cards: 2-col mobile / 4-col desktop)
+  const getKpiCards = () => {
+    if (profile === "sekum") {
+      return [
+        {
+          label: "Menunggu Review",
+          value: pendingLetters.length,
+          sub: "Antrean surat masuk",
+          href: "/organization/correspondence",
+          icon: Mail,
+          tone: "bg-amber-500/12 text-amber-700",
+        },
+        {
+          label: "Proses Ditmawa",
+          value: ditmawaLetters.length,
+          sub: "Pelacakan eksternal",
+          href: "/organization/correspondence/ditmawa",
+          icon: Clock,
+          tone: "bg-brand-burgundy/10 text-brand-burgundy",
+        },
+        {
+          label: "Surat Terbit",
+          value: store.correspondence.filter((c) => c.status === "issued" || c.status === "completed").length,
+          sub: "Nomor resmi aktif",
+          href: "/organization/correspondence/numbering",
+          icon: CheckCircle2,
+          tone: "bg-emerald-500/12 text-emerald-700",
+        },
+        {
+          label: "Dokumen & LPJ",
+          value: store.documents.length + store.lpjs.length,
+          sub: "Arsip tersimpan",
+          href: "/organization/documents",
+          icon: FileText,
+          tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+        },
+      ];
+    }
+
+    if (profile === "bendum") {
+      return [
+        {
+          label: "Saldo Kas Kabinet",
+          value: `Rp ${(cashBalance / 1_000_000).toFixed(1)} Jt`,
+          sub: "Saldo bersih terkini",
+          href: "/organization/finance",
+          icon: Wallet,
+          tone: "bg-emerald-500/12 text-emerald-700",
+        },
+        {
+          label: "RAB Menunggu",
+          value: pendingFunds.length,
+          sub: "Perlu review Bendum",
+          href: "/organization/finance/requests",
+          icon: AlertCircle,
+          tone: "bg-amber-500/12 text-amber-700",
+        },
+        {
+          label: "Siap Dicairkan",
+          value: approvedUndisbursedFunds.length,
+          sub: "Disetujui belum transfer",
+          href: "/organization/finance/disbursements",
+          icon: CheckCircle2,
+          tone: "bg-brand-burgundy/10 text-brand-burgundy",
+        },
+        {
+          label: "Pendapatan Tiket",
+          value: `Rp ${(ticketRevenue / 1_000_000).toFixed(1)} Jt`,
+          sub: "Tiket & medpart sah",
+          href: "/organization/finance/revenue",
+          icon: BarChart3,
+          tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+        },
+      ];
+    }
+
+    if (profile === "kabid") {
+      return [
+        {
+          label: "Kompartemen",
+          value: fieldCompartments.length,
+          sub: "Unit di bawah bidang",
+          href: `/workspace/${managedField?.id || "field-demo-01"}`,
+          icon: Layers,
+          tone: "bg-brand-burgundy/10 text-brand-burgundy",
+        },
+        {
+          label: "Proker Bidang",
+          value: scopedProjects.length,
+          sub: `${activeProjects.length} sedang berjalan`,
+          href: `/workspace/${managedField?.id || "field-demo-01"}`,
+          icon: FolderKanban,
+          tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+        },
+        {
+          label: "Persuratan",
+          value: store.correspondence.length,
+          sub: "Pantau status surat",
+          href: "/organization/correspondence",
+          icon: Mail,
+          tone: "bg-sky-500/12 text-sky-700",
+        },
+        {
+          label: "Direktori Mitra",
+          value: store.companies.length,
+          sub: "Referensi sponsor",
+          href: "/organization/directory/companies",
+          icon: Handshake,
+          tone: "bg-emerald-500/12 text-emerald-700",
+        },
+      ];
+    }
+
+    if (profile === "kakom") {
+      return [
+        {
+          label: "Proker Kompartemen",
+          value: scopedProjects.length,
+          sub: `${activeProjects.length} sedang berjalan`,
+          href: `/workspace/${managedComp?.id || "comp-demo-01"}`,
+          icon: FolderKanban,
+          tone: "bg-brand-burgundy/10 text-brand-burgundy",
+        },
+        {
+          label: "Jadwal Kalender",
+          value: calendarEvents.length,
+          sub: "Pleno & agenda unit",
+          href: "/organization/calendar",
+          icon: Calendar,
+          tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+        },
+        {
+          label: "Pengajuan Surat",
+          value: store.correspondence.length,
+          sub: "Administrasi unit",
+          href: "/organization/correspondence",
+          icon: Mail,
+          tone: "bg-sky-500/12 text-sky-700",
+        },
+        {
+          label: "Sponsor & Mitra",
+          value: store.companies.length,
+          sub: "Referensi kerja sama",
+          href: "/organization/directory/companies",
+          icon: Handshake,
+          tone: "bg-emerald-500/12 text-emerald-700",
+        },
+      ];
+    }
+
+    if (profile === "staff") {
+      return [
+        {
+          label: "Proker Unit",
+          value: scopedProjects.length,
+          sub: "Kompartemen aktif",
+          href: managedComp ? `/workspace/${managedComp.id}` : "/organization/calendar",
+          icon: FolderKanban,
+          tone: "bg-brand-burgundy/10 text-brand-burgundy",
+        },
+        {
+          label: "Jadwal Terdekat",
+          value: calendarEvents.length,
+          sub: "Kalender organisasi",
+          href: "/organization/calendar",
+          icon: Calendar,
+          tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+        },
+        {
+          label: "Event Publik",
+          value: publicEvents.length,
+          sub: "Agenda aktif",
+          href: "/organization/events",
+          icon: CalendarCheck,
+          tone: "bg-sky-500/12 text-sky-700",
+        },
+        {
+          label: "Sponsor & Mitra",
+          value: store.companies.length,
+          sub: "Referensi kerja sama",
+          href: "/organization/directory/companies",
+          icon: Handshake,
+          tone: "bg-emerald-500/12 text-emerald-700",
+        },
+      ];
+    }
+
+    // Default: Top Management (Ketum, Waketum, Sekjen)
+    return [
+      {
+        label: "Proker Aktif",
+        value: activeProjects.length,
+        sub: `Dari ${allCabProjects.length} total proker`,
+        href: "/organization/structure",
+        icon: FolderKanban,
+        tone: "bg-brand-burgundy/10 text-brand-burgundy",
+      },
+      {
+        label: "Menunggu Tindakan",
+        value: pendingLetters.length + pendingFunds.length,
+        sub: `${pendingLetters.length} surat • ${pendingFunds.length} RAB`,
+        href: "/organization/action-center",
+        icon: AlertCircle,
+        tone: "bg-amber-500/12 text-amber-700",
+      },
+      {
+        label: "Saldo Kas Kabinet",
+        value: `Rp ${(cashBalance / 1_000_000).toFixed(1)} Jt`,
+        sub: "Pantau arus kas",
+        href: "/organization/finance",
+        icon: Wallet,
+        tone: "bg-emerald-500/12 text-emerald-700",
+      },
+      {
+        label: "Event Publik",
+        value: publicEvents.length,
+        sub: `${store.users.filter((u) => u.cadre_status === "verified").length} kader aktif`,
+        href: "/organization/events",
+        icon: CalendarCheck,
+        tone: "bg-[#E8B577]/25 text-[#8A5A2B]",
+      },
+    ];
+  };
+
+  const kpiCards = getKpiCards();
+
+  // Assigned Special Service Shortcuts for Staff
+  const staffServiceCards = [
+    permissions.canManageCadres && {
+      title: "Database Kader",
+      desc: "Kelola data kader resmi, verifikasi & penautan NIM.",
+      href: "/organization/directory/cadres",
+      icon: Users,
+    },
+    permissions.canManagePartnerships && {
+      title: "Pengelolaan Bisnis Kader",
+      desc: "Kurasi & publikasi usaha kader ke direktori publik.",
+      href: "/organization/directory/businesses",
+      icon: Store,
+    },
+    permissions.canManagePartnerships && {
+      title: "Database Sponsor & Mitra",
+      desc: "Kelola profil perusahaan, kontak PIC & riwayat kerja sama.",
+      href: "/organization/directory/companies",
+      icon: Handshake,
+    },
+    (permissions.canReviewMedpart || permissions.canPublishMedpart) && {
+      title: "Media Partner (Medpart)",
+      desc: "Atur paket medpart gratis/berbayar & review pengajuan.",
+      href: "/organization/cms/medpart",
+      icon: Megaphone,
+    },
+    (permissions.canCreateContent || permissions.canPublishContent) && {
+      title: "Berita & Artikel",
+      desc: "Tulis dan publikasikan berita ke portal publik HIPMI.",
+      href: "/organization/cms/articles",
+      icon: Newspaper,
+    },
+    (permissions.canCreateContent || permissions.canPublishContent) && {
+      title: "Kader Berprestasi",
+      desc: "Posting prestasi kader agar tampil di portal publik.",
+      href: "/organization/cms/achievements",
+      icon: Award,
+    },
+    permissions.canManageFeedback && {
+      title: "Kotak Suara",
+      desc: "Triage dan tindak lanjuti aspirasi masuk dari publik.",
+      href: "/organization/cms/feedback",
+      icon: MessageSquareHeart,
+    },
+    (permissions.canManageEvents || permissions.canVerifyTicketPayment || permissions.canScanAttendance) && {
+      title: "Agenda, Tiket & Presensi QR",
+      desc: "Verifikasi pembayaran tiket & operasikan scanner presensi.",
+      href: "/organization/events",
+      icon: CalendarCheck,
+    },
+    permissions.canReviewLPJ && {
+      title: "Review Dokumen & LPJ",
+      desc: "Periksa kelengkapan LPJ 7-bagian dari program kerja.",
+      href: "/organization/documents",
+      icon: FileText,
+    },
+  ].filter(Boolean) as {
+    title: string;
+    desc: string;
+    href: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }[];
 
   return (
-    <OrganizationShell>
-      <div className="space-y-6 sm:space-y-8 pb-16">
-        {/* Top Hero Banner (Mobile Adaptive Typography & Button Stack) */}
-        <div className="p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-r from-brand-darkWine via-brand-burgundy to-brand-darkWine text-white shadow-xl relative overflow-hidden">
-          <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 sm:gap-6">
-            <div className="space-y-2">
-              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                <span className="text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full font-mono font-bold uppercase bg-gold-400/20 text-gold-200 border border-gold-400/30">
-                  Tata Kelola Organisasi
-                </span>
-                <span className="text-[11px] sm:text-xs px-2.5 py-0.5 sm:py-1 rounded-full font-mono font-semibold uppercase bg-white/10 text-white/90">
-                  Kabinet {activeCab.name} Aktif
-                </span>
-              </div>
+    <div className="space-y-6 sm:space-y-8 pb-12">
+      {/* Feedback Toast */}
+      {toastMsg && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{toastMsg}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setToastMsg(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
 
-              <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-white leading-tight">
-                Dasbor Operasional Organisasi
-              </h1>
+      {/* Editorial Role-Adaptive Hero Card (Minimalist Aurora Glass matching Personal Dashboard) */}
+      <section className="p-5 sm:p-7 rounded-3xl bg-gradient-to-br from-[#3D0F16] via-[#5A1722] to-[#340C12] text-white shadow-[0_18px_46px_rgba(61,15,22,0.16)] border border-[#E8B577]/30 relative overflow-hidden">
+        <div
+          className="absolute -right-14 -top-14 w-56 h-56 rounded-full border border-[#E8B577]/20 pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute right-8 -bottom-20 w-64 h-64 rounded-full bg-[#E8B577]/12 blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
 
-              <p className="text-xs sm:text-sm text-gold-100/90 max-w-2xl leading-relaxed">
-                Pusat komando dan navigasi tata kelola BPC HIPMI PT Telkom University Periode 2026/2027.
-              </p>
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-mono font-bold uppercase tracking-wider bg-[#E8B577]/20 text-[#F5D6A8] border border-[#E8B577]/35">
+                {permissions.roleBadgeTitle}
+              </span>
+              <span className="text-[10px] px-2.5 py-0.5 rounded-full font-medium bg-white/10 text-white/90 border border-white/15">
+                {activeCab?.name || "Kabinet Arthakarsa"} • {activeCab?.period || "2026/2027"}
+              </span>
             </div>
 
-            {/* Mobile Thumbs-First Hero CTAs */}
-            <div className="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2.5 w-full sm:w-auto shrink-0 pt-1 sm:pt-0">
-              <Link
-                href="/organization/structure"
-                className="min-h-[44px] px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 active:bg-white/30 border border-white/20 text-xs font-semibold text-white transition-all flex items-center justify-center text-center active:scale-[0.98]"
-              >
-                Struktur Pengurus
-              </Link>
+            <h1 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight leading-snug">
+              {profile === "top_management"
+                ? "Dashboard Eksekutif Kabinet"
+                : profile === "sekum"
+                ? "Dashboard Administrasi & Persuratan"
+                : profile === "bendum"
+                ? "Dashboard Keuangan & Kas"
+                : profile === "kabid"
+                ? `Dashboard ${managedField?.name || "Bidang"}`
+                : profile === "kakom"
+                ? `Dashboard ${managedComp?.name || "Kompartemen"}`
+                : "Dashboard Tugas Organisasi"}
+            </h1>
 
+            <p className="text-xs text-white/75 max-w-xl leading-relaxed">
+              {permissions.roleScopeSubtitle} — Menampilkan ringkasan, jadwal hari ini, dan tindakan prioritas sesuai kewenangan jabatan Anda.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {profile === "kakom" && (
+              <button
+                type="button"
+                onClick={() => setCreateProjOpen(true)}
+                className="px-4 py-2.5 rounded-full bg-[#E8B577] hover:bg-[#D4A76A] text-[#3D0F16] text-xs font-bold inline-flex items-center gap-1.5 shadow-md transition-colors"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Buat Proker Baru</span>
+              </button>
+            )}
+            {profile === "kabid" && managedField && (
+              <Link
+                href={`/workspace/${managedField.id}`}
+                className="px-4 py-2.5 rounded-full bg-[#E8B577] hover:bg-[#D4A76A] text-[#3D0F16] text-xs font-bold inline-flex items-center gap-1.5 shadow-md transition-colors"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Buka Workspace Bidang</span>
+              </Link>
+            )}
+            {(profile === "top_management" || profile === "sekum" || profile === "bendum") && (
               <Link
                 href="/organization/action-center"
-                className="min-h-[44px] px-4 py-2.5 rounded-full bg-gold-500 hover:bg-gold-600 active:bg-gold-700 text-wine-950 text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md text-center active:scale-[0.98]"
+                className="px-4 py-2.5 rounded-full bg-[#E8B577] hover:bg-[#D4A76A] text-[#3D0F16] text-xs font-bold inline-flex items-center gap-1.5 shadow-md transition-colors"
               >
-                <Sparkles className="w-4 h-4 text-wine-950 shrink-0" />
-                <span>Pusat Tindakan &amp; Persetujuan</span>
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Pusat Tindakan</span>
               </Link>
-            </div>
-          </div>
-        </div>
+            )}
 
-        {/* Actionable Executive Triage Tray (Full-width Touch Target on Mobile) */}
-        {totalPendingAction > 0 && (
-          <div className="p-4 sm:p-5 rounded-2xl bg-amber-50/95 border border-amber-300/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 sm:gap-4">
-            <div className="flex items-start sm:items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-900 flex items-center justify-center shrink-0 border border-amber-400/40">
-                <AlertCircle className="w-5 h-5 text-amber-900" />
-              </div>
-              <div className="space-y-0.5 min-w-0">
-                <h2 className="text-xs sm:text-sm font-bold text-wine-950 leading-snug">
-                  Tindakan Diperlukan: {totalPendingAction} Pengajuan Membutuhkan Review
-                </h2>
-                <p className="text-[11px] sm:text-xs text-neutral-dark leading-normal">
-                  {pendingLetters.length} persuratan Sekum &amp; {pendingFunds.length} pengajuan kas RAB Bendum.
-                </p>
-              </div>
-            </div>
             <Link
-              href="/organization/action-center"
-              className="min-h-[44px] px-4 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 shrink-0 w-full sm:w-auto transition-all active:scale-[0.98]"
+              href="/organization/calendar"
+              className="px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-xs font-semibold text-white inline-flex items-center gap-1.5 transition-colors"
             >
-              <span>Buka Approval Center</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Kalender Organisasi</span>
             </Link>
           </div>
-        )}
+        </div>
+      </section>
 
-        {/* 4 Top KPI Highlights (Responsive 2x2 on Mobile, 4x1 on Desktop) */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
-          {/* Highlight 1: Proker Berjalan (Dynamic Link) */}
-          <Link
-            href={primaryProkerHref}
-            className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md active:bg-wine-50/30 transition-all group flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between pb-2 sm:pb-3">
-              <span className="text-neutral-dark text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                Proker Berjalan
+      {/* Automated Daily Announcement Banner (Reads Calendar starting 00.01 WIB per front_end.md) */}
+      <section className="p-4 sm:p-5 rounded-3xl bg-white/95 border border-[#E8B577]/45 shadow-[0_6px_22px_rgba(61,15,22,0.04)] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5 min-w-0">
+          <div className="w-10 h-10 rounded-2xl bg-[#E8B577]/20 text-[#8A5A2B] flex items-center justify-center shrink-0">
+            <Bell className="w-4 h-4" />
+          </div>
+          <div className="space-y-1 min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-brand-burgundy">
+                {todayCalendarEvents.length > 0
+                  ? "Pengumuman Agenda Hari Ini (Aktif sejak 00.01 WIB)"
+                  : "Agenda Kalender Terdekat"}
               </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-brand-burgundy/10 text-brand-burgundy flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                <FolderKanban className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 leading-none">
-                {activeProjects.length}
-              </div>
-              <span className="text-[10px] sm:text-xs text-neutral-dark mt-1 block truncate">
-                Dari {store.projects.length} total program
+              <span className="text-[10px] font-mono text-neutral-light">
+                • Sinkron otomatis dari Kalender Organisasi
               </span>
             </div>
-          </Link>
 
-          {/* Highlight 2: Surat Butuh Review */}
-          <Link
-            href="/organization/correspondence"
-            className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md active:bg-wine-50/30 transition-all group flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between pb-2 sm:pb-3">
-              <span className="text-neutral-dark text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                Surat Review
-              </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gold-500/15 text-gold-800 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                <Mail className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+            {announcementItems.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                {announcementItems.map((ev) => (
+                  <div key={ev.id} className="text-xs text-wine-950 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-brand-burgundy shrink-0" />
+                    <strong className="font-semibold">{ev.title}</strong>
+                    <span className="text-[11px] text-neutral-dark font-mono">
+                      (
+                      {new Date(ev.start_time).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                      {" • "}
+                      {new Date(ev.start_time).toLocaleTimeString("id-ID", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}{" "}
+                      WIB)
+                    </span>
+                  </div>
+                ))}
               </div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 leading-none">
-                {pendingLetters.length}
-              </div>
-              <span className="text-[10px] sm:text-xs text-neutral-dark mt-1 block truncate">
-                Antrean verifikasi Sekum
-              </span>
-            </div>
-          </Link>
-
-          {/* Highlight 3: Pengajuan Kas Proker */}
-          <Link
-            href="/organization/finance"
-            className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md active:bg-wine-50/30 transition-all group flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between pb-2 sm:pb-3">
-              <span className="text-neutral-dark text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                Pengajuan RAB
-              </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-brand-burgundy/10 text-brand-burgundy flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 leading-none">
-                {pendingFunds.length}
-              </div>
-              <span className="text-[10px] sm:text-xs text-neutral-dark mt-1 block truncate">
-                Persetujuan Bendum
-              </span>
-            </div>
-          </Link>
-
-          {/* Highlight 4: Agenda Terjadwal */}
-          <Link
-            href="/organization/calendar"
-            className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md active:bg-wine-50/30 transition-all group flex flex-col justify-between"
-          >
-            <div className="flex items-center justify-between pb-2 sm:pb-3">
-              <span className="text-neutral-dark text-[11px] sm:text-xs font-semibold uppercase tracking-wider truncate">
-                Agenda Mendatang
-              </span>
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-gold-500/15 text-gold-800 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-              </div>
-            </div>
-            <div>
-              <div className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 leading-none">
-                {upcomingEvents.length}
-              </div>
-              <span className="text-[10px] sm:text-xs text-neutral-dark mt-1 block truncate">
-                Kegiatan kalender aktif
-              </span>
-            </div>
-          </Link>
+            ) : (
+              <p className="text-xs text-neutral-dark">
+                Tidak ada jadwal rapat pleno atau kegiatan internal yang tercatat hari ini.
+              </p>
+            )}
+          </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* PUSAT DASHBOARD MODUL & TATA KELOLA OPERASIONAL (OPERATIONAL COMMAND HUB)  */}
-        {/* ========================================================================= */}
-        <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-wine-950/10 pb-3">
-            <div>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-wine-950 flex items-center gap-2">
-                <Layers className="w-5 h-5 text-brand-burgundy" />
-                <span>Pusat Modul &amp; Dasbor Operasional</span>
+        <Link
+          href="/organization/calendar"
+          className="px-4 py-2 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 text-xs font-semibold text-wine-950 hover:text-brand-burgundy inline-flex items-center gap-1.5 shrink-0 self-start md:self-center transition-colors"
+        >
+          <span>Lihat Kalender</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </section>
+
+      {/* Auto-Layout 4 KPI Cards (Always 2-col mobile / 4-col desktop) */}
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {kpiCards.map((card) => {
+          const Icon = card.icon;
+          return (
+            <Link
+              key={card.label}
+              href={card.href}
+              className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-[0_4px_16px_rgba(61,15,22,0.04)] hover:border-brand-burgundy/40 hover:shadow-md transition-all group flex flex-col justify-between"
+            >
+              <div className="flex items-start justify-between gap-2 pb-2.5">
+                <span className="text-neutral-dark text-[11px] font-semibold leading-tight">
+                  {card.label}
+                </span>
+                <div
+                  className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform ${card.tone}`}
+                >
+                  <Icon className="w-4 h-4" />
+                </div>
+              </div>
+              <div>
+                <div className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold text-wine-950 leading-none truncate">
+                  {card.value}
+                </div>
+                <span className="text-[11px] text-neutral-light mt-1.5 block truncate">
+                  {card.sub}
+                </span>
+              </div>
+            </Link>
+          );
+        })}
+      </section>
+
+      {/* ROLE-ADAPTIVE PRIORITY BODY */}
+
+      {/* 1. SEKUM FOCUS: Letter Queue & Ditmawa Tracking */}
+      {profile === "sekum" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7 p-5 sm:p-6 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DC]">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-wine-950 flex items-center gap-2">
+                <Mail className="w-4 h-4 text-brand-burgundy" />
+                <span>Antrean Review Persuratan ({pendingLetters.length})</span>
               </h2>
-              <p className="text-xs text-neutral-dark mt-0.5">
-                Pilih modul kerja untuk mengelola administrasi, keuangan, kepanitiaan, dan arsip kabinet.
-              </p>
+              <Link
+                href="/organization/correspondence"
+                className="text-xs font-semibold text-brand-burgundy hover:underline"
+              >
+                Buka Semua →
+              </Link>
             </div>
-            <span className="text-xs font-mono font-semibold px-3 py-1 rounded-full bg-wine-50 text-wine-900 border border-wine-200 self-start sm:self-center">
-              8 Kelompok Modul Utama
-            </span>
+
+            {pendingLetters.length > 0 ? (
+              <div className="space-y-2.5">
+                {pendingLetters.slice(0, 4).map((letter) => (
+                  <Link
+                    key={letter.id}
+                    href={`/organization/correspondence/${letter.id}`}
+                    className="p-4 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 flex items-center justify-between gap-3 transition-colors"
+                  >
+                    <div className="min-w-0 space-y-0.5">
+                      <span className="text-[10px] font-mono font-bold text-brand-burgundy uppercase">
+                        {letter.routing} • {letter.unit_name}
+                      </span>
+                      <strong className="font-serif text-sm text-wine-950 block truncate">
+                        {letter.title}
+                      </strong>
+                      <span className="text-[11px] text-neutral-dark">
+                        Pengaju: {letter.submitter_name}
+                      </span>
+                    </div>
+                    <span className="px-3 py-1.5 rounded-full bg-brand-burgundy text-white text-[11px] font-semibold shrink-0">
+                      Periksa
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-dark p-4 rounded-2xl bg-[#FCF8F6] text-center">
+                Seluruh pengajuan surat telah ditinjau.
+              </p>
+            )}
           </div>
 
-          {/* Mobile & Tablet Quick Filter Bar (Solves 1800px+ mobile scroll fatigue) */}
-          <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto no-scrollbar py-1 -mx-2 px-2 sm:mx-0 sm:px-0">
-            {filterTabs.map((tab) => {
-              const isSelected = categoryFilter === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setCategoryFilter(tab.id)}
-                  className={`min-h-[38px] px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-1.5 shrink-0 active:scale-95 ${
-                    isSelected
-                      ? "bg-brand-burgundy text-white shadow-sm font-bold"
-                      : "bg-surface-card hover:bg-wine-50 text-wine-950 border border-wine-950/10"
-                  }`}
+          <div className="lg:col-span-5 p-5 sm:p-6 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DC]">
+              <h2 className="font-serif text-base font-bold text-wine-950 flex items-center gap-2">
+                <Building className="w-4 h-4 text-[#AF7D66]" />
+                <span>Pelacakan Ditmawa</span>
+              </h2>
+              <Link
+                href="/organization/correspondence/ditmawa"
+                className="text-xs font-semibold text-brand-burgundy hover:underline"
+              >
+                Kelola →
+              </Link>
+            </div>
+            <div className="space-y-2.5">
+              {ditmawaLetters.slice(0, 3).map((l) => (
+                <div
+                  key={l.id}
+                  className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] space-y-1 text-xs"
                 >
-                  <span>{tab.label}</span>
+                  <strong className="font-serif text-wine-950 block truncate">{l.title}</strong>
+                  <span className="text-[11px] text-neutral-dark block">
+                    {l.unit_name} • Status Ditmawa:{" "}
+                    <strong className="text-brand-burgundy">{l.ditmawa_status}</strong>
+                  </span>
+                </div>
+              ))}
+              {ditmawaLetters.length === 0 && (
+                <p className="text-xs text-neutral-dark">Belum ada surat aktif di Ditmawa.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. BENDUM FOCUS: RAB Approval Queue & Unit Budget Summary */}
+      {profile === "bendum" && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-7 p-5 sm:p-6 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DC]">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-wine-950 flex items-center gap-2">
+                <Wallet className="w-4 h-4 text-brand-burgundy" />
+                <span>Antrean Pengajuan Dana (RAB) ({pendingFunds.length})</span>
+              </h2>
+              <Link
+                href="/organization/finance/requests"
+                className="text-xs font-semibold text-brand-burgundy hover:underline"
+              >
+                Semua RAB →
+              </Link>
+            </div>
+
+            {pendingFunds.length > 0 ? (
+              <div className="space-y-2.5">
+                {pendingFunds.slice(0, 4).map((req) => (
+                  <Link
+                    key={req.id}
+                    href={`/organization/finance/requests/${req.id}`}
+                    className="p-4 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] hover:border-brand-burgundy/40 flex items-center justify-between gap-3 transition-colors"
+                  >
+                    <div className="min-w-0 space-y-0.5">
+                      <span className="text-[10px] font-mono font-bold text-brand-burgundy uppercase">
+                        {req.unit_name}
+                      </span>
+                      <strong className="font-serif text-sm text-wine-950 block truncate">
+                        {req.purpose}
+                      </strong>
+                      <span className="text-[11px] font-mono text-neutral-dark">
+                        Nominal: Rp {req.requested_amount.toLocaleString("id-ID")}
+                      </span>
+                    </div>
+                    <span className="px-3 py-1.5 rounded-full bg-brand-burgundy text-white text-[11px] font-semibold shrink-0">
+                      Review
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-neutral-dark p-4 rounded-2xl bg-[#FCF8F6] text-center">
+                Tidak ada pengajuan dana yang menunggu persetujuan saat ini.
+              </p>
+            )}
+          </div>
+
+          <div className="lg:col-span-5 p-5 sm:p-6 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-[#E9E1DC]">
+              <h2 className="font-serif text-base font-bold text-wine-950 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-emerald-700" />
+                <span>Pencairan &amp; Transaksi Terbaru</span>
+              </h2>
+              <Link
+                href="/organization/finance"
+                className="text-xs font-semibold text-brand-burgundy hover:underline"
+              >
+                Buku Kas →
+              </Link>
+            </div>
+            <div className="space-y-2.5">
+              {store.finance_transactions.slice(0, 4).map((tx) => (
+                <div
+                  key={tx.id}
+                  className="p-3.5 rounded-2xl bg-[#FCF8F6] border border-[#E9E1DC] flex items-center justify-between gap-3 text-xs"
+                >
+                  <div className="min-w-0">
+                    <strong className="text-wine-950 block truncate">{tx.description}</strong>
+                    <span className="text-[10px] text-neutral-light">{tx.category}</span>
+                  </div>
                   <span
-                    className={`text-[10px] font-mono px-1.5 py-0.2 rounded-full ${
-                      isSelected ? "bg-white/20 text-white" : "bg-wine-950/5 text-neutral-dark"
+                    className={`font-mono font-bold shrink-0 ${
+                      tx.type === "income" ? "text-emerald-700" : "text-red-700"
                     }`}
                   >
-                    {tab.count}
+                    {tx.type === "income" ? "+" : "-"}Rp {(tx.amount / 1000).toLocaleString("id-ID")}k
                   </span>
-                </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 3. STAFF FOCUS: Assigned Special Services Grid */}
+      {profile === "staff" && staffServiceCards.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="font-serif text-lg font-bold text-wine-950">
+            Modul Layanan yang Ditugaskan kepada Anda
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {staffServiceCards.map((svc) => {
+              const Icon = svc.icon;
+              return (
+                <Link
+                  key={svc.title}
+                  href={svc.href}
+                  className="p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all group space-y-3"
+                >
+                  <div className="w-10 h-10 rounded-2xl bg-brand-burgundy/10 text-brand-burgundy flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <div className="space-y-1">
+                    <strong className="font-serif text-base text-wine-950 block group-hover:text-brand-burgundy transition-colors">
+                      {svc.title}
+                    </strong>
+                    <p className="text-xs text-neutral-dark leading-relaxed">{svc.desc}</p>
+                  </div>
+                  <span className="text-xs font-semibold text-brand-burgundy inline-flex items-center gap-1">
+                    <span>Buka Modul</span>
+                    <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </Link>
               );
             })}
           </div>
+        </section>
+      )}
 
-          {/* 8 Module Cards Grid with Responsive Filtering & Min-44px Touch Targets */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* 1. Modul Persuratan */}
-            {(categoryFilter === "all" || categoryFilter === "admin") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-wine-50 text-brand-burgundy border border-wine-200/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Mail className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-wine-100/70 text-wine-900">
-                      Biro Administrasi
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Persuratan Sentral
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Surat tugas, permohonan SK, review checklist 4-item Sekum, penomoran otomatis &amp; tracking Ditmawa.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Antrean Review:</span>
-                    <span className="font-bold text-brand-burgundy">{pendingLetters.length} Surat</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/correspondence"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Dasbor
-                    </Link>
-                    {permissions.canCreateLetter ? (
-                      <Link
-                        href="/organization/correspondence/form?mode=create"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <Plus className="w-3.5 h-3.5 shrink-0" /> Buat Surat
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/correspondence"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Daftar Surat
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
+      {/* 4. LMS-STYLE PROJECT CARD GRID (For Top Management, Kabid, Kakom, & Compartment Staff) */}
+      {(profile === "top_management" ||
+        profile === "kabid" ||
+        profile === "kakom" ||
+        (profile === "staff" && permissions.managedCompartmentId)) && (
+        <ProjectCardGrid
+          store={store}
+          projects={scopedProjects}
+          showFieldFilter={profile === "top_management"}
+          showCompartmentFilter={profile === "top_management" || profile === "kabid"}
+          canCreateProject={profile === "kakom"}
+          onCreateProject={() => setCreateProjOpen(true)}
+          title={
+            profile === "top_management"
+              ? "Monitoring Program Kerja Kabinet"
+              : profile === "kabid"
+              ? `Monitoring Program Kerja — ${managedField?.name || "Bidang"}`
+              : `Program Kerja — ${managedComp?.name || "Kompartemen"}`
+          }
+          subtitle={
+            profile === "kakom"
+              ? "Kelola proker kompartemen Anda, tunjuk Pengelola Proker, atau klik kartu untuk masuk ke Project 360."
+              : "Pantau progres naratif, tim, persuratan, keuangan, dan LPJ setiap program kerja."
+          }
+        />
+      )}
 
-            {/* 2. Modul Keuangan & Kas */}
-            {(categoryFilter === "all" || categoryFilter === "admin") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-gold-50 text-gold-800 border border-gold-300/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Wallet className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-gold-100/70 text-gold-900">
-                      Kebendaharaan
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Keuangan &amp; Kas
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Buku kas umum, review RAB Bendum, pencairan termin bertahap, dan monitoring pendapatan tiket &amp; medpart.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Saldo Kas Aktif:</span>
-                    <span className="font-bold text-wine-950 font-mono">Rp {cashBalance.toLocaleString("id-ID")}</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/finance"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Buka Keuangan
-                    </Link>
-                    {permissions.canCreateFundRequest || permissions.canManageFinance ? (
-                      <Link
-                        href="/organization/finance/requests/form"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <Plus className="w-3.5 h-3.5 shrink-0" /> Ajukan RAB
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/finance"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Buku Kas
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 3. Modul Manajemen Event */}
-            {(categoryFilter === "all" || categoryFilter === "event") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-wine-50 text-brand-burgundy border border-wine-200/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <CalendarCheck className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-wine-100/70 text-wine-900">
-                      Operasional Acara
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Manajemen Acara
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Pusat kendali program kerja, manajemen kuota tiket, meja verifikasi pembayaran panitia, dan kirim ulang tiket.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Tiket Terbit:</span>
-                    <span className="font-bold text-wine-950 font-mono">{store.tickets.length} Lembar</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/events"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Daftar Agenda
-                    </Link>
-                    {permissions.canManageEvents ? (
-                      <Link
-                        href="/calendar/events/form"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <Plus className="w-3.5 h-3.5 shrink-0" /> Buat Agenda
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/events"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Lihat Agenda
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 4. Modul Presensi & Scanner (Dynamic Event ID P2 Fix) */}
-            {(categoryFilter === "all" || categoryFilter === "event") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-gold-50 text-gold-800 border border-gold-300/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <QrCode className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-gold-100/70 text-gold-900">
-                      Meja Kehadiran
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Presensi &amp; Pemindai QR
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Meja presensi tiket, pemindai QR kamera langsung, masukan kode manual, dan rekaman kehadiran seketika.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Kehadiran Terdata:</span>
-                    <span className="font-bold text-wine-950 font-mono">{checkedInTickets.length} Hadir</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href={`/organization/events/${primaryEventId}/check-in`}
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Meja Presensi
-                    </Link>
-                    {permissions.canManageEvents || permissions.canScanAttendance ? (
-                      <Link
-                        href={`/organization/events/${primaryEventId}/scanner`}
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <QrCode className="w-3.5 h-3.5 shrink-0" /> Pindai QR
-                      </Link>
-                    ) : (
-                      <Link
-                        href={`/organization/events/${primaryEventId}/check-in`}
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Rekam Presensi
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 5. Modul Dokumen & LPJ */}
-            {(categoryFilter === "all" || categoryFilter === "governance") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-wine-50 text-brand-burgundy border border-wine-200/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-wine-100/70 text-wine-900">
-                      Arsip &amp; LPJ
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Dokumen &amp; LPJ
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Bank arsip dokumen resmi kabinet, versioning metadata, dan review LPJ 7-bagian terintegrasi data riil.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Total Arsip:</span>
-                    <span className="font-bold text-wine-950 font-mono">{store.documents.length} Dokumen</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/documents"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Dokumen
-                    </Link>
-                    <Link
-                      href="/organization/lpj"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                    >
-                      Antrean LPJ
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 6. Direktori Kader & Mitra */}
-            {(categoryFilter === "all" || categoryFilter === "governance") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-gold-50 text-gold-800 border border-gold-300/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Users className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-gold-100/70 text-gold-900">
-                      PSDM &amp; Kemitraan
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Direktori &amp; Mitra
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Database kader lengkap, verifikasi penautan mahasiswa PSDM, katalog bisnis kader, dan CRM korporat.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Kader Terverifikasi:</span>
-                    <span className="font-bold text-wine-950 font-mono">{verifiedCadres.length} Orang</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/directory/cadres"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Data Kader
-                    </Link>
-                    {permissions.canVerifyCadres ? (
-                      <Link
-                        href="/organization/directory/cadres/verification"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <Award className="w-3.5 h-3.5 shrink-0" /> Verifikasi PSDM
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/directory/cadres"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Mitra Bisnis
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 7. CMS Portal & Media Partner */}
-            {(categoryFilter === "all" || categoryFilter === "governance") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-wine-50 text-brand-burgundy border border-wine-200/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Globe className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-wine-100/70 text-wine-900">
-                      Publikasi &amp; Media
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      CMS &amp; Mitra Media
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Editor visual beranda, publikasi warta berita, verifikasi paket mitra media &amp; seleksi aspirasi kotak suara.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Konten Web:</span>
-                    <span className="font-bold text-wine-950 font-mono">{store.articles.length} Berita</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/cms"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Buka CMS
-                    </Link>
-                    {permissions.canReviewMedpart || permissions.canCreateContent || permissions.canPublishContent ? (
-                      <Link
-                        href="/organization/cms/medpart"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        Verifikasi Mitra Media
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/cms"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-wine-100 active:bg-wine-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Lihat Berita
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 8. Kalender & Agenda Terpadu */}
-            {(categoryFilter === "all" || categoryFilter === "governance") && (
-              <div className="p-4 sm:p-5 rounded-2xl bg-surface-card border border-wine-950/10 shadow-sm hover:border-brand-burgundy/40 hover:shadow-md transition-all flex flex-col justify-between group">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="w-10 h-10 rounded-xl bg-gold-50 text-gold-800 border border-gold-300/60 flex items-center justify-center group-hover:scale-105 transition-transform">
-                      <Calendar className="w-5 h-5" />
-                    </div>
-                    <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-gold-100/70 text-gold-900">
-                      Agenda Terpadu
-                    </span>
-                  </div>
-                  <div>
-                    <h3 className="font-serif font-bold text-base text-wine-950 group-hover:text-brand-burgundy transition-colors">
-                      Kalender Organisasi
-                    </h3>
-                    <p className="text-xs text-neutral-dark mt-1 line-clamp-2 leading-relaxed">
-                      Jadwal sidang pleno, rapat koordinasi kabinet, main event proker dengan deteksi tabrakan waktu.
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-3.5 border-t border-wine-950/10 mt-3.5 space-y-2.5">
-                  <div className="flex items-center justify-between text-xs text-neutral-dark">
-                    <span>Jadwal Terdaftar:</span>
-                    <span className="font-bold text-wine-950 font-mono">{store.events.length} Kegiatan</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <Link
-                      href="/organization/calendar"
-                      className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                    >
-                      Lihat Kalender
-                    </Link>
-                    {permissions.canManageEvents || permissions.canAccessOrganization ? (
-                      <Link
-                        href="/calendar/events/form"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 active:bg-brand-darkWine text-white text-xs font-semibold text-center transition-all flex items-center justify-center gap-1 shadow-sm active:scale-[0.98]"
-                      >
-                        <Plus className="w-3.5 h-3.5 shrink-0" /> Buat Agenda
-                      </Link>
-                    ) : (
-                      <Link
-                        href="/organization/calendar"
-                        className="min-h-[44px] px-2.5 py-2 rounded-xl bg-surface-ivory hover:bg-gold-100 active:bg-gold-200 text-xs font-semibold text-wine-950 text-center transition-all flex items-center justify-center active:scale-[0.98]"
-                      >
-                        Jadwal Pleno
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Two-Column Section: Proker Prioritas & Monitoring Bidang (Reflowing for Mobile) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-          {/* Left Column (7 cols): Active Projects & Compartments */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-6">
-            <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface-card border border-wine-950/10 shadow-md sm:shadow-lg space-y-3 sm:space-y-4">
-              <div className="flex items-center justify-between pb-1 border-b border-wine-950/10">
-                <h2 className="font-serif text-base sm:text-lg font-bold text-wine-950 flex items-center gap-2">
-                  <FolderKanban className="w-4 h-4 text-brand-burgundy" />
-                  <span>Program Kerja Prioritas Kabinet</span>
-                </h2>
-                <Link
-                  href="/organization/reports"
-                  className="text-xs font-semibold text-brand-burgundy hover:underline flex items-center gap-1"
-                >
-                  <span>Laporan Lengkap</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
-
-              <div className="divide-y divide-wine-950/10">
-                {activeProjects.slice(0, 4).map((p) => {
-                  const comp = store.compartments.find((c) => c.id === p.compartment_id);
-                  return (
-                    <div
-                      key={p.id}
-                      className="py-3.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 group"
-                    >
-                      <div className="space-y-1 min-w-0">
-                        <span className="text-[11px] sm:text-xs font-mono font-bold uppercase text-brand-burgundy">
-                          {comp?.name || "Kompartemen"}
-                        </span>
-                        <h3 className="font-serif text-sm sm:text-base font-bold text-wine-950 block group-hover:text-brand-burgundy transition-colors leading-snug">
-                          {p.name}
-                        </h3>
-                        <p className="text-xs text-neutral-dark line-clamp-2 sm:line-clamp-1 leading-normal">
-                          {p.description}
-                        </p>
-                      </div>
-
-                      <Link
-                        href={`/workspace/${p.id}`}
-                        className="min-h-[44px] sm:min-h-[36px] px-4 py-2 rounded-full border border-wine-950/20 text-xs font-semibold text-wine-950 hover:bg-wine-950/5 active:bg-wine-950/10 transition-all flex items-center justify-center shrink-0 w-full sm:w-auto active:scale-[0.98]"
-                      >
-                        Buka Ruang Kerja
-                      </Link>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column (5 cols): 4 Bidang Monitoring & Fast Links */}
-          <div className="lg:col-span-5 space-y-4 sm:space-y-6">
-            <div className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-surface-card border border-wine-950/10 shadow-md sm:shadow-lg space-y-3 sm:space-y-4">
-              <div className="flex items-center justify-between pb-1 border-b border-wine-950/10">
-                <h2 className="font-serif text-base font-bold text-wine-950 flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-gold-600" />
-                  <span>Pemantauan 4 Bidang Utama</span>
-                </h2>
-                <Link
-                  href="/organization/structure"
-                  className="text-xs font-semibold text-brand-burgundy hover:underline"
-                >
-                  Lihat Semua
-                </Link>
-              </div>
-
-              <div className="divide-y divide-wine-950/10">
-                {store.fields.map((f) => {
-                  const compCount = store.compartments.filter((c) => c.field_id === f.id).length;
-                  return (
-                    <Link
-                      key={f.id}
-                      href={`/organization/fields/${f.id}/monitoring`}
-                      className="min-h-[48px] py-2.5 first:pt-1 last:pb-1 flex items-center justify-between transition-all group hover:bg-wine-950/[0.03] active:bg-wine-950/10 px-2.5 rounded-xl -mx-1"
-                    >
-                      <div className="space-y-0.5 min-w-0 pr-2">
-                        <strong className="text-xs text-wine-950 group-hover:text-brand-burgundy transition-colors block truncate">
-                          {f.name}
-                        </strong>
-                        <span className="text-[11px] text-neutral-dark block">
-                          Membawahi {compCount} Kompartemen
-                        </span>
-                      </div>
-                      <ChevronRight className="w-4 h-4 text-neutral-400 group-hover:translate-x-1 group-hover:text-brand-burgundy transition-all shrink-0" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </OrganizationShell>
+      {/* Create Project Modal (Kakom Only) */}
+      {profile === "kakom" && (
+        <CreateProjectModal
+          isOpen={createProjOpen}
+          onClose={() => setCreateProjOpen(false)}
+          store={store}
+          currentUser={currentUser}
+          defaultCompartmentId={permissions.managedCompartmentId}
+          onCreated={(projName) =>
+            setToastMsg(`Draf program kerja "${projName}" berhasil dibuat!`)
+          }
+        />
+      )}
+    </div>
   );
 }

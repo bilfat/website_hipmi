@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMockStore } from "@/lib/mock/store";
+import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
 import {
   Search,
   X,
@@ -11,13 +12,18 @@ import {
   Mail,
   Wallet,
   CalendarCheck,
-  QrCode,
+  Calendar,
   FileText,
   Users,
-  Globe,
+  Handshake,
   ArrowRight,
   Sparkles,
-  Command
+  Command,
+  Store,
+  Newspaper,
+  MessageSquareHeart,
+  Megaphone,
+  Award,
 } from "lucide-react";
 
 interface CommandPaletteProps {
@@ -27,16 +33,26 @@ interface CommandPaletteProps {
 
 type CategoryType = "all" | "projects" | "correspondence" | "finance" | "modules";
 
+interface PaletteItem {
+  id: string;
+  title: string;
+  subtitle: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  category: Exclude<CategoryType, "all">;
+  badge: string;
+}
+
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const router = useRouter();
-  const { store } = useMockStore();
+  const { store, currentUser } = useMockStore();
+  const permissions = resolveUserPermissions(currentUser, store);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryType>("all");
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Focus input on open
   useEffect(() => {
     if (isOpen) {
       setQuery("");
@@ -45,298 +61,355 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
     }
   }, [isOpen]);
 
-  // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!isOpen) return;
-
       if (e.key === "Escape") {
         e.preventDefault();
         onClose();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Operational Modules list
-  const operationalModules = [
-    {
+  // Permission-filtered modules (No generic "CMS" menu!)
+  const moduleItems: PaletteItem[] = [];
+
+  if (!permissions.isPureProjectManager) {
+    moduleItems.push({
+      id: "mod-cal",
+      title: "Kalender Organisasi",
+      subtitle: "Jadwal pleno, rapat, oprec, wawancara & milestone bertingkat",
+      href: "/organization/calendar",
+      icon: Calendar,
+      category: "modules",
+      badge: "Kalender",
+    });
+  }
+
+  if (permissions.canReadSponsors) {
+    moduleItems.push({
+      id: "mod-spo",
+      title: "Direktori Sponsor & Mitra",
+      subtitle: "Referensi perusahaan, kontak mitra & riwayat kerja sama HIPMI",
+      href: "/organization/directory/companies",
+      icon: Handshake,
+      category: "modules",
+      badge: "Referensi",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isSekum || permissions.canCreateLetter) {
+    moduleItems.push({
       id: "mod-cor",
-      title: "Persuratan Sentral (Biro Administrasi)",
-      subtitle: "Surat tugas, permohonan SK, review 4-item Sekum & nomor Ditmawa",
+      title: "Persuratan & Ditmawa",
+      subtitle: "Pengajuan surat URL dokumen, review Sekum & pelacakan Ditmawa",
       href: "/organization/correspondence",
       icon: Mail,
       category: "modules",
-      badge: "Administrasi"
-    },
-    {
+      badge: "Administrasi",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isBendum || permissions.canCreateFundRequest) {
+    moduleItems.push({
       id: "mod-fin",
-      title: "Keuangan & Kas (Kebendaharaan)",
-      subtitle: "Buku kas umum, review RAB Bendum & pencairan termin",
+      title: "Keuangan & Kas",
+      subtitle: "Buku kas umum, pengajuan dana (RAB) & pencairan",
       href: "/organization/finance",
       icon: Wallet,
       category: "modules",
-      badge: "Keuangan"
-    },
-    {
+      badge: "Keuangan",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.canManageEvents || permissions.canScanAttendance) {
+    moduleItems.push({
       id: "mod-evt",
-      title: "Manajemen Acara & Tiket",
-      subtitle: "Hub operasional agenda, kuota tiket & verifikasi panitia",
+      title: "Agenda, Event & Presensi",
+      subtitle: "Kelola event publik, tiket, verifikasi bayar & check-in QR",
       href: "/organization/events",
       icon: CalendarCheck,
       category: "modules",
-      badge: "Acara"
-    },
-    {
-      id: "mod-att",
-      title: "Presensi & Pindai QR",
-      subtitle: "Meja presensi tiket, scanner QR kamera langsung & log real-time",
-      href: "/organization/events/evt-business-expo/check-in",
-      icon: QrCode,
-      category: "modules",
-      badge: "Kehadiran"
-    },
-    {
+      badge: "Event",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isSekum || permissions.canReviewLPJ || permissions.isKakom || permissions.isKabid) {
+    moduleItems.push({
       id: "mod-doc",
-      title: "Dokumen & LPJ Kabinet",
-      subtitle: "Bank arsip dokumen resmi, versioning & review LPJ 7-bagian",
+      title: "Dokumen & LPJ",
+      subtitle: "Arsip dokumen versioning & laporan pertanggungjawaban 7-bagian",
       href: "/organization/documents",
       icon: FileText,
       category: "modules",
-      badge: "Arsip"
-    },
-    {
-      id: "mod-dir",
-      title: "Direktori Kader & Mitra",
-      subtitle: "Database kader terverifikasi PSDM & katalog bisnis anggota",
+      badge: "Arsip",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isSekum || permissions.canManageCadres) {
+    moduleItems.push({
+      id: "mod-cadre",
+      title: "Database Kader",
+      subtitle: "Data kader resmi, verifikasi & penautan NIM",
       href: "/organization/directory/cadres",
       icon: Users,
       category: "modules",
-      badge: "PSDM"
-    },
-    {
-      id: "mod-cms",
-      title: "CMS Portal & Mitra Media",
-      subtitle: "Editor beranda, publikasi warta berita & verifikasi mitra media",
-      href: "/organization/cms",
-      icon: Globe,
-      category: "modules",
-      badge: "Publikasi"
-    },
-    {
-      id: "mod-act",
-      title: "Pusat Tindakan & Persetujuan",
-      subtitle: "Pusat persetujuan lintas fungsi (surat, RAB, LPJ)",
-      href: "/organization/action-center",
-      icon: Sparkles,
-      category: "modules",
-      badge: "Persetujuan"
-    }
-  ];
+      badge: "Layanan",
+    });
+  }
 
-  // Projects list
-  const projectItems = store.projects.map((p) => ({
+  if (permissions.isTopManagement || permissions.canManageBusinesses) {
+    moduleItems.push({
+      id: "mod-biz",
+      title: "Pengelolaan Bisnis Kader",
+      subtitle: "Database & kurasi publikasi bisnis mahasiswa kader",
+      href: "/organization/directory/businesses",
+      icon: Store,
+      category: "modules",
+      badge: "Layanan",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isBendum || permissions.canReviewMedpart) {
+    moduleItems.push({
+      id: "mod-med",
+      title: "Media Partner (Medpart)",
+      subtitle: "Paket medpart gratis/berbayar & review pengajuan",
+      href: "/organization/cms/medpart",
+      icon: Megaphone,
+      category: "modules",
+      badge: "Layanan",
+    });
+  }
+
+  if (permissions.isTopManagement || permissions.isSekum || permissions.canCreateContent || permissions.canPublishContent) {
+    moduleItems.push(
+      {
+        id: "mod-news",
+        title: "Berita & Artikel",
+        subtitle: "Publikasi warta kegiatan ke portal publik",
+        href: "/organization/cms/articles",
+        icon: Newspaper,
+        category: "modules",
+        badge: "Layanan",
+      },
+      {
+        id: "mod-ach",
+        title: "Kader Berprestasi",
+        subtitle: "Posting & kelola rekam jejak prestasi kader",
+        href: "/organization/cms/achievements",
+        icon: Award,
+        category: "modules",
+        badge: "Layanan",
+      }
+    );
+  }
+
+  if (permissions.isTopManagement || permissions.isSekum || permissions.canManageFeedback) {
+    moduleItems.push({
+      id: "mod-fbk",
+      title: "Kotak Suara",
+      subtitle: "Triage & tindak lanjut aspirasi publik",
+      href: "/organization/cms/feedback",
+      icon: MessageSquareHeart,
+      category: "modules",
+      badge: "Layanan",
+    });
+  }
+
+  // Permission-filtered projects
+  const allowedProjects = store.projects.filter((p) => {
+    if (permissions.isTopManagement || permissions.isSekum || permissions.isBendum) return true;
+    if (permissions.isKabid && permissions.managedFieldId) return p.field_id === permissions.managedFieldId;
+    if (permissions.isKakom && permissions.managedCompartmentId) return p.compartment_id === permissions.managedCompartmentId;
+    if (permissions.managedProjectIds.includes(p.id)) return true;
+    if (permissions.managedCompartmentId && p.compartment_id === permissions.managedCompartmentId) return true;
+    return false;
+  });
+
+  const projectItems: PaletteItem[] = allowedProjects.map((p) => ({
     id: `proj-${p.id}`,
     title: p.name,
     subtitle: p.description,
-    href: `/workspace/${p.id}`,
+    href: `/workspace/projects/${p.id}`,
     icon: FolderKanban,
-    category: "projects" as const,
-    badge: p.operational_status === "ongoing" ? "Berjalan" : "Rencana"
+    category: "projects",
+    badge: p.operational_status === "ongoing" ? "Berjalan" : "Proker",
   }));
 
-  // Correspondence list
-  const letterItems = store.correspondence.map((c) => ({
-    id: `cor-${c.id}`,
-    title: `${c.generated_letter_number || c.reference_number_preview || "Pengajuan Surat"} - ${c.title}`,
-    subtitle: `Pemohon: ${c.submitter_name || c.requester_name || "-"} • Status: ${c.status.toUpperCase()}`,
-    href: `/organization/correspondence`,
-    icon: Mail,
-    category: "correspondence" as const,
-    badge: c.routing || "Surat"
-  }));
+  // Permission-filtered correspondence
+  const canSeeLetters =
+    permissions.isTopManagement || permissions.isSekum || permissions.canCreateLetter;
+  const letterItems: PaletteItem[] = canSeeLetters
+    ? store.correspondence
+        .filter((c) => {
+          if (permissions.isTopManagement || permissions.isSekum) return true;
+          return c.submitter_user_id === currentUser.id;
+        })
+        .map((c) => ({
+          id: `cor-${c.id}`,
+          title: `${c.generated_letter_number || "Pengajuan Surat"} — ${c.title}`,
+          subtitle: `Pengaju: ${c.submitter_name || "-"} • ${c.unit_name}`,
+          href: `/organization/correspondence`,
+          icon: Mail,
+          category: "correspondence",
+          badge: c.routing || "Surat",
+        }))
+    : [];
 
-  // Aggregate items
-  const allItems = [...operationalModules, ...projectItems, ...letterItems];
+  // Permission-filtered fund requests
+  const canSeeFinance =
+    permissions.isTopManagement || permissions.isBendum || permissions.canCreateFundRequest;
+  const financeItems: PaletteItem[] = canSeeFinance
+    ? store.fund_requests
+        .filter((f) => {
+          if (permissions.isTopManagement || permissions.isBendum) return true;
+          return f.submitter_user_id === currentUser.id;
+        })
+        .map((f) => ({
+          id: `fin-${f.id}`,
+          title: f.purpose,
+          subtitle: `${f.unit_name} • Rp ${f.requested_amount.toLocaleString("id-ID")}`,
+          href: `/organization/finance`,
+          icon: Wallet,
+          category: "finance",
+          badge: "RAB",
+        }))
+    : [];
 
-  // Filter items based on query & activeCategory
-  const filteredItems = allItems.filter((item) => {
-    const matchesCategory = activeCategory === "all" || item.category === activeCategory;
-    const q = query.toLowerCase().trim();
-    if (!q) return matchesCategory;
+  const allItems: PaletteItem[] = [
+    ...moduleItems,
+    ...projectItems,
+    ...letterItems,
+    ...financeItems,
+  ];
 
-    const matchesQuery =
+  const q = query.trim().toLowerCase();
+  const filtered = allItems.filter((item) => {
+    const matchCategory = activeCategory === "all" || item.category === activeCategory;
+    const matchQuery =
+      !q ||
       item.title.toLowerCase().includes(q) ||
       item.subtitle.toLowerCase().includes(q) ||
       item.badge.toLowerCase().includes(q);
-
-    return matchesCategory && matchesQuery;
+    return matchCategory && matchQuery;
   });
-
-  const handleSelect = (href: string) => {
-    onClose();
-    router.push(href);
-  };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 sm:p-6 pt-16 sm:pt-20">
-      {/* Backdrop */}
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4">
       <div
-        className="fixed inset-0 bg-neutral-950/60 backdrop-blur-sm animate-in fade-in duration-200"
+        className="fixed inset-0 bg-wine-950/55 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal Dialog */}
-      <div className="relative w-full max-w-2xl bg-surface-card rounded-2xl shadow-2xl border border-wine-950/15 overflow-hidden flex flex-col max-h-[80vh] z-10 animate-in zoom-in-95 duration-150">
-        {/* Top Input Bar */}
-        <div className="p-4 border-b border-wine-950/10 flex items-center gap-3 bg-surface-ivory/60">
-          <Search className="w-5 h-5 text-brand-burgundy shrink-0" />
+      <div className="relative z-10 w-full max-w-2xl rounded-3xl bg-[#FFFDFB] border border-[#E8B577]/45 shadow-[0_24px_64px_rgba(61,15,22,0.25)] overflow-hidden">
+        {/* Search Input */}
+        <div className="px-5 py-4 border-b border-[#E9E1DC] flex items-center gap-3 bg-[#FCF8F6]">
+          <Search className="w-4 h-4 text-brand-burgundy shrink-0" />
           <input
             ref={inputRef}
-            type="search"
+            type="text"
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
-            placeholder="Cari program kerja, nomor surat, modul, atau dokumen..."
-            className="w-full bg-transparent border-none outline-none text-sm text-wine-950 placeholder:text-neutral-dark/80 font-medium"
+            placeholder="Cari proker, surat, mitra, atau menu sesuai hak akses Anda..."
+            className="flex-1 bg-transparent text-sm text-wine-950 placeholder:text-neutral-light focus:outline-none"
           />
-          {query && (
-            <button
-              onClick={() => setQuery("")}
-              className="p-1 rounded-lg text-neutral-dark hover:text-wine-950 hover:bg-wine-950/5 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-          <kbd className="hidden sm:inline-block text-[11px] font-mono px-2 py-0.5 rounded bg-surface-card border border-wine-950/15 text-neutral-dark shadow-sm">
-            ESC
-          </kbd>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white border border-[#E9E1DC] flex items-center justify-center text-neutral-dark hover:text-brand-burgundy"
+            aria-label="Tutup pencarian"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Filter Category Chips */}
-        <div className="px-4 py-2.5 border-b border-wine-950/10 flex items-center gap-1.5 overflow-x-auto bg-surface-card text-xs">
-          <span className="text-[11px] text-neutral-dark/80 font-semibold mr-1 uppercase font-mono tracking-wider">
-            Filter:
-          </span>
-          {(
-            [
-              { key: "all", label: "Semua" },
-              { key: "projects", label: "Program Kerja" },
-              { key: "correspondence", label: "Persuratan" },
-              { key: "modules", label: "Modul Kerja" }
-            ] as const
-          ).map((tab) => (
+        {/* Category Pills */}
+        <div className="px-5 py-2.5 border-b border-[#E9E1DC] flex flex-wrap items-center gap-1.5 text-[11px]">
+          {[
+            { id: "all", label: "Semua" },
+            { id: "modules", label: "Menu & Layanan" },
+            { id: "projects", label: "Proker" },
+            ...(canSeeLetters ? [{ id: "correspondence", label: "Persuratan" }] : []),
+            ...(canSeeFinance ? [{ id: "finance", label: "Keuangan" }] : []),
+          ].map((cat) => (
             <button
-              key={tab.key}
-              onClick={() => {
-                setActiveCategory(tab.key);
-                setSelectedIndex(0);
-              }}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-all ${
-                activeCategory === tab.key
-                  ? "bg-brand-burgundy text-white shadow-sm font-semibold"
-                  : "bg-surface-ivory hover:bg-wine-100/60 text-neutral-dark hover:text-wine-950"
+              key={cat.id}
+              type="button"
+              onClick={() => setActiveCategory(cat.id as CategoryType)}
+              className={`px-3 py-1 rounded-full font-semibold transition-colors ${
+                activeCategory === cat.id
+                  ? "bg-brand-burgundy text-white"
+                  : "bg-[#FCF8F6] text-neutral-dark hover:text-wine-950"
               }`}
             >
-              {tab.label}
+              {cat.label}
             </button>
           ))}
         </div>
 
-        {/* Results List */}
-        <div className="flex-1 overflow-y-auto p-2 divide-y divide-wine-950/5">
-          {filteredItems.length === 0 ? (
-            <div className="py-12 text-center space-y-2">
-              <Search className="w-8 h-8 text-neutral-dark/40 mx-auto" />
-              <p className="text-sm font-semibold text-wine-950">Tidak ada hasil ditemukan</p>
-              <p className="text-xs text-neutral-dark max-w-xs mx-auto">
-                Coba gunakan kata kunci lain seperti nama proker, jenis surat, atau nama biro operasional.
-              </p>
-            </div>
-          ) : (
-            filteredItems.map((item, idx) => {
+        {/* Results */}
+        <div className="max-h-[360px] overflow-y-auto p-2.5 space-y-1">
+          {filtered.length > 0 ? (
+            filtered.slice(0, 12).map((item, idx) => {
               const Icon = item.icon;
-              const isSelected = idx === selectedIndex;
-
               return (
                 <Link
                   key={item.id}
                   href={item.href}
-                  onClick={() => onClose()}
+                  onClick={onClose}
                   onMouseEnter={() => setSelectedIndex(idx)}
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all group ${
-                    isSelected ? "bg-gold-500/15 text-wine-950" : "hover:bg-surface-ivory"
+                  className={`flex items-center justify-between gap-3 px-3.5 py-3 rounded-2xl transition-colors ${
+                    selectedIndex === idx
+                      ? "bg-[#FCF8F6] border border-[#E8B577]/45"
+                      : "hover:bg-[#FCF8F6] border border-transparent"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0 pr-3">
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all ${
-                        isSelected
-                          ? "bg-brand-burgundy text-white border-brand-burgundy"
-                          : "bg-surface-ivory text-brand-burgundy border-wine-950/10 group-hover:border-brand-burgundy/40"
-                      }`}
-                    >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-xl bg-brand-burgundy/10 text-brand-burgundy flex items-center justify-center shrink-0">
                       <Icon className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-wine-950 truncate">
-                          {item.title}
-                        </span>
-                        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-wine-950/5 text-wine-900 border border-wine-950/10 font-semibold shrink-0">
-                          {item.badge}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-dark truncate mt-0.5">{item.subtitle}</p>
+                      <strong className="text-xs font-semibold text-wine-950 block truncate">
+                        {item.title}
+                      </strong>
+                      <span className="text-[11px] text-neutral-dark block truncate">
+                        {item.subtitle}
+                      </span>
                     </div>
                   </div>
-
-                  <ArrowRight
-                    className={`w-4 h-4 shrink-0 transition-transform ${
-                      isSelected
-                        ? "text-brand-burgundy translate-x-1"
-                        : "text-neutral-dark/40 group-hover:translate-x-1 group-hover:text-brand-burgundy"
-                    }`}
-                  />
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-white border border-[#E9E1DC] text-neutral-dark">
+                      {item.badge}
+                    </span>
+                    <ArrowRight className="w-3.5 h-3.5 text-neutral-light" />
+                  </div>
                 </Link>
               );
             })
+          ) : (
+            <div className="py-10 text-center space-y-2 text-xs text-neutral-dark">
+              <Sparkles className="w-6 h-6 text-[#AF7D66] mx-auto" />
+              <p>Tidak ditemukan hasil yang sesuai dengan hak akses akun Anda.</p>
+            </div>
           )}
         </div>
 
-        {/* Footer shortcuts */}
-        <div className="px-4 py-2.5 bg-surface-ivory/80 border-t border-wine-950/10 flex items-center justify-between text-xs text-neutral-dark">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5">
-              <kbd className="font-mono px-1.5 py-0.5 rounded bg-surface-card border border-wine-950/15 text-[10px]">
-                ↑↓
-              </kbd>
-              <span>Navigasi</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="font-mono px-1.5 py-0.5 rounded bg-surface-card border border-wine-950/15 text-[10px]">
-                ↵
-              </kbd>
-              <span>Pilih</span>
-            </span>
-            <span className="flex items-center gap-1.5">
-              <kbd className="font-mono px-1.5 py-0.5 rounded bg-surface-card border border-wine-950/15 text-[10px]">
-                Esc
-              </kbd>
-              <span>Tutup</span>
-            </span>
-          </div>
-
-          <span className="font-mono text-[11px] text-wine-950 font-semibold">
-            {filteredItems.length} Hasil
+        {/* Footer */}
+        <div className="px-5 py-2.5 border-t border-[#E9E1DC] bg-[#FCF8F6] flex items-center justify-between text-[10px] text-neutral-light font-mono">
+          <span className="inline-flex items-center gap-1">
+            <Command className="w-3 h-3" />
+            Menampilkan data sesuai izin: {permissions.roleBadgeTitle}
           </span>
+          <span>ESC untuk tutup</span>
         </div>
       </div>
     </div>

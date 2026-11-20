@@ -2,32 +2,49 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { OrganizationShell } from "@/components/layout/organization-shell";
 import { useMockStore } from "@/lib/mock/store";
+import { resolveUserPermissions } from "@/lib/auth/permission-resolver";
 import {
-  FileText,
+  CreateLetterModal,
+  LetterDetailModal,
+} from "@/components/organization/letter-modals";
+import { CorrespondenceRequest } from "@/types/domain";
+import {
   Search,
-  Filter,
   Plus,
   ChevronLeft,
-  ChevronRight,
-  ExternalLink,
   CheckCircle2,
-  Clock,
-  AlertCircle
+  Hash,
 } from "lucide-react";
 
+const STATUS_BADGE_MAP: Record<string, { label: string; tone: string }> = {
+  draft: { label: "Draf", tone: "bg-neutral-100 text-neutral-700 border-neutral-200" },
+  submitted: { label: "Menunggu Sekum", tone: "bg-amber-50 text-amber-800 border-amber-200" },
+  in_review: { label: "Diperiksa Sekum", tone: "bg-amber-50 text-amber-800 border-amber-200" },
+  revision: { label: "Perlu Revisi", tone: "bg-rose-50 text-rose-700 border-rose-200" },
+  revision_needed: { label: "Perlu Revisi", tone: "bg-rose-50 text-rose-700 border-rose-200" },
+  approved: { label: "Disetujui", tone: "bg-sky-50 text-sky-800 border-sky-200" },
+  issued: { label: "Nomor Terbit", tone: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  completed: { label: "Selesai", tone: "bg-emerald-100 text-emerald-900 border-emerald-300" },
+  archived: { label: "Diarsipkan", tone: "bg-neutral-100 text-neutral-600 border-neutral-200" },
+};
+
 export default function CorrespondenceRequestsPage() {
-  const { store } = useMockStore();
+  const { store, currentUser } = useMockStore();
+  const permissions = resolveUserPermissions(currentUser, store);
+
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [routingFilter, setRoutingFilter] = useState("all");
+  const [createOpen, setCreateOpen] = useState(false);
+  const [selectedLetter, setSelectedLetter] = useState<CorrespondenceRequest | null>(null);
+  const [feedback, setFeedback] = useState<string | null>(null);
 
   const letters = (store.correspondence || []).filter((l) => {
     if (statusFilter !== "all" && l.status !== statusFilter) return false;
     if (routingFilter !== "all" && l.routing !== routingFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
+    if (searchTerm.trim()) {
+      const q = searchTerm.trim().toLowerCase();
       const matchTitle = l.title.toLowerCase().includes(q);
       const matchSubmitter = l.submitter_name.toLowerCase().includes(q);
       const matchUnit = l.unit_name.toLowerCase().includes(q);
@@ -38,158 +55,175 @@ export default function CorrespondenceRequestsPage() {
   });
 
   return (
-    <OrganizationShell>
-      <div className="space-y-6">
-        {/* Breadcrumb & Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-wine-100 pb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Link
-                href="/organization/correspondence"
-                className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                Persuratan
-              </Link>
-              <span className="text-xs text-wine-300">/</span>
-              <span className="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-brand-burgundy/10 text-brand-burgundy border border-brand-burgundy/20">
-                COR-02
-              </span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-display font-bold text-wine-950">
-              Daftar Pengajuan Surat
-            </h1>
-            <p className="text-xs text-wine-600 mt-1">
-              Seluruh surat resmi yang diajukan oleh bidang, kompartemen, atau kepanitiaan proker.
-            </p>
+    <div className="space-y-6 pb-12">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <Link
+              href="/organization/correspondence"
+              className="text-xs font-semibold text-brand-burgundy hover:underline inline-flex items-center gap-1"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Persuratan</span>
+            </Link>
+            <span className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#AF7D66] font-bold">
+              • Daftar Pengajuan
+            </span>
           </div>
+          <h1 className="font-serif text-2xl sm:text-3xl font-bold text-wine-950 tracking-tight">
+            Daftar Pengajuan Surat
+          </h1>
+          <p className="text-xs text-neutral-dark max-w-2xl">
+            Pantau seluruh pengajuan surat resmi bidang, kompartemen, dan proker lengkap dengan progres ceklis kebutuhan dari Sekretaris Umum.
+          </p>
+        </div>
 
-          <Link
-            href="/organization/correspondence/form?mode=create"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-brand-burgundy hover:bg-wine-900 text-white font-medium text-xs shadow-sm transition-all"
+        {permissions.canCreateLetter && (
+          <button
+            type="button"
+            onClick={() => setCreateOpen(true)}
+            className="px-5 py-2.5 rounded-full bg-brand-burgundy hover:bg-brand-darkWine text-white text-xs font-semibold shadow-sm inline-flex items-center gap-1.5 self-start sm:self-auto"
           >
             <Plus className="w-4 h-4" />
-            <span>Ajukan Surat (COR-03)</span>
-          </Link>
-        </div>
+            <span>Ajukan Surat Baru</span>
+          </button>
+        )}
+      </div>
 
-        {/* Filter & Search Bar */}
-        <div className="p-4 rounded-xl bg-white border border-wine-100 shadow-xs flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-wine-400 absolute left-3.5 top-3" />
-            <input
-              type="text"
-              placeholder="Cari judul surat, pengaju, unit, atau nomor..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-wine-200 text-xs text-wine-900 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            />
-          </div>
-
+      {feedback && (
+        <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-900 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Status</option>
-              <option value="submitted">Submitted</option>
-              <option value="in_review">In Review</option>
-              <option value="revision_needed">Revision Needed</option>
-              <option value="approved">Approved</option>
-              <option value="issued">Issued</option>
-            </select>
-
-            <select
-              value={routingFilter}
-              onChange={(e) => setRoutingFilter(e.target.value)}
-              className="text-xs px-3 py-2 rounded-lg border border-wine-200 bg-white text-wine-800 focus:outline-none focus:ring-1 focus:ring-brand-burgundy"
-            >
-              <option value="all">Semua Jenis Routing</option>
-              <option value="Surat Umum">Surat Umum</option>
-              <option value="Untuk Ditmawa">Untuk Ditmawa</option>
-            </select>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{feedback}</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setFeedback(null)}
+            className="text-[11px] font-semibold text-emerald-700 hover:underline"
+          >
+            Tutup
+          </button>
+        </div>
+      )}
+
+      {/* Filter & Search Bar */}
+      <div className="p-4 rounded-2xl bg-white/95 border border-[#E9E1DC] shadow-sm flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="w-3.5 h-3.5 text-neutral-light absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            placeholder="Cari judul surat, pengaju, unit, atau nomor surat..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+          />
         </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-2xl border border-wine-100 overflow-hidden shadow-xs">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-wine-50/50 text-wine-700 font-semibold border-b border-wine-100">
-                <tr>
-                  <th className="py-3.5 px-4">Judul Surat & Deskripsi</th>
-                  <th className="py-3.5 px-4">Pengaju / Unit</th>
-                  <th className="py-3.5 px-4">Jenis Routing</th>
-                  <th className="py-3.5 px-4">Status</th>
-                  <th className="py-3.5 px-4">Nomor Resmi</th>
-                  <th className="py-3.5 px-4 text-right">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-wine-50 text-wine-800">
-                {letters.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-8 text-center text-wine-500">
-                      Tidak ada pengajuan surat yang sesuai kriteria pencarian.
-                    </td>
-                  </tr>
-                ) : (
-                  letters.map((l) => (
-                    <tr key={l.id} className="hover:bg-surface-base transition-colors">
-                      <td className="py-3.5 px-4 max-w-xs">
-                        <Link
-                          href={`/organization/correspondence/${l.id}`}
-                          className="font-bold text-wine-950 hover:text-brand-burgundy hover:underline line-clamp-1 text-sm font-display"
-                        >
-                          {l.title}
-                        </Link>
-                        <p className="text-[11px] text-wine-500 line-clamp-1 mt-0.5">
-                          Tujuan: {l.purpose}
-                        </p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-medium text-wine-900">{l.submitter_name}</span>
-                        <p className="text-[11px] text-wine-500">{l.unit_name}</p>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-wine-50 text-wine-800 border border-wine-100">
-                          {l.routing}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                            l.status === "issued"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : l.status === "revision_needed"
-                              ? "bg-rose-100 text-rose-800"
-                              : l.status === "approved"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-amber-100 text-amber-800"
-                          }`}
-                        >
-                          {l.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4 font-mono text-[11px] text-brand-burgundy font-semibold">
-                        {l.generated_letter_number || "-"}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <Link
-                          href={`/organization/correspondence/${l.id}`}
-                          className="px-3 py-1.5 rounded-lg border border-wine-200 hover:bg-wine-50 text-wine-800 text-xs font-semibold inline-flex items-center gap-1 transition-all"
-                        >
-                          Detail <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+          >
+            <option value="all">Semua Status</option>
+            <option value="submitted">Menunggu Sekum</option>
+            <option value="in_review">Diperiksa Sekum</option>
+            <option value="revision_needed">Perlu Revisi</option>
+            <option value="approved">Disetujui</option>
+            <option value="issued">Nomor Terbit</option>
+          </select>
+
+          <select
+            value={routingFilter}
+            onChange={(e) => setRoutingFilter(e.target.value)}
+            className="px-3.5 py-2 rounded-xl bg-[#FCF8F6] border border-[#E9E1DC] text-xs text-wine-950"
+          >
+            <option value="all">Semua Routing</option>
+            <option value="Surat Umum">Surat Umum</option>
+            <option value="Untuk Ditmawa">Untuk Ditmawa</option>
+          </select>
         </div>
       </div>
-    </OrganizationShell>
+
+      {/* Letters List */}
+      <div className="space-y-3">
+        {letters.length > 0 ? (
+          letters.map((l) => {
+            const st = STATUS_BADGE_MAP[l.status] || STATUS_BADGE_MAP.submitted;
+            const checklist = l.checklist || [];
+            const checkedCount = checklist.filter((c) => c.checked).length;
+            const allChecked = checklist.length > 0 && checkedCount === checklist.length;
+
+            return (
+              <div
+                key={l.id}
+                onClick={() => setSelectedLetter(l)}
+                className="p-4 sm:p-5 rounded-3xl bg-white/95 border border-[#E9E1DC] shadow-sm hover:border-brand-burgundy/40 transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+              >
+                <div className="space-y-1.5 min-w-0">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-brand-burgundy/10 text-brand-burgundy">
+                      {l.routing}
+                    </span>
+                    <span className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-full border ${st.tone}`}>
+                      {st.label}
+                    </span>
+                    <span
+                      className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full border ${
+                        allChecked
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-amber-50 text-amber-800 border-amber-200"
+                      }`}
+                    >
+                      Ceklis: {checkedCount}/{checklist.length}
+                    </span>
+                    {l.generated_letter_number && (
+                      <span className="text-[10px] font-mono font-bold text-emerald-700 inline-flex items-center gap-0.5">
+                        <Hash className="w-3 h-3" />
+                        {l.generated_letter_number}
+                      </span>
+                    )}
+                  </div>
+                  <strong className="font-serif text-base text-wine-950 block">
+                    {l.title}
+                  </strong>
+                  <span className="text-xs text-neutral-dark block">
+                    {l.unit_name} • Pengaju: {l.submitter_name}
+                  </span>
+                </div>
+
+                <span className="px-4 py-2 rounded-full bg-[#FCF8F6] border border-[#E9E1DC] text-xs font-semibold text-wine-950 shrink-0 self-start sm:self-center">
+                  {permissions.canReviewLetter ? "Ceklis & Review" : "Lihat Progres"}
+                </span>
+              </div>
+            );
+          })
+        ) : (
+          <div className="p-10 rounded-3xl bg-white/95 border border-dashed border-[#E9E1DC] text-center text-xs text-neutral-dark">
+            Tidak ada pengajuan surat yang sesuai kriteria pencarian.
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      <CreateLetterModal
+        isOpen={createOpen}
+        onClose={() => setCreateOpen(false)}
+        store={store}
+        currentUser={currentUser}
+        defaultUnitName={permissions.roleScopeSubtitle}
+        onSuccess={(msg) => setFeedback(msg)}
+      />
+
+      <LetterDetailModal
+        letter={selectedLetter}
+        onClose={() => setSelectedLetter(null)}
+        store={store}
+        currentUser={currentUser}
+        canReviewLetter={permissions.canReviewLetter}
+        onUpdated={(msg) => setFeedback(msg)}
+      />
+    </div>
   );
 }
